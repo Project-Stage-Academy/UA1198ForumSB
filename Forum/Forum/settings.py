@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from os import environ
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -74,15 +80,14 @@ WSGI_APPLICATION = 'Forum.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# TODO: select credentials from environment variables
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'forum_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432'
+        'NAME': environ.get('FORUM_DB_NAME'),
+        'USER': environ.get('FORUM_DB_USER'),
+        'PASSWORD': environ.get('FORUM_DB_PASSWORD'),
+        'HOST': environ.get('FORUM_DB_HOST'),
+        'PORT': int(environ.get('FORUM_DB_PORT'))
     }
 }
 
