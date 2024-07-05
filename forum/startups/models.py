@@ -10,6 +10,12 @@ class StartupSize(models.Model):
     people_count_min = models.IntegerField(default=0)
     people_count_max = models.IntegerField()
 
+    class Meta:
+        db_table = 'startup_size'
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.people_count_min} - {self.people_count_max})"
+
     def clean(self):
         if self.people_count_min > self.people_count_max:
             raise ValidationError('people_count_min cannot be greater than people_count_max')
@@ -17,9 +23,6 @@ class StartupSize(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
-
-    class Meta:
-        db_table = 'startup_size'
 
 
 class Startup(models.Model):
@@ -36,3 +39,6 @@ class Startup(models.Model):
 
     class Meta:
         db_table = 'startup'
+
+    def __str__(self) -> str:
+        return f"{self.startup_id} {self.name}"
