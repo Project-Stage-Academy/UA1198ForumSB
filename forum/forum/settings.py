@@ -153,10 +153,10 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '1000/day',
-        'token_obtain': '500/hour',
-        'token_refresh': '100/hour',
+        'anon': environ.get('ANON_THROTTLE_RATE', '100/day'),
+        'user': environ.get('USER_THROTTLE_RATE', '1000/day'),
+        'token_obtain': environ.get('TOKEN_OBTAIN_RATE', '500/hour'),
+        'token_refresh': environ.get('TOKEN_REFRESH_RATE', '100/hour'),
     },
 }
 
