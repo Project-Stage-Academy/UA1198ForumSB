@@ -9,7 +9,6 @@ class CustomUserManager(BaseUserManager):
             raise ValueError("The Email must be set")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
         user.save()
         return user
 
@@ -26,22 +25,18 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser):
-    class Role(models.IntegerChoices):
-        INVESTOR = 1
-        STARTUP = 2
-
     user_id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=75)
     last_name = models.CharField(max_length=75)
     email = models.EmailField(unique=True)
     user_phone = models.CharField(max_length=50, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    role = models.IntegerField(choices=Role.choices)
     last_updated = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_superuser = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -50,6 +45,10 @@ class CustomUser(AbstractBaseUser):
 
     class Meta:
         db_table = 'custom_user'
+
+    def save(self, *args, **kwargs):
+        self.set_password(self.password)
+        super(CustomUser, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.email
