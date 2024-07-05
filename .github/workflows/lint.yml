@@ -24,4 +24,4 @@ jobs:
       - name: Run pylint
         run: |
           cd forum/
-          poetry run pylint --load-plugins=pylint_django --django-settings-module=forum.settings **/*.py 
+          poetry run pylint --fail-under=3.5 --load-plugins=pylint_django --django-settings-module=forum.settings **/*.py 
