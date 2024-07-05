@@ -17,5 +17,5 @@ class ProjectSubscriptionSerializer(ModelSerializer):
 
 class IndustrySerializer(ModelSerializer):
     class Meta:
-        ModelSerializer = Industry
+        model = Industry
         fields = '__all__'
