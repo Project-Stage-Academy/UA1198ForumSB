@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework'
+    #'rest_framework'
 ]
 
 MIDDLEWARE = [
@@ -87,7 +87,7 @@ DATABASES = {
         'USER': environ.get('FORUM_DB_USER'),
         'PASSWORD': environ.get('FORUM_DB_PASSWORD'),
         'HOST': environ.get('FORUM_DB_HOST'),
-        'PORT': int(environ.get('FORUM_DB_PORT'))
+        'PORT': str(environ.get('FORUM_DB_PORT'))
     }
 }
 
