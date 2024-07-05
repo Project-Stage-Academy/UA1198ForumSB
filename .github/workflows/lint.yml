@@ -21,4 +21,6 @@ jobs:
           pip install pylint
 
       - name: Run pylint
-        run: pylint forum/**/*.py
+        run:
+          cd forum/
+          pylint **/*.py
