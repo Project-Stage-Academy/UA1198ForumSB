@@ -24,4 +24,4 @@ jobs:
       - name: Run pylint
         run: |
           cd forum/
-          poetry run pylint --load-plugins pylint_django **/*.py 
+          poetry run pylint --load-plugins=pylint_django **/*.py 
