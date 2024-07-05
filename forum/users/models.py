@@ -31,14 +31,14 @@ class CustomUser(AbstractBaseUser):
         STARTUP = 2
 
     user_id = models.AutoField(primary_key=True)
-    first_name = models.CharField()
-    last_name = models.CharField()
+    first_name = models.CharField(max_length=75)
+    last_name = models.CharField(max_length=75)
     email = models.EmailField(unique=True)
-    user_phone = models.CharField()
-    description = models.CharField()
+    user_phone = models.CharField(max_length=50, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     role = models.IntegerField(choices=Role.choices)
-    created_at = models.DateTimeField(default=timezone.now)
-    last_updated = models.DateTimeField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -47,6 +47,9 @@ class CustomUser(AbstractBaseUser):
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
+
+    class Meta:
+        db_table = 'custom_user'
 
     def __str__(self):
         return self.email
