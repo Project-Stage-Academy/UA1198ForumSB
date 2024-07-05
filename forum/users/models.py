@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 
@@ -8,7 +8,7 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError("The Email must be set")
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        user = self.model(email=email, password=password, **extra_fields)
         user.save()
         return user
 
@@ -24,7 +24,7 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-class CustomUser(AbstractBaseUser):
+class CustomUser(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=75)
     last_name = models.CharField(max_length=75)
