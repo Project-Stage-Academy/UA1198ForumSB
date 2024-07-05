@@ -50,3 +50,4 @@ class Industry(models.Model):
 
     class Meta:
         db_table = 'industry'
+        verbose_name_plural = 'Industries'
