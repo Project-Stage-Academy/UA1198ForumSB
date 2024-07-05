@@ -33,11 +33,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# as we use custom user model, we need such configuration
-# leave comments unchanged for now
-# AUTH_USER_MODEL = 'users.CustomUser'
-
-
 # Application definition
 
 INSTALLED_APPS = [
