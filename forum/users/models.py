@@ -26,17 +26,12 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser):
-    class Role(models.IntegerChoices):
-        INVESTOR = 1
-        STARTUP = 2
-
     user_id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=75)
     last_name = models.CharField(max_length=75)
     email = models.EmailField(unique=True)
     user_phone = models.CharField(max_length=50, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    role = models.IntegerField(choices=Role.choices)
     last_updated = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

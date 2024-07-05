@@ -15,7 +15,7 @@ class Project(models.Model):
         APPROVED = 'APPROVED'
 
     project_id = models.AutoField(primary_key=True)
-    startup_id = models.ForeignKey(Startup, on_delete=models.CASCADE)
+    startup_id = models.OneToOneField(Startup, on_delete=models.CASCADE)
     status_id = models.CharField(max_length=10, choices=ProjectStatus.choices, default=ProjectStatus.NEW)
     title = models.CharField(max_length=200)
     business_plan = models.TextField(blank=True, null=True)
@@ -32,11 +32,7 @@ class Project(models.Model):
 class ProjectSubscription(models.Model):
     project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
     investor_id = models.ForeignKey(Investor, on_delete=models.CASCADE)
-    part = models.DecimalField(
-        max_digits=5,  # Maximum number of digits (including decimals)
-        decimal_places=2,  # Number of decimal places
-        help_text="Investor's share in the project as a percentage"
-    )
+    part = models.IntegerField()
 
     class Meta:
         db_table = 'project_subscription'
