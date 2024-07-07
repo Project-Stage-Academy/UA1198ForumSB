@@ -2,10 +2,12 @@ version: '3.8'
 
 services:
   web:
-    build: .
-    command: gunicorn forum.wsgi:application --bind 0.0.0.0:8000
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: poetry run python forum/manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - ./forum:/app/forum
     ports:
       - "8000:8000"
     env_file:
