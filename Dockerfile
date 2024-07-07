@@ -1,50 +1,47 @@
-# The base image we want to inherit from
-FROM python:3.11-slim AS development_build
+FROM python:3.11-slim
 
 ARG DJANGO_ENV
 
-ENV DJANGO_ENV=${DJANGO_ENV} \
-  # python:
-  PYTHONFAULTHANDLER=1 \
-  PYTHONUNBUFFERED=1 \
-  PYTHONHASHSEED=random \
-  # pip:
-  PIP_NO_CACHE_DIR=off \
-  PIP_DISABLE_PIP_VERSION_CHECK=on \
-  PIP_DEFAULT_TIMEOUT=100 \
-  # poetry:
-  POETRY_VERSION=1.3.2 \
-  POETRY_VIRTUALENVS_CREATE=false \
-  POETRY_CACHE_DIR='/var/cache/pypoetry' \
-  PATH="/root/.local/bin:$PATH" \
-  PYTHONPATH="/app"
-
-# System deps:
+# Install system dependencies and create a new user
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     bash \
     build-essential \
     curl \
-    gettext \
-    git \
     libpq-dev \
-    wget \
-  # Cleaning cache:
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* \
-  && curl -sSL https://install.python-poetry.org | python3 - \
-  && poetry --version
+  && useradd -m appuser
+
+# Switch to the new user and set up Poetry
+USER appuser
+
+# Set environment variables
+ENV PATH="/home/appuser/.local/bin:$PATH" \
+    DJANGO_ENV=${DJANGO_ENV} \
+    PYTHONFAULTHANDLER=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONHASHSEED=random \
+    PIP_DISABLE_PIP_VERSION_CHECK=on
+
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 - \
+  && poetry config virtualenvs.in-project true
 
 # Set work directory
 WORKDIR /app
 
-# Copy pyproject.toml and poetry.lock to work directory
-COPY pyproject.toml poetry.lock /app/
+# Copy dependency files first for better caching
+COPY --chown=appuser:appuser pyproject.toml poetry.lock /app/
 
 # Install dependencies
-RUN poetry install --no-root
+RUN poetry install
 
-# Copy project files to the work directory
-COPY forum /app/forum
+# Copy project files
+COPY --chown=appuser:appuser forum /app/forum
+
+# Activate virtual environment and set PYTHONPATH
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH="/app"
 
 # Command to run the application
-CMD ["poetry", "run", "python", "forum/manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "forum/manage.py", "runserver", "0.0.0.0:8000"]
