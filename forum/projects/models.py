@@ -21,11 +21,11 @@ class Project(models.Model):
     status = models.ForeignKey(ProjectStatus, on_delete=models.CASCADE, related_name="projects")
     title = models.CharField(max_length=200)
     business_plan = models.TextField(blank=True, null=True)
-    duration = models.IntegerField(blank=True, null=True, help_text="Duration of the project in months")
+    duration = models.PositiveIntegerField(blank=True, null=True, help_text="Duration of the project in months")
     last_updated = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     description = models.TextField(blank=True, null=True)
-    budget = models.IntegerField(blank=True, null=True)
+    budget = models.PositiveIntegerField(blank=True, null=True)
 
     class Meta:
         db_table = 'project'
@@ -36,7 +36,7 @@ class Project(models.Model):
 class ProjectSubscription(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="project_subscriptions")
     investor = models.ForeignKey(Investor, on_delete=models.CASCADE, related_name="project_subscriptions")
-    part = models.IntegerField()
+    part = models.PositiveIntegerField()
 
     class Meta:
         db_table = 'project_subscription'
