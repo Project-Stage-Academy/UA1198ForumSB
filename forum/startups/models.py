@@ -20,13 +20,15 @@ class StartupSize(models.Model):
 
     class Meta:
         db_table = 'startup_size'
+        verbose_name = 'StartupSize'
+        verbose_name_plural = 'StartupSizes'
 
 
 class Startup(models.Model):
     startup_id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="startups")
     name = models.CharField(max_length=200)
-    size = models.ForeignKey(StartupSize, on_delete=models.CASCADE, blank=True, null=True)
+    size = models.ForeignKey(StartupSize, on_delete=models.CASCADE, blank=True, null=True, related_name="startup_sizes")
     location = models.CharField(max_length=200, blank=True, null=True)
     startup_logo = models.BinaryField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -36,3 +38,5 @@ class Startup(models.Model):
 
     class Meta:
         db_table = 'startup'
+        verbose_name = 'Startup'
+        verbose_name_plural = 'Startups'
