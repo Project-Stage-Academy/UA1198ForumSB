@@ -5,7 +5,7 @@ from django.utils import timezone
 
 class Investor(models.Model):
     investor_id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="investors")
     investor_logo = models.BinaryField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
@@ -13,3 +13,5 @@ class Investor(models.Model):
 
     class Meta:
         db_table = 'investor'
+        verbose_name = 'Investor'
+        verbose_name_plural = 'Investors'
