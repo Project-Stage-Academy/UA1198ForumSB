@@ -1,6 +1,5 @@
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 
 from .models import StartupSize
@@ -9,16 +8,17 @@ from .serializers import StartupSizeSerializer
 
 class StartupSizeViewSet(GenericViewSet, ListModelMixin):
     queryset = StartupSize.objects.all()
+    serializer_class = StartupSizeSerializer
 
     @swagger_auto_schema(
-            responses={
-                '200': StartupSizeSerializer
-            }
+        operation_description="Retrieve a list of startup sizes",
+        operation_summary="List StartupSizes",
+        responses={
+            '200': StartupSizeSerializer(many=True)
+        }
     )
     def list(self, request, *args, **kwargs):
-        return Response(
-            StartupSizeSerializer(
-                self.get_queryset(),
-                many=True
-            ).data
-        )
+        """
+            Retrieve a list of startup sizes.
+        """
+        return super().list(request, *args, **kwargs)
