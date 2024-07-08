@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from users.models import CustomUser
+from users.validators import CustomUserValidator
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
@@ -21,3 +22,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             description=validated_data.get('description')
         )
         return user
+    
+    def validate(self, data):
+        CustomUserValidator.validate_passwords_match(data.get('password'), data.get('password2'))
+        CustomUserValidator.validate_password(data.get('password'))
+        CustomUserValidator.validate_user_phone(data.get('user_phone')) if data.get('user_phone') is not None else None
+            
+        return data
