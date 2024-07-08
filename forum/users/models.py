@@ -45,8 +45,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = 'custom_user'
-        verbose_name = 'Users'
-        verbose_name_plural = 'Users'
+        verbose_name = 'CustomUser'
+        verbose_name_plural = 'CustomUsers'
 
     def save(self, *args, **kwargs):
         self.set_password(self.password)
