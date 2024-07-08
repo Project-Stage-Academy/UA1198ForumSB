@@ -5,11 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: poetry run python forum/manage.py runserver 0.0.0.0:8000
     volumes:
       - ./forum:/app/forum
     ports:
-      - "8000:8000"
+      - "${WEB_PORT}:8000"
     env_file:
       - .env
     depends_on:
@@ -23,8 +22,6 @@ services:
       POSTGRES_DB: ${FORUM_DB_NAME}
       POSTGRES_USER: ${FORUM_DB_USER}
       POSTGRES_PASSWORD: ${FORUM_DB_PASSWORD}
-      POSTGRES_HOST: ${FORUM_DB_HOST}
-      POSTGRES_PORT: ${FORUM_DB_PORT}
 
   pgadmin:
     image: dpage/pgadmin4
@@ -32,7 +29,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
-      - "5050:80"
+      - "${PGADMIN_PORT}:80"
     depends_on:
       - db
 
