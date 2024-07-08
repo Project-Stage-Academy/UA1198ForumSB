@@ -5,7 +5,7 @@ from .views import StartupSizeViewSet, StartupViewSet
 
 router = DefaultRouter()
 router.register('startup_sizes', StartupSizeViewSet)
-router.register('', StartupViewSet)
+router.register('', StartupViewSet, basename='startup')
 
 
 urlpatterns = [
