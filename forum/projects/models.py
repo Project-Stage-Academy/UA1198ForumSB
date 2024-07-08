@@ -4,19 +4,21 @@ from investors.models import Investor
 from django.utils import timezone
 
 
-class Project(models.Model):
-    class ProjectStatus(models.TextChoices):
-        NEW = 'NEW'
-        ACTIVE = 'ACTIVE'
-        ON_HOLD = 'ON_HOLD'
-        COMPLETED = 'COMPLETED'
-        CANCELLED = 'CANCELLED'
-        PENDING = 'PENDING'
-        APPROVED = 'APPROVED'
+class ProjectStatus(models.Model):
+    status_id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=75)
+    description = models.TextField(blank=True, null=True)
 
+    class Meta:
+        db_table = 'project_status'
+        verbose_name = 'ProjectStatus'
+        verbose_name_plural = 'ProjectStatuses'
+
+
+class Project(models.Model):
     project_id = models.AutoField(primary_key=True)
     startup = models.OneToOneField(Startup, on_delete=models.CASCADE, related_name="project")
-    status = models.CharField(max_length=10, choices=ProjectStatus.choices, default=ProjectStatus.NEW)
+    status = models.ForeignKey(ProjectStatus, on_delete=models.CASCADE, related_name="projects")
     title = models.CharField(max_length=200)
     business_plan = models.TextField(blank=True, null=True)
     duration = models.IntegerField(blank=True, null=True, help_text="Duration of the project in months")
