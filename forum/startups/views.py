@@ -32,7 +32,9 @@ class StartupViewSet(ViewSet):
         return Response(serializer.data, status=200)
     
     def retrieve(self, request, pk):
-        startups = Startup.objects.all()
-        startup = get_object_or_404(startups, pk)
+        try:
+            startup = Startup.objects.get(startup_id=pk)
+        except Startup.DoesNotExist:
+            return Response(status=404)
         serializer = StartupSerializer(startup)
         return Response(serializer.data, status=200)
