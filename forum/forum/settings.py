@@ -210,3 +210,8 @@ EMAIL_HOST = environ.get('FORUM_EMAIL_HOST', 'localhost')
 EMAIL_PORT = environ.get('FORUM_EMAIL_PORT', '8025')
 EMAIL_HOST_USER = environ.get('FORUM_EMAIL_USER', '')
 EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')
+
+
+# Celery configuration
+
+CELERY_BROKER_URL = environ.get('FORUM_CELERY_BROKER_URL', 'redis://localhost:6379/0')
