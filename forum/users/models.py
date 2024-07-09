@@ -54,3 +54,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class PasswordResetModel(models.Model):
+    email = models.EmailField()
+    reset_token = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'password_reset'
+        verbose_name = 'PasswordReset'
+        verbose_name_plural = 'PasswordReset'
+
+    def __str__(self) -> str:
+        return f"{self.email} {self.created_at}"
