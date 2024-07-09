@@ -43,5 +43,8 @@ COPY --chown=appuser:appuser forum /app/forum
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH="/app"
 
+# Change working dir
+WORKDIR /app/forum
+
 # Command to run the application
-CMD ["python", "forum/manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
