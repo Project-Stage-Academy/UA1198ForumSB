@@ -69,7 +69,7 @@ ROOT_URLCONF = 'forum.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -201,3 +201,11 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+
+# email configuration
+
+EMAIL_HOST = environ.get('FORUM_EMAIL_HOST', 'localhost')
+EMAIL_PORT = environ.get('FORUM_EMAIL_HOST', '8025')
+EMAIL_HOST_USER = environ.get('FORUM_EMAIL_USER', '')
+EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')

@@ -1,4 +1,7 @@
+from os import environ
+
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as BaseTokenObtainPairView,
@@ -51,8 +54,18 @@ class PasswordResetRequestView(GenericAPIView):
             reset_token=reset_token
         )
 
-
-#        send_mail()
+        send_mail(
+            "Password Reset Request",
+            render_to_string(
+                "email/password_reset_request.txt",
+                context={
+                    "first_name": user.first_name,
+                    "reset_link": environ.get('FORUM_PASSWORD_RESET_LINK') + reset_token
+                }
+            ),
+            "from@example.com",
+            [user.email],
+        )
 
         return Response(
             {
