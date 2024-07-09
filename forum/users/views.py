@@ -10,11 +10,13 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView as BaseTokenRefreshView
 )
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_yasg.utils import swagger_auto_schema
 
 from forum import settings
 from users.models import CustomUser
 from users.serializers import UserRegisterSerializer
 from users.utils import Util
+from users.swagger_auto_schema_settings import *
 
 class TokenObtainPairView(BaseTokenObtainPairView):
     throttle_scope = 'token_obtain'
@@ -27,6 +29,12 @@ class TokenRefreshView(BaseTokenRefreshView):
 class UserRegisterView(APIView):
     permission_classes = [AllowAny]
     
+    @swagger_auto_schema(
+        operation_description="In your email, click on the link to verify your email to finish creating your new account",
+        operation_summary="Register new user",
+        request_body=userRegisterView_request_body,
+        responses=userRegisterView_responses,
+    )
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -53,6 +61,11 @@ class UserRegisterView(APIView):
 class SendEmailConfirmationView(APIView):
     permission_classes = [AllowAny]
     
+    @swagger_auto_schema(
+        operation_description="Finish creating your new account",
+        operation_summary="Verify user email",
+        responses=sendEmailConfirmationView_responses,
+    )
     def get(self, request, token):
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, settings.SIMPLE_JWT['ALGORITHM'])
@@ -63,5 +76,5 @@ class SendEmailConfirmationView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except jwt.ExpiredSignatureError:
             return Response({"Error": "Verification link expired"}, status=status.HTTP_400_BAD_REQUEST)
-        except jwt.exceptions.DecodeError:
+        except (jwt.exceptions.DecodeError, jwt.exceptions.InvalidTokenError):
             return Response({"Error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
