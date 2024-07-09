@@ -10,7 +10,7 @@ from rest_framework_simplejwt.views import (
 from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import NotFound
 
 from users.models import CustomUser
 from .models import PasswordResetModel
@@ -34,17 +34,20 @@ class PasswordResetRequestView(GenericAPIView):
 
     def post(self, request: Request):
         serializer_data = self.serializer_class(data=request.data)
-        if not serializer_data.is_valid():
-            raise ValidationError()
+        serializer_data.is_valid(raise_exception=True)
 
         clear_data = serializer_data.validated_data
 
+        # TODO: create function to get current user with error if noexist
         user = CustomUser.objects.filter(
             email__iexact=clear_data['email']
         ).first()
-
         if not user:
-            raise NotFound(detail="User with such email is not exists")
+            raise NotFound(
+                {
+                    "detail": "User with such email is not exists"
+                }
+            )
 
         token_generator = PasswordResetTokenGenerator()
         reset_token = token_generator.make_token(user)
@@ -54,6 +57,7 @@ class PasswordResetRequestView(GenericAPIView):
             reset_token=reset_token
         )
 
+        # NOTE: it would be better to use Celery for such tasks
         send_mail(
             "Password Reset Request",
             render_to_string(
@@ -80,8 +84,7 @@ class PasswordResetConfirmView(GenericAPIView):
 
     def post(self, request: Request, reset_token: str = None):
         serializer_data = self.serializer_class(data=request.data)
-        if not serializer_data.is_valid():
-            raise ValidationError()
+        serializer_data.is_valid(raise_exception=True)
 
         clear_data = serializer_data.validated_data
 
@@ -89,9 +92,24 @@ class PasswordResetConfirmView(GenericAPIView):
             reset_token=clear_data['reset_token']
         ).first()
         if not reset_password_object:
-            raise NotFound()
+            raise NotFound(
+                {
+                    "detail": "Invalid reset token provided"
+                }
+            )
 
-        user = CustomUser.objects.get(email=reset_password_object.email)
+        # TODO: create function to get current user with error if noexist
+        user = CustomUser.objects.filter(
+            email__iexact=reset_password_object.email
+        ).first()
+
+        if not user:
+            raise NotFound(
+                {
+                    "detail": "User with such email is not exists"
+                }
+            )
+
         user.password = clear_data['password']
         user.save()
 
