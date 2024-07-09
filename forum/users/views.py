@@ -18,6 +18,7 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetSerializer
 )
+from .throttling import PasswordResetThrottle
 
 
 class TokenObtainPairView(BaseTokenObtainPairView):
@@ -31,6 +32,7 @@ class TokenRefreshView(BaseTokenRefreshView):
 class PasswordResetRequestView(GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
     permission_classes = []
+    throttle_classes = [PasswordResetThrottle]
 
     def post(self, request: Request):
         serializer_data = self.serializer_class(data=request.data)
@@ -81,6 +83,7 @@ class PasswordResetRequestView(GenericAPIView):
 class PasswordResetConfirmView(GenericAPIView):
     serializer_class = PasswordResetSerializer
     permission_classes = []
+    throttle_classes = [PasswordResetThrottle]
 
     def post(self, request: Request, reset_token: str = None):
         serializer_data = self.serializer_class(data=request.data)

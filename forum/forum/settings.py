@@ -157,6 +157,7 @@ REST_FRAMEWORK = {
         'user': environ.get('USER_THROTTLE_RATE', '1000/day'),
         'token_obtain': environ.get('TOKEN_OBTAIN_RATE', '500/hour'),
         'token_refresh': environ.get('TOKEN_REFRESH_RATE', '100/hour'),
+        'password_reset': environ.get('TOKEN_REFRESH_RATE', '10/hour'),
     },
 }
 
