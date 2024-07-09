@@ -206,6 +206,6 @@ AUTH_USER_MODEL = 'users.CustomUser'
 # email configuration
 
 EMAIL_HOST = environ.get('FORUM_EMAIL_HOST', 'localhost')
-EMAIL_PORT = environ.get('FORUM_EMAIL_HOST', '8025')
+EMAIL_PORT = environ.get('FORUM_EMAIL_PORT', '8025')
 EMAIL_HOST_USER = environ.get('FORUM_EMAIL_USER', '')
 EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')
