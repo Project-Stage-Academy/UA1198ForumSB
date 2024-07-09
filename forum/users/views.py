@@ -3,6 +3,7 @@ from os import environ
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as BaseTokenObtainPairView,
     TokenRefreshView as BaseTokenRefreshView,
@@ -40,16 +41,7 @@ class PasswordResetRequestView(GenericAPIView):
 
         clear_data = serializer_data.validated_data
 
-        # TODO: create function to get current user with error if noexist
-        user = CustomUser.objects.filter(
-            email__iexact=clear_data['email']
-        ).first()
-        if not user:
-            raise NotFound(
-                {
-                    "detail": "User with such email is not exists"
-                }
-            )
+        user: CustomUser = get_object_or_404(CustomUser, email=clear_data['email'])
 
         token_generator = PasswordResetTokenGenerator()
         reset_token = token_generator.make_token(user)
@@ -101,18 +93,10 @@ class PasswordResetConfirmView(GenericAPIView):
                 }
             )
 
-        # TODO: create function to get current user with error if noexist
-        user = CustomUser.objects.filter(
-            email__iexact=reset_password_object.email
-        ).first()
-
-        if not user:
-            raise NotFound(
-                {
-                    "detail": "User with such email is not exists"
-                }
-            )
-
+        user: CustomUser = get_object_or_404(
+            CustomUser,
+            email=reset_password_object.email
+        )
         user.password = clear_data['password']
         user.save()
 
