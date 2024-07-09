@@ -1,14 +1,20 @@
 from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
 from rest_framework import status
 from rest_framework.response import Response
 
 class Util:
     @staticmethod
     def send_email(domain, verification_link, message_data, user_data):
-        absolute_url = domain + verification_link
         email = EmailMessage(
             subject=message_data['subject'],
-            body='Hello ' + user_data['first_name'] + message_data['body'] + absolute_url,
+            body= render_to_string(
+                "email/email_confirmation_request.txt",
+                context={
+                    "first_name": user_data['first_name'],
+                    "confirmation_email_link": domain + verification_link
+                }
+            ),
             from_email=message_data['from_email'],
             to=[message_data['to_email']]
         )
