@@ -1,6 +1,8 @@
+include .env
+export
 
 run:
-	python forum/manage.py runserver
+	cd forum && ./manage.py runserver
 
 run_smtp:
 	./scripts/run_smtp_server.sh
