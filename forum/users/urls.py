@@ -11,4 +11,5 @@ urlpatterns = [
     path('token/refresh/', views.TokenRefreshView.as_view(throttle_classes=[ScopedRateThrottle]),
          name='token_refresh'),
     path('register/', views.UserRegisterView.as_view(), name='register'),
+    path('email-verify/<str:token>/', views.SendEmailConfirmationView.as_view(), name='email-verify'),
 ]
