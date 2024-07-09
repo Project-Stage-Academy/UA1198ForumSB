@@ -15,6 +15,15 @@ userRegisterView_request_body = openapi.Schema(
         "user_phone": openapi.Schema(type=openapi.TYPE_STRING),
         "description": openapi.Schema(type=openapi.TYPE_STRING),
     },
+    required=["first_name", "last_name", "email", "password", "password2"],
+    example={
+        "first_name": "test",
+        "last_name": "test",
+        "email": "your_email+2@gmail.com",
+        "password": "Pass_12345",
+        "password2": "Pass_12345",
+        "description": "desc"
+    },
 )
 
 userRegisterView_responses = {
