@@ -29,15 +29,19 @@ class StartupSizeViewSet(GenericViewSet, ListModelMixin):
         )
 
 
-class StartupViewSet(ViewSet):    
+def select_startups_by_search_string(search_string):
+    return Startup.objects.filter(
+        Q(name__icontains = search_string) |
+        Q(location__icontains = search_string) |
+        Q(description__icontains = search_string)
+    )
+
+
+class StartupViewSet(ViewSet):
     def list(self, request):
         search_string = request.query_params.get('search')
         if search_string:
-            startups = Startup.objects.filter(
-                Q(name__icontains = search_string) |
-                Q(location__icontains = search_string) |
-                Q(description__icontains = search_string)
-            )
+            startups = select_startups_by_search_string(search_string)
         else:
             startups = Startup.objects.all()
         serializer = StartupSerializer(startups, many=True)
