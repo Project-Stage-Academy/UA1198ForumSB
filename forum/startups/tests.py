@@ -2,11 +2,11 @@ from rest_framework.test import APITestCase
 from rest_framework.reverse import reverse
 from rest_framework import status
 
-from forum.tests_setup import TestUserSetupMixin
+from forum.tests_setup import UserSetupMixin
 from startups.models import StartupSize
 
 
-class StartupsTestCase(TestUserSetupMixin):
+class StartupsTestCase(UserSetupMixin):
     CREATE_OBJ_COUNT: int = 5
 
     def setUp(self) -> None:

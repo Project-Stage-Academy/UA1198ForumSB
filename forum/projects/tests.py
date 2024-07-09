@@ -1,11 +1,11 @@
 from rest_framework.reverse import reverse
 from rest_framework import status
-from forum.tests_setup import TestUserSetupMixin
+from forum.tests_setup import UserSetupMixin
 
 from projects.models import Industry
 
 
-class IndustryModelTestCase(TestUserSetupMixin):
+class IndustryModelTestCase(UserSetupMixin):
     CREATE_INDUSTRY_COUNT: int = 3
 
     def setUp(self) -> None:
