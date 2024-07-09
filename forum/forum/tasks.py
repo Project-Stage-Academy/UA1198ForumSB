@@ -2,16 +2,17 @@ from django.core.mail import send_mail
 from celery import shared_task
 
 
-@shared_task(bind=True, ignore_result=True)
+@shared_task(bind=True)
 def send_email_task(
+    self,  # this name get from docs
     subject: str,
     body: str,
-    from_email: str,
+    sender: str,
     receivers: list[str]
 ) -> int:
     return send_mail(
         subject,
         body,
-        from_email,
+        sender,
         receivers
     )

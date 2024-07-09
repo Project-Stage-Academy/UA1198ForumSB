@@ -1,8 +1,6 @@
 from os import environ
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.template.loader import render_to_string
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as BaseTokenObtainPairView,
@@ -14,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 
 from users.models import CustomUser
+from forum.tasks import send_email_task
+from forum.utils import build_email_message
 from .models import PasswordResetModel
 from .serializers import (
     PasswordResetRequestSerializer,
@@ -51,18 +51,17 @@ class PasswordResetRequestView(GenericAPIView):
             reset_token=reset_token
         )
 
-        # NOTE: it would be better to use Celery for such tasks
-        send_mail(
-            "Password Reset Request",
-            render_to_string(
+        send_email_task.delay(
+            subject="Password Reset Request",
+            body=build_email_message(
                 "email/password_reset_request.txt",
-                context={
+                {
                     "first_name": user.first_name,
                     "reset_link": environ.get('FORUM_PASSWORD_RESET_LINK') + reset_token
                 }
             ),
-            "from@example.com",
-            [user.email],
+            sender="from@example.com",
+            receivers=[user.email],
         )
 
         return Response(
