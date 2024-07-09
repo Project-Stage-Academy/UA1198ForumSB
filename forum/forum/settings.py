@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 from os import environ
+import os
 
 from dotenv import load_dotenv
 
@@ -69,7 +70,7 @@ ROOT_URLCONF = 'forum.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'forum', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

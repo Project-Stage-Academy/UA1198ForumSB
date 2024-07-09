@@ -30,8 +30,8 @@ class UserRegisterView(APIView):
     permission_classes = [AllowAny]
     
     @swagger_auto_schema(
-        operation_description="In your email, click on the link to verify your email to finish creating your new account",
-        operation_summary="Register new user",
+        operation_description="Sending a confirmation email after successful validation of user data",
+        operation_summary="User Registration",
         request_body=userRegisterView_request_body,
         responses=userRegisterView_responses,
     )
@@ -39,16 +39,15 @@ class UserRegisterView(APIView):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
             user_data = serializer.validated_data
-            token = RefreshToken().access_token
+            token = RefreshToken()
             
             for key, value in user_data.items():
                 token[key] = str(value)
             
             message_data = {
                 'subject': 'Verify your email',
-                'body': '\nUse this link to verify your email and finish creating your new account:\n',
-                'to_email': user_data['email'],
-                'from_email': settings.EMAIL_HOST_USER
+                'from_email': settings.EMAIL_HOST_USER,
+                'to_email': user_data['email']
             }
             domain = get_current_site(request).domain
             verification_link = reverse('users:email-verify', kwargs={'token': str(token)})
@@ -62,13 +61,17 @@ class SendEmailConfirmationView(APIView):
     permission_classes = [AllowAny]
     
     @swagger_auto_schema(
-        operation_description="Finish creating your new account",
-        operation_summary="Verify user email",
+        operation_description="Creating a new user after successful confirmation email",
+        operation_summary="Confirmation Email",
         responses=sendEmailConfirmationView_responses,
     )
     def get(self, request, token):
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, settings.SIMPLE_JWT['ALGORITHM'])
+            
+            if CustomUser.objects.filter(email=payload['email']).exists():
+                return Response({"Error": "A user with this email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            
             serializer = UserRegisterSerializer(data=payload)
             if serializer.is_valid():
                 serializer.save()
