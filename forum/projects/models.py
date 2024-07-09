@@ -32,6 +32,9 @@ class Project(models.Model):
         verbose_name = 'Project'
         verbose_name_plural = 'Projects'
 
+    def __str__(self) -> str:
+        return f"{self.project_id} {self.title}"
+
 
 class ProjectSubscription(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="project_subscriptions")
@@ -54,4 +57,3 @@ class Industry(models.Model):
         db_table = 'industry'
         verbose_name = 'Industry'
         verbose_name_plural = 'Industries'
-
