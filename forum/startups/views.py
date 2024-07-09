@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet, ViewSet
 from rest_framework.response import Response
+from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 
 from .models import StartupSize, Startup
@@ -28,9 +29,17 @@ class StartupSizeViewSet(GenericViewSet, ListModelMixin):
         )
 
 
-class StartupViewSet(ViewSet):
+class StartupViewSet(ViewSet):    
     def list(self, request):
-        startups = Startup.objects.all()
+        search_string = request.query_params.get('search')
+        if search_string:
+            startups = Startup.objects.filter(
+                Q(name__icontains = search_string) |
+                Q(location__icontains = search_string) |
+                Q(description__icontains = search_string)
+            )
+        else:
+            startups = Startup.objects.all()
         serializer = StartupSerializer(startups, many=True)
         return Response(serializer.data, status=200)
     
