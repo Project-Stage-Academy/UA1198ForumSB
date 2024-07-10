@@ -38,11 +38,17 @@ def select_startups_by_search_string(search_string):
 
 
 def filter_startups(query_params):
-    industry = query_params.get("industry")
+    industry_name = query_params.get("industry")
     budget = query_params.get("budget")
     size = query_params.get("size")
     
     startups = Startup.objects.filter()
+
+    if industry_name:
+        industry = Industry.objects.filter(name=industry_name).first()
+        projects = Project.objects.filter(industries=industry)
+        startups_ids = list(map(lambda proj: proj.startup.startup_id, projects))
+        startups = startups.filter(pk__in=startups_ids)
 
     if size:
         try:
@@ -53,6 +59,7 @@ def filter_startups(query_params):
             )
         except ValueError:
             return []
+        
     return startups
 
 
