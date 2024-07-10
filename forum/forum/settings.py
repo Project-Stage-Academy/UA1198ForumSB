@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_celery_results',
     'communications',
     'investors',
     'projects',
@@ -215,3 +216,4 @@ EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')
 # Celery configuration
 
 CELERY_BROKER_URL = environ.get('FORUM_CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = 'django-db'

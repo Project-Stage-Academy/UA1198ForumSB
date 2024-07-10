@@ -47,6 +47,14 @@ services:
       - .env
     command: ["celery", "-A", "forum", "worker", "-l", "INFO"]
 
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    command: ["celery", "-A", "forum", "beat", "-l", "INFO"]
+
   dummy_smtp_server:
     container_name: dummy-smpt-server
     build:
