@@ -53,12 +53,12 @@ def filter_startups(query_params):
     if size:
         try:
             size = int(size)
-            startups = startups.filter(
-                Q(size__people_count_min__lte=size) &
-                Q(size__people_count_max__gt=size)
-            )
         except ValueError:
             return []
+        startups = startups.filter(
+            Q(size__people_count_min__lte=size) &
+            Q(size__people_count_max__gt=size)
+        )
         
     return startups
 
