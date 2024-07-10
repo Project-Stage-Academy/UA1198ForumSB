@@ -39,7 +39,11 @@ def select_startups_by_search_string(search_string):
 
 def filter_startups(query_params):
     startups = Startup.objects.all()
+
+    industry = query_params.get("industry")
+    budget = query_params.get("budget")
     size = query_params.get("size")
+
     if size:
         try:
             size = int(size)
