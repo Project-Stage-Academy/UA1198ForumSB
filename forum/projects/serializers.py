@@ -26,3 +26,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         Update and return an existing Project instance, given the validated data.
         """
         return super().update(instance, validated_data)
+
+class HistoricalProjectSerializer(serializers.ModelSerializer):
+    """
+    Historical records serializer
+    """
+    class Meta:
+        model = Project.history.model
+        fields = '__all__'
