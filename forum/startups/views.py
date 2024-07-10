@@ -82,21 +82,21 @@ class StartupViewSet(ViewSet):
             return Response(status=404)
         
         startup_serializer = StartupSerializer(startup)
-        response = startup_serializer.data
+        response_data = startup_serializer.data
 
         project = Project.objects.filter(startup=startup).first()
         if project:
             project_serializer = ProjectSerializer(project)
-            response = {
-                **response,
+            response_data = {
+                **response_data,
                 "project": project_serializer.data
             }
             industries = Industry.objects.filter(projects=project)
             if len(industries):
                 industries_serializer = IndustrySerializer(industries, many=True)
-                response = {
-                    **response,
+                response_data = {
+                    **response_data,
                     "industries": industries_serializer.data
                 }
 
-        return Response(response, status=200)
+        return Response(response_data, status=200)
