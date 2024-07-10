@@ -53,4 +53,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         super(CustomUser, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.email
+        return f"{self.user_id} {self.email}"
