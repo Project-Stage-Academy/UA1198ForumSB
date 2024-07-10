@@ -12,11 +12,6 @@ CHAR_TYPES = {
 
 class CustomUserValidator:
     @staticmethod
-    def validate_passwords_match(password, password2):
-        if password != password2:
-            raise serializers.ValidationError({"Error": "Passwords don't match"})
-
-    @staticmethod
     def validate_password(password):
         min_length = 8
         errors = []

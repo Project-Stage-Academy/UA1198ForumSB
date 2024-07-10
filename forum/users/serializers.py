@@ -28,8 +28,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return user
     
     def validate(self, data):
-        CustomUserValidator.validate_passwords_match(data.get('password'), data.get('password2'))
+        # Validate that the two password fields match
+        if data.get('password') != data.get('password2'):
+            raise serializers.ValidationError("Passwords must match.")
+        
         CustomUserValidator.validate_password(data.get('password'))
-        CustomUserValidator.validate_user_phone(data.get('user_phone')) if data.get('user_phone') is not None else None
-            
+        if data.get('user_phone') is not None:
+            CustomUserValidator.validate_user_phone(data.get('user_phone'))
+  
         return data
