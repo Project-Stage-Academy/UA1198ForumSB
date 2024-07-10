@@ -1,27 +1,33 @@
-from rest_framework.test import APITestCase
 from rest_framework.reverse import reverse
 from rest_framework import status
 
-from forum.tests_setup import TestUserSetupMixin
+from forum.tests_setup import UserSetupMixin
 from startups.models import StartupSize
 
 
-class StartupsTestCase(TestUserSetupMixin):
+class StartupsTestCase(UserSetupMixin):
     CREATE_OBJ_COUNT: int = 5
 
     def setUp(self) -> None:
-        self.setup_test_user()
+        super().setUp()
 
         for i in range(self.CREATE_OBJ_COUNT):
-            tmp_size_obj = StartupSize.objects.create(
+            StartupSize.objects.create(
                 name="test size",
                 people_count_min=20,
                 people_count_max=30
             )
-            StartupSize.objects.get(size_id=tmp_size_obj.size_id)
 
     def test_industries_list(self):
         response = self.client.get(reverse('startup_sizes-list'))
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), self.CREATE_OBJ_COUNT)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            "Status code is different from 200"
+        )
+        self.assertEqual(
+            len(response.json()),
+            self.CREATE_OBJ_COUNT,
+            "The number of objects received is not equal to the number created"
+        )
