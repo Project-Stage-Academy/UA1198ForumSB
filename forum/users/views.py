@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 import jwt
 from django.contrib.sites.shortcuts import get_current_site
@@ -51,11 +52,12 @@ class UserRegisterView(APIView):
             }
             domain = get_current_site(request).domain
             verification_link = reverse('users:email-verify', kwargs={'token': str(token)})
-            response = Util.send_email(domain, verification_link, message_data, user_data)
-            if isinstance(response, Response):
-                return response
-            return Response("Verification link was sent to your email", status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            email_sent = Util.send_email(domain, verification_link, message_data, user_data)
+            if email_sent:
+                return Response("Verification link was sent to your email", status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "An error occurred during sending email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
 class SendEmailConfirmationView(APIView):
     permission_classes = [AllowAny]
@@ -70,14 +72,14 @@ class SendEmailConfirmationView(APIView):
             payload = jwt.decode(token, settings.SECRET_KEY, settings.SIMPLE_JWT['ALGORITHM'])
             
             if CustomUser.objects.filter(email=payload['email']).exists():
-                return Response({"Error": "A user with this email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "A user with this email already exists"}, status=status.HTTP_400_BAD_REQUEST)
             
             serializer = UserRegisterSerializer(data=payload)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.ExpiredSignatureError:
-            return Response({"Error": "Verification link expired"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Verification link expired"}, status=status.HTTP_400_BAD_REQUEST)
         except (jwt.exceptions.DecodeError, jwt.exceptions.InvalidTokenError):
-            return Response({"Error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)

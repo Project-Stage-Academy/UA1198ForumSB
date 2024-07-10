@@ -32,9 +32,19 @@ userRegisterView_responses = {
         schema=openapi.Schema(type=openapi.TYPE_STRING),
     ),
     400: openapi.Response(
-        description="Bad request",
-        schema=openapi.Schema(type=openapi.TYPE_STRING)
-    )
+        description="Bad Request",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={'error': openapi.Schema(type=openapi.TYPE_STRING)}
+        ),
+    ),
+    500: openapi.Response(
+        description="Internal Server Error",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={'error': openapi.Schema(type=openapi.TYPE_STRING)}
+        ),
+    ),
 }
 
 sendEmailConfirmationView_responses = {
@@ -53,7 +63,10 @@ sendEmailConfirmationView_responses = {
         ),
     ),
     400: openapi.Response(
-        description="Bad request",
-        schema=openapi.Schema(type=openapi.TYPE_STRING),
+        description="Bad Request",
+        schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={'error': openapi.Schema(type=openapi.TYPE_STRING)}
+        ),
     ),
 }

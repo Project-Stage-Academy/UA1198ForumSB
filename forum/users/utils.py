@@ -1,7 +1,9 @@
+import logging
+import smtplib
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
-from rest_framework import status
-from rest_framework.response import Response
+
+logging.basicConfig(format="%(name)s - %(levelname)s - %(message)s", level=logging.DEBUG)
 
 class Util:
     @staticmethod
@@ -20,6 +22,9 @@ class Util:
         )
         try:
             email.send()
-        except Exception:
-            return Response(f'An error occurred during sending email', status=status.HTTP_400_BAD_REQUEST)
-            
+            return True
+        except smtplib.SMTPException as e:
+            logging.error(f'SMTP error occurred: {e}')
+        except Exception as e:
+            logging.error(f"An error occurred during sending email to {user_data['first_name']}: {str(e)}")
+        return False

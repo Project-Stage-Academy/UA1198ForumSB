@@ -5,6 +5,10 @@ from users.models import CustomUser
 from users.validators import CustomUserValidator
 
 class UserRegisterSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=CustomUser.objects.all())]
+    )
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
 
