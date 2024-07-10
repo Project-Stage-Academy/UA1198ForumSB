@@ -38,14 +38,17 @@ def select_startups_by_search_string(search_string):
 
 
 def filter_startups(query_params):
+    startups = Startup.objects.all()
     size = query_params.get("size")
-    startups = []
     if size:
-        size = int(size)
-        startups = Startup.objects.filter(
-            Q(size__people_count_min__lte=size) &
-            Q(size__people_count_max__gt=size)
-        )
+        try:
+            size = int(size)
+            startups = Startup.objects.filter(
+                Q(size__people_count_min__lte=size) &
+                Q(size__people_count_max__gt=size)
+            )
+        except ValueError:
+            return []
     return startups
 
 
