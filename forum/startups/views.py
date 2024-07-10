@@ -38,16 +38,16 @@ def select_startups_by_search_string(search_string):
 
 
 def filter_startups(query_params):
-    startups = Startup.objects.all()
-
     industry = query_params.get("industry")
     budget = query_params.get("budget")
     size = query_params.get("size")
+    
+    startups = Startup.objects.filter()
 
     if size:
         try:
             size = int(size)
-            startups = Startup.objects.filter(
+            startups = startups.filter(
                 Q(size__people_count_min__lte=size) &
                 Q(size__people_count_max__gt=size)
             )
