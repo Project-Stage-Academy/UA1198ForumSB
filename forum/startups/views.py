@@ -37,11 +37,25 @@ def select_startups_by_search_string(search_string):
     )
 
 
+def filter_startups(query_params):
+    size = query_params.get("size")
+    startups = []
+    if size:
+        size = int(size)
+        startups = Startup.objects.filter(
+            Q(size__people_count_min__lte=size) &
+            Q(size__people_count_max__gt=size)
+        )
+    return startups
+
+
 class StartupViewSet(ViewSet):
     def list(self, request):
         search_string = request.query_params.get('search')
         if search_string:
             startups = select_startups_by_search_string(search_string)
+        elif request.query_params:
+            startups = filter_startups(request.query_params)
         else:
             startups = Startup.objects.all()
         serializer = StartupSerializer(startups, many=True)
