@@ -38,7 +38,7 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc'), name='schema-redoc'),
     path('communications/', include('communications.urls')),
     path('investors/', include('investors.urls')),
-    path('startups/projects/', include('projects.urls')),
     path('startups/', include('startups.urls')),
+    path('startups/projects/', include('projects.urls')),
     path('users/', include('users.urls')),
 ]

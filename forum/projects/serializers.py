@@ -18,4 +18,4 @@ class ProjectSubscriptionSerializer(ModelSerializer):
 class IndustrySerializer(ModelSerializer):
     class Meta:
         model = Industry
-        fields = '__all__'
+        exclude = ['projects']

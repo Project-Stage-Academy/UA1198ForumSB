@@ -1,6 +1,5 @@
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 
 from .models import Industry
@@ -9,16 +8,17 @@ from .serializers import IndustrySerializer
 
 class IndustryViewSet(GenericViewSet, ListModelMixin):
     queryset = Industry.objects.all()
+    serializer_class = IndustrySerializer
 
     @swagger_auto_schema(
-            responses={
-                '200': IndustrySerializer
-            }
+        operation_description="Retrieve a list of industries",
+        operation_summary="List Industries",
+        responses={
+            '200': IndustrySerializer(many=True)
+        }
     )
     def list(self, request, *args, **kwargs):
-        return Response(
-            IndustrySerializer(
-                self.get_queryset(),
-                many=True
-            ).data
-        )
+        """
+            Receive a list of industries.
+        """
+        return super().list(request, *args, **kwargs)

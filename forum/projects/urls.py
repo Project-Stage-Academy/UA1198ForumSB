@@ -5,7 +5,7 @@ from .views import IndustryViewSet
 
 
 router = DefaultRouter()
-router.register('industries', IndustryViewSet)
+router.register('industries', IndustryViewSet, 'industries')
 
 
 urlpatterns = [

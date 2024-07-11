@@ -12,19 +12,20 @@ from .helpers import select_startups_by_search_string, filter_startups, get_deta
 
 class StartupSizeViewSet(GenericViewSet, ListModelMixin):
     queryset = StartupSize.objects.all()
+    serializer_class = StartupSizeSerializer
 
     @swagger_auto_schema(
-            responses={
-                '200': StartupSizeSerializer
-            }
+        operation_description="Retrieve a list of startup sizes",
+        operation_summary="List StartupSizes",
+        responses={
+            '200': StartupSizeSerializer(many=True)
+        }
     )
     def list(self, request, *args, **kwargs):
-        return Response(
-            StartupSizeSerializer(
-                self.get_queryset(),
-                many=True
-            ).data
-        )
+        """
+            Retrieve a list of startup sizes.
+        """
+        return super().list(request, *args, **kwargs)
 
 
 class StartupViewSet(ViewSet):
@@ -44,3 +45,4 @@ class StartupViewSet(ViewSet):
         startup = get_object_or_404(startups, startup_id=pk)
         response_data = get_details_about_startup(startup)
         return Response(response_data, status=200)
+
