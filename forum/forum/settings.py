@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'simple_history',
+    'django_celery_results',
     'communications',
     'investors',
     'projects',
@@ -71,7 +72,7 @@ ROOT_URLCONF = 'forum.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -159,6 +160,7 @@ REST_FRAMEWORK = {
         'user': environ.get('USER_THROTTLE_RATE', '1000/day'),
         'token_obtain': environ.get('TOKEN_OBTAIN_RATE', '500/hour'),
         'token_refresh': environ.get('TOKEN_REFRESH_RATE', '100/hour'),
+        'password_reset': environ.get('TOKEN_REFRESH_RATE', '10/hour'),
     },
 }
 
@@ -180,7 +182,7 @@ SIMPLE_JWT = {
 
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    "USER_ID_FIELD": "id",
+    "USER_ID_FIELD": "user_id",
     "USER_ID_CLAIM": "user_id",
     "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
 
@@ -201,3 +203,19 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
+
+AUTH_USER_MODEL = 'users.CustomUser'
+
+
+# email configuration
+
+EMAIL_HOST = environ.get('FORUM_EMAIL_HOST', 'localhost')
+EMAIL_PORT = environ.get('FORUM_EMAIL_PORT', '8025')
+EMAIL_HOST_USER = environ.get('FORUM_EMAIL_USER', '')
+EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')
+
+
+# Celery configuration
+
+CELERY_BROKER_URL = environ.get('FORUM_CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = 'django-db'
