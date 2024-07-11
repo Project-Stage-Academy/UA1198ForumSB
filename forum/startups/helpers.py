@@ -1,6 +1,6 @@
 from django.db.models import Q
 from .models import Startup
-from .serializers import StartupSerializer
+from .serializers import StartupSerializer, StartupSizeSerializer
 
 from projects.models import Project, Industry
 from projects.serializers import ProjectSerializer, IndustrySerializer
@@ -52,6 +52,13 @@ def filter_startups(query_params):
 def get_details_about_startup(startup):
     startup_serializer = StartupSerializer(startup)
     response_data = startup_serializer.data
+
+    if startup.size:
+        startup_size_serializer = StartupSizeSerializer(startup.size)
+        response_data = {
+            **response_data,
+            "size": startup_size_serializer.data
+        }
 
     project = Project.objects.filter(startup=startup).first()
     if project:
