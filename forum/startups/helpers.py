@@ -1,6 +1,9 @@
-from .models import Startup
-from projects.models import Project, Industry
 from django.db.models import Q
+from .models import Startup
+from .serializers import StartupSerializer
+
+from projects.models import Project, Industry
+from projects.serializers import ProjectSerializer, IndustrySerializer
 
 
 def select_startups_by_search_string(search_string):
@@ -44,3 +47,25 @@ def filter_startups(query_params):
         )
         
     return startups
+
+
+def get_details_about_startup(startup):
+    startup_serializer = StartupSerializer(startup)
+    response_data = startup_serializer.data
+
+    project = Project.objects.filter(startup=startup).first()
+    if project:
+        project_serializer = ProjectSerializer(project)
+        response_data = {
+            **response_data,
+            "project": project_serializer.data
+        }
+        industries = Industry.objects.filter(projects=project)
+        if len(industries):
+            industries_serializer = IndustrySerializer(industries, many=True)
+            response_data = {
+                **response_data,
+                "industries": industries_serializer.data
+            }
+    
+    return response_data

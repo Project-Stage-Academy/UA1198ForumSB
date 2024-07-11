@@ -7,10 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from .models import StartupSize, Startup
 from .serializers import StartupSizeSerializer, StartupSerializer
 
-from projects.models import Project, Industry
-from projects.serializers import ProjectSerializer, IndustrySerializer
-
-from .helpers import select_startups_by_search_string, filter_startups
+from .helpers import select_startups_by_search_string, filter_startups, get_details_about_startup
 
 
 class StartupSizeViewSet(GenericViewSet, ListModelMixin):
@@ -47,23 +44,5 @@ class StartupViewSet(ViewSet):
             startup = Startup.objects.get(startup_id=pk)
         except Startup.DoesNotExist:
             return Response(status=404)
-        
-        startup_serializer = StartupSerializer(startup)
-        response_data = startup_serializer.data
-
-        project = Project.objects.filter(startup=startup).first()
-        if project:
-            project_serializer = ProjectSerializer(project)
-            response_data = {
-                **response_data,
-                "project": project_serializer.data
-            }
-            industries = Industry.objects.filter(projects=project)
-            if len(industries):
-                industries_serializer = IndustrySerializer(industries, many=True)
-                response_data = {
-                    **response_data,
-                    "industries": industries_serializer.data
-                }
-
+        response_data = get_details_about_startup(startup)
         return Response(response_data, status=200)
