@@ -14,4 +14,4 @@ migrate:
 	cd forum && ./manage.py migrate
 
 show_urls:
-	./scripts/list_urls.sh
+	cd forum && ../scripts/list_urls.sh
