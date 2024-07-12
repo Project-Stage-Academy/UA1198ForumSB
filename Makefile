@@ -12,3 +12,6 @@ migrations:
 
 migrate:
 	cd forum && ./manage.py migrate
+
+show_urls:
+	./scripts/list_urls.sh
