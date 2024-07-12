@@ -10,4 +10,5 @@ urlpatterns = [
          name='token_obtain_pair'),
     path('token/refresh/', views.TokenRefreshView.as_view(throttle_classes=[ScopedRateThrottle]),
          name='token_refresh'),
+    path('select-namespace/', views.NamespaceSelectionView.as_view(), name='namespace_selection'),
 ]
