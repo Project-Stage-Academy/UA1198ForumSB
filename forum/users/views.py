@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as BaseTokenObtainPairView,
     TokenRefreshView as BaseTokenRefreshView
@@ -79,7 +79,7 @@ class UserStartupListView(APIView):
     permission_classes = [ThisUserPermission]
 
     def get(self, request, user_id):
-        startups = Startup.objects.filter(user=user_id)
+        startups = get_list_or_404(Startup, user=user_id)
         serializer = StartupSerializer(startups, many=True)
         return Response(serializer.data, status=200)
     
