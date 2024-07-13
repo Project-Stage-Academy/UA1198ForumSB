@@ -26,11 +26,6 @@ class StartupSize(models.Model):
         self.clean()
         super().save(*args, **kwargs)
 
-    class Meta:
-        db_table = 'startup_size'
-        verbose_name = 'StartupSize'
-        verbose_name_plural = 'StartupSizes'
-
 
 class Startup(models.Model):
     startup_id = models.AutoField(primary_key=True)
