@@ -93,7 +93,7 @@ class UserStartupListView(APIView):
 
 class UserStartupDetailView(APIView):
     permission_classes = [ThisUserPermission]
-    
+
     def get(self, request, user_id, startup_id):
         startups = Startup.objects.filter(user=user_id)
         startup = get_object_or_404(startups, startup_id=startup_id)
@@ -110,6 +110,8 @@ class UserStartupDetailView(APIView):
         return Response(serializer.errors, status=400)
     
     def delete(self, request, user_id, startup_id):
+        # if the startup has some investors subscriptions we can't delete it
+        # add appropriate permission
         startups = Startup.objects.filter(user=user_id)
         startup = get_object_or_404(startups, startup_id=startup_id)
         startup.delete()
