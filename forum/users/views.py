@@ -92,7 +92,28 @@ class UserStartupListView(APIView):
 
 
 class UserStartupDetailView(APIView):
-    pass
+    permission_classes = [ThisUserPermission]
+    
+    def get(self, request, user_id, startup_id):
+        startups = Startup.objects.filter(user=user_id)
+        startup = get_object_or_404(startups, startup_id=startup_id)
+        serializer = StartupSerializer(startup)
+        return Response(serializer.data, status=200)
+    
+    def patch(self, request, user_id, startup_id):
+        startups = Startup.objects.filter(user=user_id)
+        startup = get_object_or_404(startups, startup_id=startup_id)
+        serializer = StartupSerializer(startup, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=200)
+        return Response(serializer.errors, status=400)
+    
+    def delete(self, request, user_id, startup_id):
+        startups = Startup.objects.filter(user=user_id)
+        startup = get_object_or_404(startups, startup_id=startup_id)
+        startup.delete()
+        return Response(status=204)
 
 
 class UserStartupProjectView(APIView):
