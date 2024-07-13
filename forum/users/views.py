@@ -79,8 +79,8 @@ class UserStartupListView(APIView):
         serializer = StartupSerializer(startups, many=True)
         return Response(serializer.data, status=200)
     
-    def post(self, request):
-        serializer = StartupSerializer(data=request.data)
+    def post(self, request, user_id):
+        serializer = StartupSerializer(data={**request.data, 'user': user_id})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
