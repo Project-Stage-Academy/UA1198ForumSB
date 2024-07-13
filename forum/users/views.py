@@ -15,7 +15,7 @@ from startups.serializers import StartupSerializer
 
 from users.models import CustomUser
 from users.serializers import NamespaceSerializer
-from users.permissions import ThisUserPermission
+from users.permissions import ThisUserPermission, CanCreateNewNameSpacePermission
 
 class TokenObtainPairView(BaseTokenObtainPairView):
     throttle_scope = 'token_obtain'
@@ -76,7 +76,10 @@ class NamespaceSelectionView(APIView):
 
 
 class UserStartupListView(APIView):
-    permission_classes = [ThisUserPermission]
+    permission_classes = [
+        ThisUserPermission,
+        CanCreateNewNameSpacePermission
+    ]
 
     def get(self, request, user_id):
         startups = get_list_or_404(Startup, user=user_id)
