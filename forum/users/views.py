@@ -12,8 +12,10 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 
 from startups.models import Startup
 from startups.serializers import StartupSerializer
+
 from users.models import CustomUser
 from users.serializers import NamespaceSerializer
+from users.permissions import ThisUserPermission
 
 class TokenObtainPairView(BaseTokenObtainPairView):
     throttle_scope = 'token_obtain'
@@ -74,6 +76,8 @@ class NamespaceSelectionView(APIView):
 
 
 class UserStartupListView(APIView):
+    permission_classes = [ThisUserPermission]
+
     def get(self, request, user_id):
         startups = Startup.objects.filter(user=user_id)
         serializer = StartupSerializer(startups, many=True)
