@@ -69,3 +69,15 @@ class NamespaceSelectionView(APIView):
             )
             return response
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserStartupListView(APIView):
+    pass
+
+
+class UserStartupDetailView(APIView):
+    pass
+
+
+class UserStartupProjectView(APIView):
+    pass
