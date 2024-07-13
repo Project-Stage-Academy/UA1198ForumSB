@@ -95,14 +95,12 @@ class UserStartupDetailView(APIView):
     permission_classes = [ThisUserPermission]
 
     def get(self, request, user_id, startup_id):
-        startups = Startup.objects.filter(user=user_id)
-        startup = get_object_or_404(startups, startup_id=startup_id)
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
         serializer = StartupSerializer(startup)
         return Response(serializer.data, status=200)
     
     def patch(self, request, user_id, startup_id):
-        startups = Startup.objects.filter(user=user_id)
-        startup = get_object_or_404(startups, startup_id=startup_id)
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
         serializer = StartupSerializer(startup, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -112,8 +110,7 @@ class UserStartupDetailView(APIView):
     def delete(self, request, user_id, startup_id):
         # if the startup has some investors subscriptions we can't delete it
         # add appropriate permission
-        startups = Startup.objects.filter(user=user_id)
-        startup = get_object_or_404(startups, startup_id=startup_id)
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
         startup.delete()
         return Response(status=204)
 
