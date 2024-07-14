@@ -15,7 +15,7 @@ class TokenRefreshView(BaseTokenRefreshView):
     throttle_scope = 'token_refresh'
 
 
-class LogoutView(TokenBlacklistView):
+class LogoutAndBlacklistRefreshTokenView(TokenBlacklistView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
