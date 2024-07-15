@@ -13,11 +13,11 @@ from startups.models import Startup
 from startups.serializers import StartupSerializer
 
 from projects.models import Project
-from forum.projects.serializers import ProjectSerializer
+from projects.serializers import ProjectSerializer
 
 from users.models import CustomUser
 from users.serializers import NamespaceSerializer
-from users.permissions import ThisUserPermission, NameSpaceIsNotSelected
+from users.permissions import *
 
 
 class TokenObtainPairView(BaseTokenObtainPairView):
@@ -82,7 +82,7 @@ class NamespaceSelectionView(APIView):
 class UserStartupListView(APIView):
     permission_classes = [
         ThisUserPermission,
-        NameSpaceIsNotSelected
+        IsStartupNamespaceSelected,
     ]
 
     def get(self, request, user_id):
@@ -99,7 +99,11 @@ class UserStartupListView(APIView):
 
 
 class UserStartupDetailView(APIView):
-    permission_classes = [ThisUserPermission]
+    permission_classes = [
+        ThisUserPermission,
+        IsStartupNamespaceSelected,
+        ThisStartup
+    ]
 
     def get(self, request, user_id, startup_id):
         startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
@@ -123,6 +127,12 @@ class UserStartupDetailView(APIView):
 
 
 class UserStartupProjectView(APIView):
+    permission_classes = [
+        ThisUserPermission,
+        IsStartupNamespaceSelected,
+        ThisStartup
+    ]
+    
     def get(self, request, user_id, startup_id):
         startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
         project = get_object_or_404(Project, startup=startup)
