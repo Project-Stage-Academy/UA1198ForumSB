@@ -13,6 +13,7 @@ from startups.models import Startup
 from startups.serializers import StartupSerializer
 
 from projects.models import Project
+from forum.projects.serializers import ProjectSerializer
 
 from users.models import CustomUser
 from users.serializers import NamespaceSerializer
@@ -127,3 +128,29 @@ class UserStartupProjectView(APIView):
         project = get_object_or_404(Project, startup=startup)
         serializer = StartupSerializer(project)
         return Response(serializer.data, status=200)
+    
+    def post(self, request, user_id, startup_id):
+        serializer = StartupSerializer(data={
+            **request.data,
+            'user': user_id,
+            'startup': startup_id
+        })
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+    
+    def patch(self, request, user_id, startup_id):
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
+        project = get_object_or_404(Project, startup=startup)
+        serializer = ProjectSerializer(project, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=200)
+        return Response(serializer.errors, status=400)
+    
+    def delete(self, request, user_id, startup_id):
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
+        project = get_object_or_404(Project, startup=startup)
+        project.delete()
+        return Response(status=204)
