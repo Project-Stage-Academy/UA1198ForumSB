@@ -69,7 +69,7 @@ ROOT_URLCONF = 'forum.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -141,7 +141,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 AUTH_USER_MODEL = 'users.CustomUser'
 
 REST_FRAMEWORK = {
@@ -204,3 +203,10 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = environ.get('EMAIL_HOST')
+EMAIL_HOST_USER = environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = environ.get('EMAIL_PORT')
+EMAIL_USE_TLS = environ.get('EMAIL_USE_TLS')
