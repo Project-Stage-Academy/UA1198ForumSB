@@ -81,7 +81,8 @@ class NamespaceSelectionView(APIView):
 
 class UserStartupListView(APIView):
     permission_classes = [
-        ThisUserPermission
+        ThisUserPermission,
+        IsStartupNamespaceSelected
     ]
 
     def get(self, request, user_id):
