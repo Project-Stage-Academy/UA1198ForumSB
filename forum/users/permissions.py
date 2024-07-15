@@ -70,24 +70,13 @@ class ThisInvestor(ThisNamespace):
 
 class ThisUserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        
-        if request.method in ["PUT", "Pat"]:
-            pass
-        user_id_from_url = int(request.get_full_path().split("users/")[1].split("/")[0])
-        # access_token = request.COOKIES.get("access") after finished Sign In
-        if request.headers.get('Authorization'):
-            access_token = request.headers.get('Authorization').split('Bearer ')[1]
-            access_token = AccessToken(access_token)
-            current_user_id = access_token.payload.get('user_id')
-            return current_user_id == user_id_from_url
-        return False
+        user_id_from_url = view.kwargs.get("user_id")
+        payload = get_token_payload_from_cookies(request)
+        current_user_id = payload.get('user_id')
+        return current_user_id == user_id_from_url
 
 
 class NameSpaceIsNotSelected(permissions.BasePermission):
     def has_permission(self, request, view):
-        # access_token = request.COOKIES.get("access") after finished Sign In
-        if request.headers.get('Authorization'):
-            access_token = request.headers.get('Authorization').split('Bearer ')[1]
-            access_token = AccessToken(access_token)
-            return "name_space_id" not in access_token.payload
-        return False
+        payload = get_token_payload_from_cookies(request)
+        return "name_space_id" not in payload
