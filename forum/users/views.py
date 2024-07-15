@@ -12,9 +12,12 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from startups.models import Startup
 from startups.serializers import StartupSerializer
 
+from projects.models import Project
+
 from users.models import CustomUser
 from users.serializers import NamespaceSerializer
 from users.permissions import ThisUserPermission, NameSpaceIsNotSelected
+
 
 class TokenObtainPairView(BaseTokenObtainPairView):
     throttle_scope = 'token_obtain'
@@ -23,6 +26,7 @@ class TokenObtainPairView(BaseTokenObtainPairView):
 class TokenRefreshView(BaseTokenRefreshView):
     throttle_scope = 'token_refresh'
     
+
 class NamespaceSelectionView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -118,4 +122,8 @@ class UserStartupDetailView(APIView):
 
 
 class UserStartupProjectView(APIView):
-    pass
+    def get(self, request, user_id, startup_id):
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
+        project = get_object_or_404(Project, startup=startup)
+        serializer = StartupSerializer(project)
+        return Response(serializer.data, status=200)
