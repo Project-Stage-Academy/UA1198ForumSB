@@ -81,8 +81,7 @@ class NamespaceSelectionView(APIView):
 
 class UserStartupListView(APIView):
     permission_classes = [
-        ThisUserPermission,
-        IsStartupNamespaceSelected,
+        ThisUserPermission
     ]
 
     def get(self, request, user_id):
@@ -132,7 +131,7 @@ class UserStartupProjectView(APIView):
         IsStartupNamespaceSelected,
         ThisStartup
     ]
-    
+
     def get(self, request, user_id, startup_id):
         startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
         project = get_object_or_404(Project, startup=startup)
