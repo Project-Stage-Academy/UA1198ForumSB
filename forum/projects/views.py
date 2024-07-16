@@ -1,3 +1,6 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from django.shortcuts import get_list_or_404
 from django.shortcuts import render
 
 from rest_framework import viewsets, permissions
@@ -28,6 +31,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
         changes = get_changed_fields(old_instance, instance)
 
         if changes:
+            # Send WebSocket update
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'project_{instance.pk}',
+                {
+                    'type': 'project_update',
+                    'project_data': {
+                        'id': instance.pk,
+                        'title': instance.title,
+                        'changes': changes
+                    }
+                }
+            )
+
+            # Fetch investors to notify via email
             investors = Investor.objects.filter(
                 investor_id__in=ProjectSubscription.objects.filter(
                     project_id=instance

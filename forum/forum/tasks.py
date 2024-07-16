@@ -25,7 +25,6 @@ def send_email_task(
         receivers
     )
 
-
 @shared_task(bind=True)
 def password_reset_ttl_task(self):
     # we should import model on demand cause we could get an error if we imported it globally
@@ -36,4 +35,3 @@ def password_reset_ttl_task(self):
             minutes=int(environ.get('FORUM_PASSWORD_RESET_TTL', 10))
         )
     ).delete()
-
