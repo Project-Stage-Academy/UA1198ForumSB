@@ -132,6 +132,7 @@ class UserStartupListTestCase(APITestCase):
         )
         self.user.password = password
         self.user.save()
+        self.url = reverse("users:user_startups", kwargs=dict(user_id=self.user.user_id))
         user_credentials = {
             "email": self.user.email,
             "password": password
@@ -160,19 +161,20 @@ class UserStartupListTestCase(APITestCase):
         self.startup1 = Startup.objects.create(
             startup_id=10,
             user=self.user,
-            name="test-startup1"
+            name="test-startup1",
+            contacts={}
         )
         self.startup2 = Startup.objects.create(
             startup_id=11,
             user=self.user,
-            name="test-startup2"
+            name="test-startup2",
+            contacts={}
         )
         self.startup1.save()
         self.startup2.save()
     
     def test_user_can_get_all_his_startups_if_namespace_is_not_selected(self):
-        url = f"/users/{self.user.user_id}/startups"
-        response = self.client.get(url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.post_headers)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
@@ -189,8 +191,7 @@ class UserStartupListTestCase(APITestCase):
             data=select_namespace_data,
             headers=self.post_headers
         )
-        url = f"/users/{self.user.user_id}/startups"
-        response = self.client.get(url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.post_headers)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
@@ -198,12 +199,14 @@ class UserStartupListTestCase(APITestCase):
         self.assertEqual(response.data[1].get("name"), 'test-startup2')
 
     def test_user_can_not_create_startup_if_namespace_is_not_selected(self):
-        url = f"/users/{self.user.user_id}/startups"
         post_data = dict(
             user=self.user.user_id,
-            name="test-startup3"
+            name="test-startup3",
+            location="UA",
+            description="desc",
+            contacts=json.dumps({})
         )
-        response = self.client.post(url, data=post_data, headers=self.post_headers)
+        response = self.client.post(self.url, data=post_data, headers=self.post_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_user_can_create_startup_if_namespace_is_selected(self):
@@ -216,14 +219,24 @@ class UserStartupListTestCase(APITestCase):
             data=select_namespace_data,
             headers=self.post_headers
         )
-        url = f"/users/{self.user.user_id}/startups"
         post_data = dict(
             user=self.user.user_id,
-            name='test-startup3'
+            name="test-startup3",
+            location="UA",
+            description="desc",
+            contacts=json.dumps({})
         )
-        response = self.client.post(url, data=post_data, headers=self.post_headers, format='json')
+        response = self.client.post(self.url, data=post_data, headers=self.post_headers, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
-        response = self.client.get(url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.post_headers)
         self.assertEqual(len(response.data), 3)
         self.assertEqual(response.data[2].get("name"), 'test-startup3')
+    
+    def test_user_can_not_view_startups_of_an_other_user(self):
+        url = reverse("users:user_startups", kwargs=dict(user_id=100))
+        response = self.client.get(url, headers=self.post_headers)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    
+    def test_user_can_not_create_startup_for_an_other_user(self):
+        pass
