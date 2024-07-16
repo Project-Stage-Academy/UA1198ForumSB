@@ -9,12 +9,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
+from investors.models import Investor
+from investors.serializers import InvestorSerializer
 from startups.models import Startup
 from startups.serializers import StartupSerializer
 
 from users.models import CustomUser
 from users.serializers import NamespaceSerializer
-from users.permissions import ThisUserPermission, NameSpaceIsNotSelected
+from users.permissions import *
 
 class TokenObtainPairView(BaseTokenObtainPairView):
     throttle_scope = 'token_obtain'
@@ -76,8 +78,7 @@ class NamespaceSelectionView(APIView):
 
 class UserStartupListView(APIView):
     permission_classes = [
-        ThisUserPermission,
-        NameSpaceIsNotSelected
+        ThisUserPermission
     ]
 
     def get(self, request, user_id):
@@ -94,8 +95,18 @@ class UserStartupListView(APIView):
 
 
 class UserStartupDetailView(APIView):
-    permission_classes = [ThisUserPermission]
-
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            permission_classes = [ThisUserPermission]
+        elif self.request.method == 'PATCH':
+            permission_classes = [ThisUserPermission, IsStartupNamespaceSelected, ThisStartup]
+        elif self.request.method == 'DELETE':
+            permission_classes = [ThisUserPermission]
+        else:
+            permission_classes = self.permission_classes
+        
+        return [permission() for permission in permission_classes]
+    
     def get(self, request, user_id, startup_id):
         startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
         serializer = StartupSerializer(startup)
@@ -119,3 +130,47 @@ class UserStartupDetailView(APIView):
 
 class UserStartupProjectView(APIView):
     pass
+
+
+class UserInvestorListView(APIView):
+    permission_classes = [
+        ThisUserPermission,
+        IsInvestorNamespaceSelected
+    ]
+
+    def get(self, request, user_id):
+        investors = get_list_or_404(Investor, user=user_id)
+        serializer = InvestorSerializer(investors, many=True)
+        return Response(serializer.data, status=200)
+
+    def post(self, request, user_id):
+        serializer = InvestorSerializer(data={**request.data, 'user': user_id})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+class UserInvestorDetailView(APIView):
+    permission_classes = [
+        ThisUserPermission,
+        IsInvestorNamespaceSelected,
+        ThisInvestor
+    ]
+
+    def get(self, request, user_id, investor_id):
+        investor = get_object_or_404(Investor, user=user_id, investor_id=investor_id)
+        serializer = InvestorSerializer(investor)
+        return Response(serializer.data, status=200)
+
+    def patch(self, request, user_id, investor_id):
+        investor = get_object_or_404(Investor, user=user_id, investor_id=investor_id)
+        serializer = InvestorSerializer(investor, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=200)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, user_id, investor_id):
+        investor = get_object_or_404(Investor, user=user_id, investor_id=investor_id)
+        investor.delete()
+        return Response(status=204)

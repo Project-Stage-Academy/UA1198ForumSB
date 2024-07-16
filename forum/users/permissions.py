@@ -74,9 +74,3 @@ class ThisUserPermission(permissions.BasePermission):
         payload = get_token_payload_from_cookies(request)
         current_user_id = payload.get('user_id')
         return current_user_id == user_id_from_url
-
-
-class NameSpaceIsNotSelected(permissions.BasePermission):
-    def has_permission(self, request, view):
-        payload = get_token_payload_from_cookies(request)
-        return "name_space_id" not in payload
