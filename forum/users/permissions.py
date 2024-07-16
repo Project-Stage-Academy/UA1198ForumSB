@@ -3,6 +3,9 @@ from rest_framework_simplejwt.tokens import AccessToken, TokenError
 from rest_framework.exceptions import PermissionDenied
 
 
+SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
+
+
 def get_token_payload_from_cookies(request):
     token = request.COOKIES.get('access')
     if not token:
@@ -18,17 +21,18 @@ def get_token_payload_from_cookies(request):
     
     
 class BaseNamespaceSelectedPermission(permissions.BasePermission):
+    """
+        Check what namespace has been selected: startup or investor
+    """
     NAMESPACE = None
 
     def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        
         payload = get_token_payload_from_cookies(request)
         namespace_name = payload.get('name_space_name')
-        if namespace_name != self.NAMESPACE:
-            raise PermissionDenied({"error": f"Namespace is not {self.NAMESPACE}."})
-        namespace_id = payload.get('name_space_id')
-        if not namespace_id:
-            raise PermissionDenied({"error": f"No {self.NAMESPACE} selected."})
-        return True
+        return namespace_name == self.NAMESPACE
 
 
 class IsStartupNamespaceSelected(BaseNamespaceSelectedPermission):
@@ -39,24 +43,27 @@ class IsInvestorNamespaceSelected(BaseNamespaceSelectedPermission):
     NAMESPACE = 'investor'
 
 
-class IsNamespace(permissions.BasePermission):
-    def has_permission(self, request, view):
-        payload = get_token_payload_from_cookies(request)
-        namespace = payload.get('name_space_name')
-        if namespace not in ['startup', 'investor']:
-            raise PermissionDenied({"error": "Invalid namespace."})
-        return True
+# class IsNamespace(permissions.BasePermission):
+#     def has_permission(self, request, view):
+#         payload = get_token_payload_from_cookies(request)
+#         namespace = payload.get('name_space_name')
+#         if namespace not in ['startup', 'investor']:
+#             raise PermissionDenied({"error": "Invalid namespace."})
+#         return True
 
 
 class ThisNamespace(permissions.BasePermission):
+    """
+        Check if namespace_id of selected namespace matches to namespace_id in request url
+    """
     NAMESPACE = None
 
     def has_permission(self, request, view):
-        payload = get_token_payload_from_cookies(request)
-        namespace_id = payload.get('name_space_id')
-        view_namespace_id = view.kwargs.get(f'{self.NAMESPACE}_id')
-        if namespace_id != view_namespace_id:
-            raise PermissionDenied({"error": "Namespace ID mismatch."})   
+        if request.method in ["PUT", "PATCH"]:
+            payload = get_token_payload_from_cookies(request)
+            namespace_id = payload.get('name_space_id')
+            view_namespace_id = view.kwargs.get(f'{self.NAMESPACE}_id')
+            return namespace_id == view_namespace_id
         return True
     
     
@@ -69,6 +76,9 @@ class ThisInvestor(ThisNamespace):
 
 
 class ThisUserPermission(permissions.BasePermission):
+    """
+        Check if user_id of user that make request matches to user_id in request url
+    """
     def has_permission(self, request, view):
         user_id_from_url = view.kwargs.get("user_id")
         payload = get_token_payload_from_cookies(request)

@@ -11,8 +11,12 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from investors.models import Investor
 from investors.serializers import InvestorSerializer
+
 from startups.models import Startup
 from startups.serializers import StartupSerializer
+
+from projects.models import Project
+from projects.serializers import ProjectSerializer
 
 from users.models import CustomUser
 from users.serializers import NamespaceSerializer
@@ -25,6 +29,7 @@ class TokenObtainPairView(BaseTokenObtainPairView):
 class TokenRefreshView(BaseTokenRefreshView):
     throttle_scope = 'token_refresh'
     
+
 class NamespaceSelectionView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -78,7 +83,8 @@ class NamespaceSelectionView(APIView):
 
 class UserStartupListView(APIView):
     permission_classes = [
-        ThisUserPermission
+        ThisUserPermission,
+        IsStartupNamespaceSelected
     ]
 
     def get(self, request, user_id):
@@ -95,18 +101,12 @@ class UserStartupListView(APIView):
 
 
 class UserStartupDetailView(APIView):
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            permission_classes = [ThisUserPermission]
-        elif self.request.method == 'PATCH':
-            permission_classes = [ThisUserPermission, IsStartupNamespaceSelected, ThisStartup]
-        elif self.request.method == 'DELETE':
-            permission_classes = [ThisUserPermission]
-        else:
-            permission_classes = self.permission_classes
-        
-        return [permission() for permission in permission_classes]
-    
+    permission_classes = [
+        ThisUserPermission,
+        IsStartupNamespaceSelected,
+        ThisStartup
+    ]
+
     def get(self, request, user_id, startup_id):
         startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
         serializer = StartupSerializer(startup)
@@ -129,7 +129,43 @@ class UserStartupDetailView(APIView):
 
 
 class UserStartupProjectView(APIView):
-    pass
+    permission_classes = [
+        ThisUserPermission,
+        IsStartupNamespaceSelected,
+        ThisStartup
+    ]
+
+    def get(self, request, user_id, startup_id):
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
+        project = get_object_or_404(Project, startup=startup)
+        serializer = StartupSerializer(project)
+        return Response(serializer.data, status=200)
+
+    def post(self, request, user_id, startup_id):
+        serializer = StartupSerializer(data={
+            **request.data,
+            'user': user_id,
+            'startup': startup_id
+        })
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+    def patch(self, request, user_id, startup_id):
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
+        project = get_object_or_404(Project, startup=startup)
+        serializer = ProjectSerializer(project, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=200)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, user_id, startup_id):
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
+        project = get_object_or_404(Project, startup=startup)
+        project.delete()
+        return Response(status=204)
 
 
 class UserInvestorListView(APIView):
