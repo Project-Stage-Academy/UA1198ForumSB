@@ -26,12 +26,15 @@ class SelectNameSpaceTestCase(APITestCase):
             "password": password
         }
         response = self.client.post(reverse('users:token_obtain_pair'), data=user_credentials)
-        self.refresh_token = response.data.get("refresh")
-        self.access_token = response.data.get("access")
+        refresh_token = response.data.get("refresh")
+        access_token = response.data.get("access")
         self.client.cookies = SimpleCookie({
-            'refresh': self.refresh_token,
-            'access': self.access_token
+            'refresh': refresh_token,
+            'access': access_token
         })
+        self.post_headers = {
+            "Authorization": f"Bearer {access_token}"
+        }
         self.investor = Investor.objects.create(
             investor_id=1,
             user=self.user
@@ -49,10 +52,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': self.investor.investor_id,
             'name_space_name': 'investor'
         }
-        post_headers = {
-            "Authorization": f"Bearer {self.access_token}"
-        }
-        response = self.client.post(self.url, data=post_body, headers=post_headers)
+        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
         access_token = response.cookies.get('access').value
         access_token_obj = AccessToken(access_token)
 
@@ -70,11 +70,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': 3,
             'name_space_name': 'investor'
         }
-        post_headers = {
-            "Authorization": f"Bearer {self.access_token}"
-        }
-        response = self.client.post(self.url, data=post_body, headers=post_headers)
-
+        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
     def test_select_existed_startup_namespase(self):
@@ -82,10 +78,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': self.startup.startup_id,
             'name_space_name': 'startup'
         }
-        post_headers = {
-            "Authorization": f"Bearer {self.access_token}"
-        }
-        response = self.client.post(self.url, data=post_body, headers=post_headers)
+        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
         access_token = response.cookies.get('access').value
         access_token_obj = AccessToken(access_token)
 
@@ -103,11 +96,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': 56,
             'name_space_name': 'startup'
         }
-        post_headers = {
-            "Authorization": f"Bearer {self.access_token}"
-        }
-        response = self.client.post(self.url, data=post_body, headers=post_headers)
-
+        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
     def test_select_invalid_namespase(self):
@@ -115,28 +104,16 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': self.startup.startup_id,
             'name_space_name': 'python'
         }
-        post_headers = {
-            "Authorization": f"Bearer {self.access_token}"
-        }
-        response = self.client.post(self.url, data=post_body, headers=post_headers)
-
+        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_select_namespase_invalid_post_data(self):
         post_body = {
             'name_space_name': 'startup'
         }
-        post_headers = {
-            "Authorization": f"Bearer {self.access_token}"
-        }
-        response = self.client.post(self.url, data=post_body, headers=post_headers)
-
+        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_select_namespase_without_post_data(self):
-        post_headers = {
-            "Authorization": f"Bearer {self.access_token}"
-        }
-        response = self.client.post(self.url, headers=post_headers)
-
+        response = self.client.post(self.url, headers=self.post_headers)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
