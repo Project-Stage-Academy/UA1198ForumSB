@@ -9,6 +9,9 @@ from django.shortcuts import get_object_or_404
 from .models import StartupSize, Startup
 from .serializers import StartupSizeSerializer, StartupSerializer
 
+from users.permissions import *
+from rest_framework.permissions import IsAuthenticated
+
 
 class StartupSizeViewSet(GenericViewSet, ListModelMixin):
     queryset = StartupSize.objects.all()
@@ -29,6 +32,11 @@ class StartupSizeViewSet(GenericViewSet, ListModelMixin):
 
 
 class UserStartupsView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        ThisUserPermission,
+        IsStartupNamespaceSelected
+    ]
 
     @swagger_auto_schema(
         operation_description="Retrieve a list of startups",
@@ -59,6 +67,12 @@ class UserStartupsView(APIView):
 
 
 class UserStartupView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        ThisUserPermission,
+        IsStartupNamespaceSelected,
+        ThisStartup
+    ]
 
     @swagger_auto_schema(
         operation_description="Get startup information",
