@@ -1,3 +1,4 @@
+import json
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.urls import reverse
@@ -117,3 +118,112 @@ class SelectNameSpaceTestCase(APITestCase):
     def test_select_namespase_without_post_data(self):
         response = self.client.post(self.url, headers=self.post_headers)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class UserStartupListTestCase(APITestCase):
+    def setUp(self):
+        password = 'Test1234'
+        self.user = CustomUser.objects.create_user(
+            user_id=1,
+            first_name='test',
+            last_name='test',
+            email='test@gmail.com',
+            password=''
+        )
+        self.user.password = password
+        self.user.save()
+        user_credentials = {
+            "email": self.user.email,
+            "password": password
+        }
+        response = self.client.post(reverse('users:token_obtain_pair'), data=user_credentials)
+        refresh_token = response.data.get("refresh")
+        access_token = response.data.get("access")
+        self.client.cookies = SimpleCookie({
+            'refresh': refresh_token,
+            'access': access_token
+        })
+        self.post_headers = {
+            "Authorization": f"Bearer {access_token}"
+        }
+        self.investor1 = Investor.objects.create(
+            investor_id=10,
+            user=self.user
+        )
+        self.investor2 = Investor.objects.create(
+            investor_id=11,
+            user=self.user
+        )
+        self.investor1.save()
+        self.investor2.save()
+
+        self.startup1 = Startup.objects.create(
+            startup_id=10,
+            user=self.user,
+            name="test-startup1"
+        )
+        self.startup2 = Startup.objects.create(
+            startup_id=11,
+            user=self.user,
+            name="test-startup2"
+        )
+        self.startup1.save()
+        self.startup2.save()
+    
+    def test_user_can_get_all_his_startups_if_namespace_is_not_selected(self):
+        url = f"/users/{self.user.user_id}/startups"
+        response = self.client.get(url, headers=self.post_headers)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0].get("name"), 'test-startup1')
+        self.assertEqual(response.data[1].get("name"), 'test-startup2')
+    
+    def test_user_can_get_all_his_startups_if_namespace_is_selected(self):
+        select_namespace_data = {
+            'name_space_id': self.startup1.startup_id,
+            'name_space_name': 'startup'
+        }
+        self.client.post(
+            reverse('users:namespace_selection'),
+            data=select_namespace_data,
+            headers=self.post_headers
+        )
+        url = f"/users/{self.user.user_id}/startups"
+        response = self.client.get(url, headers=self.post_headers)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0].get("name"), 'test-startup1')
+        self.assertEqual(response.data[1].get("name"), 'test-startup2')
+
+    def test_user_can_not_create_startup_if_namespace_is_not_selected(self):
+        url = f"/users/{self.user.user_id}/startups"
+        post_data = dict(
+            user=self.user.user_id,
+            name="test-startup3"
+        )
+        response = self.client.post(url, data=post_data, headers=self.post_headers)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    
+    def test_user_can_create_startup_if_namespace_is_selected(self):
+        select_namespace_data = {
+            'name_space_id': self.startup1.startup_id,
+            'name_space_name': 'startup'
+        }
+        self.client.post(
+            reverse('users:namespace_selection'),
+            data=select_namespace_data,
+            headers=self.post_headers
+        )
+        url = f"/users/{self.user.user_id}/startups"
+        post_data = dict(
+            user=self.user.user_id,
+            name='test-startup3'
+        )
+        response = self.client.post(url, data=post_data, headers=self.post_headers, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        response = self.client.get(url, headers=self.post_headers)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[2].get("name"), 'test-startup3')

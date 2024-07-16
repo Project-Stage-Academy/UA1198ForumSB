@@ -83,6 +83,7 @@ class NamespaceSelectionView(APIView):
 
 class UserStartupListView(APIView):
     permission_classes = [
+        IsAuthenticated,
         ThisUserPermission,
         IsStartupNamespaceSelected
     ]
@@ -102,6 +103,7 @@ class UserStartupListView(APIView):
 
 class UserStartupDetailView(APIView):
     permission_classes = [
+        IsAuthenticated,
         ThisUserPermission,
         IsStartupNamespaceSelected,
         ThisStartup
@@ -130,6 +132,7 @@ class UserStartupDetailView(APIView):
 
 class UserStartupProjectView(APIView):
     permission_classes = [
+        IsAuthenticated,
         ThisUserPermission,
         IsStartupNamespaceSelected,
         ThisStartup
@@ -170,6 +173,7 @@ class UserStartupProjectView(APIView):
 
 class UserInvestorListView(APIView):
     permission_classes = [
+        IsAuthenticated,
         ThisUserPermission,
         IsInvestorNamespaceSelected
     ]
@@ -188,6 +192,7 @@ class UserInvestorListView(APIView):
 
 class UserInvestorDetailView(APIView):
     permission_classes = [
+        IsAuthenticated,
         ThisUserPermission,
         IsInvestorNamespaceSelected,
         ThisInvestor
