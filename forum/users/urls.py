@@ -27,4 +27,10 @@ urlpatterns = [
         views.PasswordResetConfirmView.as_view(),
         name='password_reset_confirm'
     ),
+    path('register/', views.UserRegisterView.as_view(), name='register'),
+    path(
+        'email-verify/<str:token>/',
+        views.SendEmailConfirmationView.as_view(),
+        name='email-verify'
+    ),
 ]

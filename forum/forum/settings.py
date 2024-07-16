@@ -142,7 +142,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 AUTH_USER_MODEL = 'users.CustomUser'
 
 REST_FRAMEWORK = {
@@ -210,10 +209,12 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 # email configuration
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = environ.get('FORUM_EMAIL_HOST', 'localhost')
 EMAIL_PORT = environ.get('FORUM_EMAIL_PORT', '8025')
 EMAIL_HOST_USER = environ.get('FORUM_EMAIL_USER', '')
 EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')
+EMAIL_USE_TLS = environ.get('EMAIL_USE_TLS')
 
 
 # Celery configuration
