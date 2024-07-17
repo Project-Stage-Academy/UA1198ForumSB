@@ -33,7 +33,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'refresh': refresh_token,
             'access': access_token
         })
-        self.post_headers = {
+        self.authorization_headers = {
             "Authorization": f"Bearer {access_token}"
         }
         self.investor = Investor.objects.create(
@@ -55,7 +55,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': self.investor.investor_id,
             'name_space_name': 'investor'
         }
-        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
+        response = self.client.post(self.url, data=post_body, headers=self.authorization_headers)
         access_token = response.cookies.get('access').value
         access_token_obj = AccessToken(access_token)
 
@@ -73,7 +73,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': 3,
             'name_space_name': 'investor'
         }
-        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
+        response = self.client.post(self.url, data=post_body, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
     def test_select_existed_startup_namespase(self):
@@ -81,7 +81,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': self.startup.startup_id,
             'name_space_name': 'startup'
         }
-        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
+        response = self.client.post(self.url, data=post_body, headers=self.authorization_headers)
         access_token = response.cookies.get('access').value
         access_token_obj = AccessToken(access_token)
 
@@ -99,7 +99,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': 56,
             'name_space_name': 'startup'
         }
-        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
+        response = self.client.post(self.url, data=post_body, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
     def test_select_invalid_namespase(self):
@@ -107,18 +107,18 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_id': self.startup.startup_id,
             'name_space_name': 'python'
         }
-        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
+        response = self.client.post(self.url, data=post_body, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_select_namespase_invalid_post_data(self):
         post_body = {
             'name_space_name': 'startup'
         }
-        response = self.client.post(self.url, data=post_body, headers=self.post_headers)
+        response = self.client.post(self.url, data=post_body, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_select_namespase_without_post_data(self):
-        response = self.client.post(self.url, headers=self.post_headers)
+        response = self.client.post(self.url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
@@ -146,7 +146,7 @@ class UserStartupListTestCase(APITestCase):
             'refresh': refresh_token,
             'access': access_token
         })
-        self.post_headers = {
+        self.authorization_headers = {
             "Authorization": f"Bearer {access_token}"
         }
         self.investor1 = Investor.objects.create(
@@ -176,7 +176,7 @@ class UserStartupListTestCase(APITestCase):
         self.startup2.save()
     
     def test_user_can_get_his_startups_if_namespace_is_not_selected(self):
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
@@ -191,9 +191,9 @@ class UserStartupListTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
@@ -208,9 +208,9 @@ class UserStartupListTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
@@ -225,7 +225,7 @@ class UserStartupListTestCase(APITestCase):
             description="desc",
             contacts=json.dumps({})
         )
-        response = self.client.post(self.url, data=post_data, headers=self.post_headers, format="json")
+        response = self.client.post(self.url, data=post_data, headers=self.authorization_headers, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
     
     def test_user_can_create_startup_if_namespace_is_startup(self):
@@ -236,7 +236,7 @@ class UserStartupListTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
         post_data = dict(
             user=self.user.user_id,
@@ -245,10 +245,10 @@ class UserStartupListTestCase(APITestCase):
             description="desc",
             contacts=json.dumps({})
         )
-        response = self.client.post(self.url, data=post_data, headers=self.post_headers, format='json')
+        response = self.client.post(self.url, data=post_data, headers=self.authorization_headers, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
         self.assertEqual(len(response.data), 3)
         self.assertEqual(response.data[2].get("name"), 'test-startup3')
     
@@ -260,7 +260,7 @@ class UserStartupListTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
         post_data = dict(
             user=self.user.user_id,
@@ -269,16 +269,16 @@ class UserStartupListTestCase(APITestCase):
             description="desc",
             contacts=json.dumps({})
         )
-        response = self.client.post(self.url, data=post_data, headers=self.post_headers, format='json')
+        response = self.client.post(self.url, data=post_data, headers=self.authorization_headers, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
         self.assertEqual(len(response.data), 3)
         self.assertEqual(response.data[2].get("name"), 'test-startup3')
     
     def test_user_can_not_view_startups_of_an_other_user(self):
         url = reverse("users:user_startups", kwargs=dict(user_id=100))
-        response = self.client.get(url, headers=self.post_headers)
+        response = self.client.get(url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_user_can_not_create_startup_for_an_other_user(self):
@@ -289,7 +289,7 @@ class UserStartupListTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
         other_user = CustomUser.objects.create_user(
             user_id=101,
@@ -306,11 +306,11 @@ class UserStartupListTestCase(APITestCase):
             description="desc",
             contacts=json.dumps({})
         )
-        response = self.client.post(self.url, data=post_data, headers=self.post_headers, format='json')
+        response = self.client.post(self.url, data=post_data, headers=self.authorization_headers, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         response = other_url = f"/users/{other_user.user_id}/startups/"
-        response = self.client.post(other_url, data=post_data, headers=self.post_headers, format='json')
+        response = self.client.post(other_url, data=post_data, headers=self.authorization_headers, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
@@ -337,7 +337,7 @@ class UserStartupDetailTestCase(APITestCase):
             'refresh': refresh_token,
             'access': access_token
         })
-        self.post_headers = {
+        self.authorization_headers = {
             "Authorization": f"Bearer {access_token}"
         }
         self.investor1 = Investor.objects.create(
@@ -378,21 +378,21 @@ class UserStartupDetailTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("name"), 'test-startup1')
 
         patch_data = {"name":"new-name-1", "location": "new-loc"}
-        response = self.client.patch(self.url, data=patch_data, headers=self.post_headers)
+        response = self.client.patch(self.url, data=patch_data, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("name"), 'new-name-1')
         self.assertEqual(response.data.get("location"), 'new-loc')
 
-        response = self.client.delete(self.url, headers=self.post_headers)
+        response = self.client.delete(self.url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
     
     def test_user_can_view_startup_if_namespace_is_investor(self):
@@ -403,9 +403,9 @@ class UserStartupDetailTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("name"), 'test-startup1')
@@ -418,26 +418,26 @@ class UserStartupDetailTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
         patch_data = {"name": "updated-name1"}
-        response = self.client.patch(self.url, data=patch_data, headers=self.post_headers)
+        response = self.client.patch(self.url, data=patch_data, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        response = self.client.delete(self.url, headers=self.post_headers)
+        response = self.client.delete(self.url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_user_can_view_startup_if_namespace_is_not_selected(self):
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("name"), 'test-startup1')
 
     def test_user_can_not_update_or_delete_startup_if_namespace_is_not_selected(self):
         patch_data = {"name": "updated-name1"}
-        response = self.client.patch(self.url, data=patch_data, headers=self.post_headers)
+        response = self.client.patch(self.url, data=patch_data, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        response = self.client.delete(self.url, headers=self.post_headers)
+        response = self.client.delete(self.url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_user_can_not_update_stratup_if_an_other_is_selected(self):
@@ -448,10 +448,10 @@ class UserStartupDetailTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
         patch_data = {"name": "updated-name1"}
-        response = self.client.patch(self.url, data=patch_data, headers=self.post_headers)
+        response = self.client.patch(self.url, data=patch_data, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_can_view_or_delete_stratup_if_an_other_is_selected(self):
@@ -462,12 +462,12 @@ class UserStartupDetailTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
-        response = self.client.get(self.url, headers=self.post_headers)
+        response = self.client.get(self.url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response = self.client.delete(self.url, headers=self.post_headers)
+        response = self.client.delete(self.url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_user_can_not_view_update_or_delete_startup_of_an_other_user(self):
@@ -478,7 +478,7 @@ class UserStartupDetailTestCase(APITestCase):
         self.client.post(
             reverse('users:namespace_selection'),
             data=select_namespace_data,
-            headers=self.post_headers
+            headers=self.authorization_headers
         )
         password = 'Test1234'
         other_user = CustomUser.objects.create_user(
@@ -499,14 +499,14 @@ class UserStartupDetailTestCase(APITestCase):
         other_startup.save()
         url = f"/users/{other_user.user_id}/startups/{other_startup.startup_id}/"
 
-        response = self.client.get(url, headers=self.post_headers)
+        response = self.client.get(url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         patch_data = {"name": "new-name"}
-        response = self.client.patch(url, data=patch_data, headers=self.post_headers)
+        response = self.client.patch(url, data=patch_data, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        response = self.client.delete(url, headers=self.post_headers)
+        response = self.client.delete(url, headers=self.authorization_headers)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
