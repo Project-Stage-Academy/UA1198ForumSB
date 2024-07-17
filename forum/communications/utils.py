@@ -84,7 +84,6 @@ class StartupNotificationManager(NotificationManager):
                     namespace_id=i.investor.investor_id
                 )
             )
-            i.investor.investor_id
 
         return receivers
 
@@ -102,12 +101,11 @@ class InvestorNotificationManager(NotificationManager):
         for i in ProjectSubscription.objects.filter(investor=self.namespace):
             receivers.append(
                 NamespaceInfo(
-                    user_id=i.investor.user.user_id,
+                    user_id=i.project.startup.user.user_id,
                     namespace=self.NAMESPACE_RECEIVERS_NAME,
                     namespace_id=i.project.startup.startup_id
                 )
             )
-            i.investor.investor_id
 
         return receivers
 
