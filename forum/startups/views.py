@@ -29,6 +29,11 @@ class StartupSizeViewSet(GenericViewSet, ListModelMixin):
 
 
 class StartupViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of startups based on search criteria",
+        operation_summary="List Startups",
+        responses={200: StartupSerializer(many=True)}
+    )
     def list(self, request):
         search_string = request.query_params.get('search')
         if search_string:
@@ -40,6 +45,11 @@ class StartupViewSet(ViewSet):
         serializer = StartupSerializer(startups, many=True)
         return Response(serializer.data, status=200)
     
+    @swagger_auto_schema(
+        operation_description="Retrieve detailed information about a specific startup",
+        operation_summary="Retrieve Startup",
+        responses={200: StartupSerializer}
+    )
     def retrieve(self, request, pk):
         startups = Startup.objects.all()
         startup = get_object_or_404(startups, startup_id=pk)
