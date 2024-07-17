@@ -24,7 +24,7 @@ def filter_startups(query_params):
     if industry_name:
         industry = Industry.objects.filter(name=industry_name).first()
         projects = Project.objects.filter(industries=industry)
-        startup_ids = [proj.startup.startup_id for proj in projects]
+        startup_ids = projects.values_list('startup_id', flat=True)
         startups = startups.filter(pk__in=startup_ids)
     
     if max_budget:
@@ -33,7 +33,7 @@ def filter_startups(query_params):
         except ValueError:
             return []
         projects = Project.objects.filter(budget__lte=max_budget)
-        startup_ids = [proj.startup.startup_id for proj in projects]
+        startup_ids = projects.values_list('startup_id', flat=True)
         startups = startups.filter(pk__in=startup_ids)
         
     if size:
