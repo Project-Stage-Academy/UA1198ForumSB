@@ -206,7 +206,7 @@ class UserStartupListTestCase(APITestCase):
             description="desc",
             contacts=json.dumps({})
         )
-        response = self.client.post(self.url, data=post_data, headers=self.post_headers)
+        response = self.client.post(self.url, data=post_data, headers=self.post_headers, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
     
     def test_user_can_create_startup_if_namespace_is_startup(self):
