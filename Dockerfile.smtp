@@ -1,0 +1,11 @@
+FROM python:3.11-slim
+
+EXPOSE 8025
+
+RUN apt-get update && \
+    pip3 install aiosmtpd
+
+ENV PYTHONFAULTHANDLER=1 \
+    PYTHONUNBUFFERED=1
+
+CMD ["python3", "-m", "aiosmtpd", "-n", "-l", "0.0.0.0:8025"]
