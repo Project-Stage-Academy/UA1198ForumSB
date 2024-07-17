@@ -385,3 +385,105 @@ class UserStartupDetailTestCase:
         pass
 
 
+class UserInvestorListTestCase(APITestCase):
+    def setUp(self):
+        password = "Test_12345"
+        self.user = CustomUser.objects.create_user(            
+            first_name="test",
+            last_name="test",
+            email="test@gmail.com",
+            password=password
+        )
+        self.user2 = CustomUser.objects.create_user(            
+            first_name="test2",
+            last_name="test2",
+            email="test2@gmail.com",
+            password=password
+        )
+        self.investor1 = Investor.objects.create(
+            user=self.user,
+            contacts={"contact": "+380950000000"} 
+        )
+        self.investor2 = Investor.objects.create(
+            user=self.user,
+            contacts={"contact": "+380990000000"} 
+        )
+        self.namespace_selection_url = reverse('users:namespace_selection')
+        self.user_investors_url = reverse('users:user_investors', args=[self.user.user_id])
+        self.other_user_investors_url = reverse('users:user_investors', args=[self.user2.user_id])
+        user_credentials = {
+            "email": self.user.email,
+            "password": password
+        }
+        response = self.client.post(reverse('users:token_obtain_pair'), data=user_credentials)
+        refresh_token = response.data.get("refresh")
+        access_token = response.data.get("access")
+        self.client.cookies = SimpleCookie({'access': str(access_token), 'refresh': str(refresh_token)})
+        self.client_credentials_headers = {"Authorization": f"Bearer {access_token}"}
+
+    def tearDown(self):
+        CustomUser.objects.all().delete()
+        Investor.objects.all().delete()
+
+    def test_user_can_get_investors_if_namespace_is_selected(self):
+        response = self.client.post(self.namespace_selection_url, {
+            'name_space_name': 'investor',
+            'name_space_id': self.investor1.investor_id
+        }, headers=self.client_credentials_headers, format='json')
+
+        response = self.client.get(self.user_investors_url, 
+                                   headers=self.client_credentials_headers)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]['contacts']['contact'], '+380950000000')
+        self.assertEqual(response.data[1]['contacts']['contact'], '+380990000000')
+
+    def test_user_can_get_investors_if_namespace_is_not_selected(self):
+        response = self.client.get(self.user_investors_url, 
+                                   headers=self.client_credentials_headers)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+    def test_user_can_not_get_investors_if_not_authenticated(self):
+        response = self.client.get(self.user_investors_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        
+    def test_user_can_not_view_investors_of_an_other_user(self):
+        response = self.client.get(self.other_user_investors_url, 
+                                   headers=self.client_credentials_headers)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_can_create_investor_if_namespace_is_selected(self):
+        response = self.client.post(self.namespace_selection_url, {
+            'name_space_name': 'investor',
+            'name_space_id': self.investor1.investor_id
+        }, headers=self.client_credentials_headers, format='json')
+
+        response = self.client.post(self.user_investors_url, {
+            'contacts': {'contact': '+380960000000'}
+        }, headers=self.client_credentials_headers, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['contacts']['contact'], '+380960000000')
+
+    def test_user_can_create_investor_if_namespace_is_not_selected(self):
+        response = self.client.post(self.user_investors_url, {
+            'contacts': {'contact': '+380960000000'}
+        }, headers=self.client_credentials_headers, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['contacts']['contact'], '+380960000000')
+        
+    def test_user_can_not_create_investor_if_not_authenticated(self):
+        response = self.client.post(self.user_investors_url, {
+            'contacts': {'contact': '+380960000000'}
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)  
+        
+    def test_user_can_not_create_investor_for_an_other_user(self):
+        response = self.client.post(self.namespace_selection_url, {
+            'name_space_name': 'investor',
+            'name_space_id': self.investor1.investor_id
+        }, headers=self.client_credentials_headers, format='json')
+
+        response = self.client.post(self.other_user_investors_url, {
+            'contacts': {'contact': '+380960000000'}
+        }, headers=self.client_credentials_headers, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

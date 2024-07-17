@@ -27,7 +27,7 @@ class BaseNamespaceSelectedPermission(permissions.BasePermission):
     NAMESPACE = None
 
     def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
+        if request.method in SAFE_METHODS + ['POST']:
             return True
         
         payload = get_token_payload_from_cookies(request)
@@ -41,17 +41,8 @@ class IsStartupNamespaceSelected(BaseNamespaceSelectedPermission):
 
 class IsInvestorNamespaceSelected(BaseNamespaceSelectedPermission):
     NAMESPACE = 'investor'
-
-
-# class IsNamespace(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         payload = get_token_payload_from_cookies(request)
-#         namespace = payload.get('name_space_name')
-#         if namespace not in ['startup', 'investor']:
-#             raise PermissionDenied({"error": "Invalid namespace."})
-#         return True
-
-
+    
+    
 class ThisNamespace(permissions.BasePermission):
     """
         Check if namespace_id of selected namespace matches to namespace_id in request url
