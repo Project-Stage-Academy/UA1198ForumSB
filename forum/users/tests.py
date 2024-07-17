@@ -297,7 +297,7 @@ class UserStartupListTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class UserStartupDetailTestCase:
+class UserStartupDetailTestCase(APITestCase):
     def setUp(self):
         password = 'Test1234'
         self.user = CustomUser.objects.create_user(
@@ -309,7 +309,6 @@ class UserStartupDetailTestCase:
         )
         self.user.password = password
         self.user.save()
-        self.url = reverse("users:user_startups", kwargs=dict(user_id=self.user.user_id))
         user_credentials = {
             "email": self.user.email,
             "password": password
@@ -349,42 +348,83 @@ class UserStartupDetailTestCase:
         )
         self.startup1.save()
         self.startup2.save()
+        self.url = reverse("users:user_startup", kwargs=dict(
+            user_id=self.user.user_id,
+            startup_id=self.startup1.startup_id
+        ))
     
-    def user_can_view_startup_if_namespace_is_investor(self):
-        pass
+    def test_user_can_view_startup_if_namespace_is_investor(self):
+        select_namespace_data = {
+            'name_space_id': self.investor1.investor_id,
+            'name_space_name': 'investor'
+        }
+        self.client.post(
+            reverse('users:namespace_selection'),
+            data=select_namespace_data,
+            headers=self.post_headers
+        )
+        response = self.client.get(self.url, headers=self.post_headers)
 
-    def user_can_not_update_startup_if_namespace_is_investor(self):
-        pass
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("name"), 'test-startup1')
 
-    def user_can_not_delete_startup_if_namespace_is_investor(self):
-        pass
+    def test_user_can_not_update_startup_if_namespace_is_investor(self):
+        select_namespace_data = {
+            'name_space_id': self.investor1.investor_id,
+            'name_space_name': 'investor'
+        }
+        self.client.post(
+            reverse('users:namespace_selection'),
+            data=select_namespace_data,
+            headers=self.post_headers
+        )
+        patch_data = {"name": "updated-name1"}
+        response = self.client.patch(self.url, data=patch_data, headers=self.post_headers)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_can_not_delete_startup_if_namespace_is_investor(self):
+        select_namespace_data = {
+            'name_space_id': self.investor1.investor_id,
+            'name_space_name': 'investor'
+        }
+        self.client.post(
+            reverse('users:namespace_selection'),
+            data=select_namespace_data,
+            headers=self.post_headers
+        )
+        response = self.client.delete(self.url, headers=self.post_headers)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
-    def user_can_view_startup_if_namespace_is_not_selected(self):
-        pass
+    def test_user_can_view_startup_if_namespace_is_not_selected(self):
+        response = self.client.get(self.url, headers=self.post_headers)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("name"), 'test-startup1')
 
-    def user_can_not_update_startup_if_namespace_is_not_selected(self):
-        pass
+    # def user_can_not_update_startup_if_namespace_is_not_selected(self):
+    #     pass
 
-    def user_can_not_delete_startup_if_namespace_is_not_selected(self):
-        pass
+    # def user_can_not_delete_startup_if_namespace_is_not_selected(self):
+    #     pass
     
-    def test_user_can_not_update_stratup_if_an_other_is_selected(self):
-        pass
+    # def test_user_can_not_update_stratup_if_an_other_is_selected(self):
+    #     pass
 
-    def test_user_can_view_stratup_if_an_other_is_selected(self):
-        pass
+    # def test_user_can_view_stratup_if_an_other_is_selected(self):
+    #     pass
 
-    def test_user_can_delete_stratup_if_an_other_is_selected(self):
-        pass
+    # def test_user_can_delete_stratup_if_an_other_is_selected(self):
+    #     pass
 
-    def test_user_can_not_view_startup_of_an_other_user(self):
-        pass
+    # def test_user_can_not_view_startup_of_an_other_user(self):
+    #     pass
 
-    def test_user_can_not_update_startup_of_an_other_user(self):
-        pass
+    # def test_user_can_not_update_startup_of_an_other_user(self):
+    #     pass
 
-    def test_user_can_not_delete_startup_of_an_other_user(self):
-        pass
+    # def test_user_can_not_delete_startup_of_an_other_user(self):
+    #     pass
 
 
 class UserInvestorListTestCase(APITestCase):
