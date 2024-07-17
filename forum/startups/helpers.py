@@ -31,7 +31,7 @@ def filter_startups(query_params):
         try:
             max_budget = int(max_budget)
         except ValueError:
-            return []
+            return Startup.objects.none()
         projects = Project.objects.filter(budget__lte=max_budget)
         startup_ids = projects.values_list('startup_id', flat=True)
         startups = startups.filter(pk__in=startup_ids)
@@ -40,7 +40,7 @@ def filter_startups(query_params):
         try:
             size = int(size)
         except ValueError:
-            return []
+            return Startup.objects.none()
         startups = startups.filter(
             Q(size__people_count_min__lte=size) &
             Q(size__people_count_max__gt=size)
