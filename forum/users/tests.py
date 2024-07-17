@@ -38,13 +38,15 @@ class SelectNameSpaceTestCase(APITestCase):
         }
         self.investor = Investor.objects.create(
             investor_id=1,
-            user=self.user
+            user=self.user,
+            contacts=json.dumps({})
         )
         self.investor.save()
         self.startup = Startup.objects.create(
             startup_id=1,
             user=self.user,
-            name="test-startup"
+            name="test-startup",
+            contacts=json.dumps({})
         )
         self.startup.save()
 
