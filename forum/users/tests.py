@@ -411,6 +411,7 @@ class UserInvestorListTestCase(APITestCase):
         self.namespace_selection_url = reverse('users:namespace_selection')
         self.user_investors_url = reverse('users:user_investors', args=[self.user.user_id])
         self.other_user_investors_url = reverse('users:user_investors', args=[self.user2.user_id])
+        
         user_credentials = {
             "email": self.user.email,
             "password": password
