@@ -347,5 +347,41 @@ class UserStartupDetailTestCase:
         )
         self.startup1.save()
         self.startup2.save()
+    
+    def user_can_view_startup_if_namespace_is_investor(self):
+        pass
+
+    def user_can_not_update_startup_if_namespace_is_investor(self):
+        pass
+
+    def user_can_not_delete_startup_if_namespace_is_investor(self):
+        pass
+    
+    def user_can_view_startup_if_namespace_is_not_selected(self):
+        pass
+
+    def user_can_not_update_startup_if_namespace_is_not_selected(self):
+        pass
+
+    def user_can_not_delete_startup_if_namespace_is_not_selected(self):
+        pass
+    
+    def test_user_can_not_update_stratup_if_an_other_is_selected(self):
+        pass
+
+    def test_user_can_view_stratup_if_an_other_is_selected(self):
+        pass
+
+    def test_user_can_delete_stratup_if_an_other_is_selected(self):
+        pass
+
+    def test_user_can_not_view_startup_of_an_other_user(self):
+        pass
+
+    def test_user_can_not_update_startup_of_an_other_user(self):
+        pass
+
+    def test_user_can_not_delete_startup_of_an_other_user(self):
+        pass
 
 
