@@ -239,7 +239,36 @@ class UserStartupListTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_user_can_not_create_startup_for_an_other_user(self):
-        pass
+        select_namespace_data = {
+            'name_space_id': self.startup1.startup_id,
+            'name_space_name': 'startup'
+        }
+        self.client.post(
+            reverse('users:namespace_selection'),
+            data=select_namespace_data,
+            headers=self.post_headers
+        )
+        other_user = CustomUser.objects.create_user(
+            user_id=101,
+            first_name='test',
+            last_name='test',
+            email='other@gmail.com',
+            password='test'
+        )
+        self.user.save()
+        post_data = dict(
+            user=other_user.user_id,
+            name="test-startup",
+            location="UA",
+            description="desc",
+            contacts=json.dumps({})
+        )
+        response = self.client.post(self.url, data=post_data, headers=self.post_headers, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        response = other_url = f"/users/{other_user.user_id}/startups/"
+        response = self.client.post(other_url, data=post_data, headers=self.post_headers, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class UserInvestorListTestCase(APITestCase):

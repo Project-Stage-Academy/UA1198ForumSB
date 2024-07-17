@@ -72,6 +72,12 @@ class ThisUserPermission(permissions.BasePermission):
     """
     def has_permission(self, request, view):
         user_id_from_url = view.kwargs.get("user_id")
+        user_id_from_request_data = request.data.get("user_id") or request.data.get("user")
         payload = get_token_payload_from_cookies(request)
         current_user_id = payload.get('user_id')
+        if user_id_from_request_data:
+            return (
+                (current_user_id == user_id_from_url) and 
+                (current_user_id == user_id_from_request_data)
+            )
         return current_user_id == user_id_from_url
