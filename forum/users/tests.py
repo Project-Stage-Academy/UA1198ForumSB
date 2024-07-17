@@ -198,7 +198,7 @@ class UserStartupListTestCase(APITestCase):
         self.assertEqual(response.data[0].get("name"), 'test-startup1')
         self.assertEqual(response.data[1].get("name"), 'test-startup2')
 
-    def test_user_can_not_create_startup_if_namespace_is_not_selected(self):
+    def test_user_can_create_startup_if_namespace_is_not_selected(self):
         post_data = dict(
             user=self.user.user_id,
             name="test-startup3",
@@ -207,12 +207,36 @@ class UserStartupListTestCase(APITestCase):
             contacts=json.dumps({})
         )
         response = self.client.post(self.url, data=post_data, headers=self.post_headers)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
     
-    def test_user_can_create_startup_if_namespace_is_selected(self):
+    def test_user_can_create_startup_if_namespace_is_startup(self):
         select_namespace_data = {
             'name_space_id': self.startup1.startup_id,
             'name_space_name': 'startup'
+        }
+        self.client.post(
+            reverse('users:namespace_selection'),
+            data=select_namespace_data,
+            headers=self.post_headers
+        )
+        post_data = dict(
+            user=self.user.user_id,
+            name="test-startup3",
+            location="UA",
+            description="desc",
+            contacts=json.dumps({})
+        )
+        response = self.client.post(self.url, data=post_data, headers=self.post_headers, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        response = self.client.get(self.url, headers=self.post_headers)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[2].get("name"), 'test-startup3')
+    
+    def test_user_can_create_startup_if_namespace_is_investor(self):
+        select_namespace_data = {
+            'name_space_id': self.investor1.investor_id,
+            'name_space_name': 'investor'
         }
         self.client.post(
             reverse('users:namespace_selection'),
@@ -255,7 +279,7 @@ class UserStartupListTestCase(APITestCase):
             email='other@gmail.com',
             password='test'
         )
-        self.user.save()
+        other_user.save()
         post_data = dict(
             user=other_user.user_id,
             name="test-startup",
