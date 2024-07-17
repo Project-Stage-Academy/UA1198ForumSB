@@ -293,3 +293,59 @@ class UserStartupListTestCase(APITestCase):
         response = other_url = f"/users/{other_user.user_id}/startups/"
         response = self.client.post(other_url, data=post_data, headers=self.post_headers, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class UserStartupDetailTestCase:
+    def setUp(self):
+        password = 'Test1234'
+        self.user = CustomUser.objects.create_user(
+            user_id=1,
+            first_name='test',
+            last_name='test',
+            email='test@gmail.com',
+            password=''
+        )
+        self.user.password = password
+        self.user.save()
+        self.url = reverse("users:user_startups", kwargs=dict(user_id=self.user.user_id))
+        user_credentials = {
+            "email": self.user.email,
+            "password": password
+        }
+        response = self.client.post(reverse('users:token_obtain_pair'), data=user_credentials)
+        refresh_token = response.data.get("refresh")
+        access_token = response.data.get("access")
+        self.client.cookies = SimpleCookie({
+            'refresh': refresh_token,
+            'access': access_token
+        })
+        self.post_headers = {
+            "Authorization": f"Bearer {access_token}"
+        }
+        self.investor1 = Investor.objects.create(
+            investor_id=10,
+            user=self.user
+        )
+        self.investor2 = Investor.objects.create(
+            investor_id=11,
+            user=self.user
+        )
+        self.investor1.save()
+        self.investor2.save()
+
+        self.startup1 = Startup.objects.create(
+            startup_id=10,
+            user=self.user,
+            name="test-startup1",
+            contacts={}
+        )
+        self.startup2 = Startup.objects.create(
+            startup_id=11,
+            user=self.user,
+            name="test-startup2",
+            contacts={}
+        )
+        self.startup1.save()
+        self.startup2.save()
+
+
