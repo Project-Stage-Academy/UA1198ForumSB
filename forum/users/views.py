@@ -92,6 +92,7 @@ class NamespaceSelectionView(APIView):
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# This view has been created to test uesrs.permissions and can be deleted
 class UserStartupProjectView(APIView):
     permission_classes = [
         IsAuthenticated,
