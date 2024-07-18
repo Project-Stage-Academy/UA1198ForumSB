@@ -1,22 +1,13 @@
 from abc import ABC, abstractmethod
 
-from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
-
-from startups.models import Startup
-from projects.models import Project, ProjectSubscription
 from investors.models import Investor
+from projects.models import Project, ProjectSubscription
+from startups.models import Startup
+
 from .mongo_models import NamespaceInfo, Notification
-
-
-def send_message(room_name: str, message: str):
-    channel_layer = get_channel_layer()
-
-    async_to_sync(channel_layer.group_send)(
-        room_name,
-        {"type": "chat_message", "message": message}
-    )
 
 
 def send_notification(notification: Notification):
@@ -25,7 +16,11 @@ def send_notification(notification: Notification):
     for receiver in notification.receivers:
         async_to_sync(channel_layer.group_send)(
             f"notifications_{receiver.user_id}",
-            {"type": "notify_user", "message": notification.message}
+            {
+                "type": "notify_user",
+                "notification_id": str(notification.pk),
+                "message": notification.message
+            }
         )
 
 

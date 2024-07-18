@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from mongoengine import Document, EmbeddedDocument
-from mongoengine import fields
+from mongoengine import Document, EmbeddedDocument, fields
 
 
 class NamespaceInfo(EmbeddedDocument):
@@ -34,6 +33,5 @@ class Notification(Document):
 #         }
 #     ],
 #     "message": "",
-#     "status": "",
 #     "created_at": ""
 # }

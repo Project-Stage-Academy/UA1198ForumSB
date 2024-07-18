@@ -1,12 +1,12 @@
 #! /bin/env python
 
-from websocket import WebSocket
-from os import environ
+import json
 import time
+from os import environ
 
 import requests
 from dotenv import load_dotenv
-
+from websocket import WebSocket
 
 load_dotenv()
 
@@ -40,7 +40,17 @@ def get_jwt_access() -> str:
 def listen_for_notification(ws_client: WebSocket, timeout: float = 0.5):
     message_num = 1
     while True:
-        print(f"[{message_num}] {ws_client.recv()}")
+        data = json.loads(ws_client.recv())
+
+        print(f"[{message_num}] {data}")
+        ws_client.send(
+            json.dumps(
+                {
+                    "type": "notification_ack",
+                    "notification_id": data["notification_id"]
+                }
+            )
+        )
         message_num += 1
         time.sleep(timeout)
 
