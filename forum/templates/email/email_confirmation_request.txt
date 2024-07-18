@@ -1,0 +1,12 @@
+Dear {{first_name}},
+
+Thank you for registering with us. To complete the creation of your new account, please verify your email by clicking the link below:
+
+{{confirmation_email_link}}
+
+For security reasons, this link will expire in [time period, e.g., 24 hours]. If the link expires, you will need to request a new verification link.
+
+If you have any questions or need further assistance, please contact our support team.
+
+Thank you,
+    MegaForum inc.

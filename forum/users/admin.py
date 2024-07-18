@@ -1,3 +1,13 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import CustomUser, PasswordResetModel
+
+
+@admin.register(CustomUser)
+class CustomUserModelAdmin(admin.ModelAdmin):
+    ...
+
+
+@admin.register(PasswordResetModel)
+class PasswordResetAdminModel(admin.ModelAdmin):
+    ...
