@@ -7,7 +7,7 @@ SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
 
 
 def get_token_payload_from_cookies(request):
-    token = request.COOKIES.get('access')
+    token = request.COOKIES.get('access_token')
     if not token:
         raise PermissionDenied({"error": "Authentication credentials were not provided."})
     try:
