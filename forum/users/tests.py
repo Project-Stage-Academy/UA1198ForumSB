@@ -27,8 +27,8 @@ class SelectNameSpaceTestCase(APITestCase):
             "password": password
         }
         response = self.client.post(reverse('users:token_obtain_pair'), data=user_credentials)
-        refresh_token = response.data.get("refresh_token")
-        access_token = response.data.get("access_token")
+        refresh_token = response.data.get("refresh")
+        access_token = response.data.get("access")
         self.client.cookies = SimpleCookie({
             'refresh_token': refresh_token,
             'access_token': access_token
@@ -56,7 +56,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_name': 'investor'
         }
         response = self.client.post(self.url, data=post_body, headers=self.authorization_headers)
-        access_token = response.cookies.get('access').value
+        access_token = response.cookies.get('access_token').value
         access_token_obj = AccessToken(access_token)
 
         user_id = access_token_obj.payload.get("user_id")
@@ -82,7 +82,7 @@ class SelectNameSpaceTestCase(APITestCase):
             'name_space_name': 'startup'
         }
         response = self.client.post(self.url, data=post_body, headers=self.authorization_headers)
-        access_token = response.cookies.get('access').value
+        access_token = response.cookies.get('access_token').value
         access_token_obj = AccessToken(access_token)
 
         user_id = access_token_obj.payload.get("user_id")
@@ -140,8 +140,8 @@ class UserStartupListTestCase(APITestCase):
             "password": password
         }
         response = self.client.post(reverse('users:token_obtain_pair'), data=user_credentials)
-        refresh_token = response.data.get("refresh_token")
-        access_token = response.data.get("access_token")
+        refresh_token = response.data.get("refresh")
+        access_token = response.data.get("access")
         self.client.cookies = SimpleCookie({
             'refresh_token': refresh_token,
             'access_token': access_token
@@ -331,8 +331,8 @@ class UserStartupDetailTestCase(APITestCase):
             "password": password
         }
         response = self.client.post(reverse('users:token_obtain_pair'), data=user_credentials)
-        refresh_token = response.data.get("refresh_token")
-        access_token = response.data.get("access_token")
+        refresh_token = response.data.get("refresh")
+        access_token = response.data.get("access")
         self.client.cookies = SimpleCookie({
             'refresh_token': refresh_token,
             'access_token': access_token
@@ -542,8 +542,8 @@ class UserInvestorListTestCase(APITestCase):
             "password": password
         }
         response = self.client.post(reverse('users:token_obtain_pair'), data=user_credentials)
-        refresh_token = response.data.get("refresh_token")
-        access_token = response.data.get("access_token")
+        refresh_token = response.data.get("refresh")
+        access_token = response.data.get("access")
         self.client.cookies = SimpleCookie({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
         self.client_credentials_headers = {"Authorization": f"Bearer {access_token}"}
 
@@ -658,8 +658,8 @@ class UserInvestorDetailTestCase(APITestCase):
             "password": password
         }
         response = self.client.post(reverse('users:token_obtain_pair'), data=user_credentials)
-        refresh_token = response.data.get("refresh_token")
-        access_token = response.data.get("access_token")
+        refresh_token = response.data.get("refresh")
+        access_token = response.data.get("access")
         self.client.cookies = SimpleCookie({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
         self.client_credentials_headers = {"Authorization": f"Bearer {access_token}"}
 
