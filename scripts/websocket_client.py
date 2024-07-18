@@ -1,12 +1,12 @@
 #! /bin/env python
 
-from websocket import WebSocket
-from os import environ
 import time
+from os import environ
 
 import requests
 from dotenv import load_dotenv
-
+from loguru import logger
+from websocket import WebSocket, WebSocketBadStatusException
 
 load_dotenv()
 
@@ -18,6 +18,8 @@ FORUM_USER_PASSWORD = environ.get("FORUM_USER_PASSWORD")
 
 
 def get_jwt_access() -> str:
+    logger.info("Starting password auth...")
+
     response = requests.post(
         f"http://{FORUM_HOST}:{FORUM_PORT}/users/token/",
         json={
@@ -26,34 +28,50 @@ def get_jwt_access() -> str:
         }
     )
     if response.status_code != 200:
-        print("[-] Password auth failed")
+        logger.error(f"Password auth failed. Unexpected status code '{response.status_code}'")
         exit(0)
 
     access_token = response.json().get("access")
     if not access_token:
-        print("[-] There is no access token in response JSON")
+        logger.error(f"There is no access token in JSON-response \n{response.json()}\n")
         exit(0)
+
+    logger.info("Password auth was successful")
 
     return access_token
 
 
 def listen_for_notification(ws_client: WebSocket, timeout: float = 0.5):
+    logger.info("Waiting for notifications...")
+
     message_num = 1
     while True:
-        print(f"[{message_num}] {ws_client.recv()}")
+        logger.info(f"Notification: [{message_num}] {ws_client.recv()}")
         message_num += 1
         time.sleep(timeout)
 
 
 if __name__ == "__main__":
+    logger.info("Staring websocket client...")
+
     access_token = get_jwt_access()
 
     ws_client = WebSocket()
-    ws_client.connect(
-        f"ws://{FORUM_HOST}:{FORUM_PORT}/ws/notifications/",
-        header=[
-            f"Authorization: Bearer {access_token}"
-        ]
-    )
+    try:
+        ws_client.connect(
+            f"ws://{FORUM_HOST}:{FORUM_PORT}/ws/notifications/",
+            header=[
+                f"Authorization: Bearer {access_token}"
+            ]
+        )
+    except WebSocketBadStatusException as exc:
+        logger.error(f"Failed to initiate websocket connection due to \n{exc}\n")
+        exit(0)
+    except Exception as exc:
+        logger.error(f"Lol unexpected error) \n{exc}\n")
+        exit(0)
 
-    listen_for_notification(ws_client)
+    try:
+        listen_for_notification(ws_client)
+    except KeyboardInterrupt:
+        logger.info("Bye-bye 🥺🥺🥺")
