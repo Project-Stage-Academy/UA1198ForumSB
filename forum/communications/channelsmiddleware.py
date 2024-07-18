@@ -23,9 +23,6 @@ def get_user(user_id: int) -> CustomUser:
 
 
 class JwtAuthMiddleware(BaseMiddleware):
-    def __init__(self, inner):
-        super().__init__(inner)
-
     async def __call__(self, scope, receive, send):
         headers = dict(scope["headers"])
 
