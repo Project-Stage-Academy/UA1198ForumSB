@@ -45,7 +45,7 @@ class NamespaceSelectionView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        refresh_token: str = request.COOKIES.get('refresh')
+        refresh_token: str = request.COOKIES.get('refresh_token')
         
         if not refresh_token:
             return Response({"error": "Authentication credentials were not provided."}, 
@@ -75,14 +75,14 @@ class NamespaceSelectionView(APIView):
             response = Response("Namespace has been successfully updated.", 
                                 status=status.HTTP_200_OK)
             response.set_cookie(
-                'refresh',
+                'refresh_token',
                 new_refresh_token,
                 httponly=True,
                 secure=True,
                 samesite='Strict',
             )
             response.set_cookie(
-                'access',
+                'access_token',
                 new_refresh_token.access_token,
                 httponly=True,
                 secure=True,
