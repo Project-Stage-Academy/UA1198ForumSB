@@ -19,6 +19,8 @@ class Investor(models.Model):
 
 
 class InvestorStartup(models.Model):
-    investor = models.ForeignKey(Investor, on_delete=models.CASCADE, related_name="investors")
-    startup = models.ForeignKey(Startup, on_delete=models.CASCADE, related_name="startups")
+    investor = models.ForeignKey(Investor, on_delete=models.CASCADE,
+                                 related_name="saved_startups")
+    startup = models.ForeignKey(Startup, on_delete=models.CASCADE,
+                                related_name="interested_investors")
     created_at = models.DateTimeField(auto_now_add=True)
