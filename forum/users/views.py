@@ -21,15 +21,15 @@ class LogoutAndBlacklistRefreshTokenView(APIView):
     permission_classes = (IsAuthenticated,)
     def post(self, request):
         try:
-            refresh_token = request.COOKIES.get('refresh')
+            refresh_token = request.COOKIES.get('refresh_token')
             if not refresh_token:
                 return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
 
             token = RefreshToken(refresh_token)
             token.blacklist()
             response = Response(status=status.HTTP_205_RESET_CONTENT)
-            response.delete_cookie('refresh')
-            response.delete_cookie('access')
+            response.delete_cookie('refresh_token')
+            response.delete_cookie('access_token')
             return response
         except Exception as e:
             return Response({"detail": "Token is invalid or expired."}, status=status.HTTP_400_BAD_REQUEST)

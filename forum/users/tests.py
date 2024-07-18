@@ -18,8 +18,8 @@ class LogoutAPITestCase(APITestCase):
         }, format='json')
         self.access_token = response.data['access']
         self.refresh_token = response.data['refresh']
-        self.client.cookies['refresh'] = self.refresh_token
-        self.client.cookies['access'] = self.access_token
+        self.client.cookies['refresh_token'] = self.refresh_token
+        self.client.cookies['access_token'] = self.access_token
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
 
     def test_logout_with_valid_token(self):
@@ -29,7 +29,7 @@ class LogoutAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_logout_with_invalid_token(self):
-        self.client.cookies['refresh'] = 'invalidtoken'
+        self.client.cookies['refresh_token'] = 'invalidtoken'
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('detail', response.data)
