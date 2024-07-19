@@ -52,7 +52,7 @@ class UserStartupsView(APIView):
     )
     def post(self, request, user_id):
         serializer = StartupSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid() and serializer.validate_user_id(user_id):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

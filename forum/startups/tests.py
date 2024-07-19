@@ -6,6 +6,7 @@ from rest_framework import status
 from forum.tests_setup import UserSetupMixin
 from startups.models import StartupSize, Startup
 from projects.models import Project, ProjectStatus
+from users.models import CustomUser
 
 
 class StartupSizesTestCase(UserSetupMixin):
@@ -46,7 +47,7 @@ class BaseUserStartupsTestCase(UserSetupMixin):
             name='test name1',
             location='test location',
             description='test description',
-            contacts={'phone': 'test phone'},
+            contacts={'phone': 'test phone'}
         )
 
         self.startup2 = Startup.objects.create(
@@ -58,14 +59,14 @@ class BaseUserStartupsTestCase(UserSetupMixin):
             is_deleted=True
         )
 
-        startup_size = StartupSize.objects.create(
+        self.startup_size = StartupSize.objects.create(
             name="test size", people_count_min=20, people_count_max=30
         )
 
         self.startup3 = Startup.objects.create(
             user=self.test_user,
             name='test name3',
-            size=startup_size,
+            size=self.startup_size,
             location='test location',
             description='test description',
             contacts={'phone': 'test phone'}
@@ -73,18 +74,63 @@ class BaseUserStartupsTestCase(UserSetupMixin):
 
         project_status = ProjectStatus.objects.create(title='title test')
 
-        project = Project.objects.create(
+        self.project = Project.objects.create(
             startup=self.startup3, status=project_status, title='title test'
         )
 
-        self.startup3.project = project
+        self.startup3.project = self.project
         self.startup3.save()
+
+        self.other_test_user = CustomUser.objects.create_user(
+            first_name="other_test_first",
+            last_name="other_test_last",
+            email="other_test@gmail.com",
+            password="other_test_password"
+        )
 
 
 class UserStartupsTestCase(BaseUserStartupsTestCase):
 
     def test_get_startups_list(self):
         response = self.client.get(reverse('users:user_startups', kwargs={'user_id': self.test_user.user_id}))
+        expected_data = [
+            {
+                "startup_id": self.startup1.startup_id,
+                "size": None,
+                "project": None,
+                "name": self.startup1.name,
+                "location": self.startup1.location,
+                "startup_logo": self.startup1.startup_logo,
+                "description": self.startup1.description,
+                "last_updated": self.startup1.last_updated.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                "created_at": self.startup1.created_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                "contacts": self.startup1.contacts,
+                "is_deleted": self.startup1.is_deleted,
+                "user": self.test_user.user_id
+            },
+            {
+                "startup_id": self.startup3.startup_id,
+                "size": {
+                    "size_id": self.startup_size.size_id,
+                    "name": self.startup_size.name,
+                    "people_count_min": self.startup_size.people_count_min,
+                    "people_count_max": self.startup_size.people_count_max
+                },
+                "project": {
+                    "title": self.project.title,
+                    "last_updated": self.project.last_updated.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                },
+                "name": self.startup3.name,
+                "location": self.startup3.location,
+                "startup_logo": self.startup3.startup_logo,
+                "description": self.startup3.description,
+                "last_updated": self.startup3.last_updated.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                "created_at": self.startup3.created_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                "contacts": self.startup3.contacts,
+                "is_deleted": self.startup3.is_deleted,
+                "user": self.test_user.user_id
+            }
+        ]
 
         self.assertEqual(
             response.status_code,
@@ -92,9 +138,9 @@ class UserStartupsTestCase(BaseUserStartupsTestCase):
             "Status code is different from 200"
         )
         self.assertEqual(
-            len(response.json()),
-            2,
-            "The number of objects received is not equal to the expected number of startups(one has is_deleted=True)"
+            response.json(),
+            expected_data,
+            "Received json does not match the expected one"
         )
 
     def test_get_startups_empty_list(self):
@@ -119,10 +165,23 @@ class UserStartupsTestCase(BaseUserStartupsTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, "Status code is different from 201")
 
         self.assertIn('startup_id', response.json())
+        from django.shortcuts import get_object_or_404
 
         startup = Startup.objects.get(startup_id=response.json()['startup_id'])
 
+        self.assertEqual(startup.user, self.test_user)
         self.assertEqual(startup.name, 'test name4')
+        self.assertEqual(startup.location, 'test location')
+        self.assertEqual(startup.startup_logo, None)
+        self.assertEqual(startup.description, 'test description')
+        self.assertIsNotNone(startup.last_updated)
+        self.assertIsNotNone(startup.created_at)
+        self.assertEqual(startup.contacts, {'phone': 'test phone'})
+        self.assertEqual(startup.is_deleted, False)
+        self.assertEqual(startup.size, None)
+        with self.assertRaises(Project.DoesNotExist):
+            startup.project
+        self.assertEqual(startup.startup_id, response.json()['startup_id'])
 
     def test_create_startup_failed(self):
         response = self.client.post(
@@ -131,6 +190,34 @@ class UserStartupsTestCase(BaseUserStartupsTestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Status code is different from 400")
+        self.assertEqual(
+            response.json(),
+            {
+                'location': ['This field is required.'],
+                'description': ['This field is required.'],
+                'contacts': ['This field is required.']
+            },
+            "Response body does not match the expected one"
+        )
+
+    def test_create_startup_failed_bad_user_id(self):
+        response = self.client.post(
+            reverse('users:user_startups', kwargs={'user_id': self.test_user.user_id}),
+            {
+                'user': self.other_test_user.user_id,
+                'name': 'test name4',
+                'location': 'test location',
+                'description': 'test description',
+                'contacts': json.dumps({'phone': 'test phone'})
+            }
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Status code is different from 400")
+        self.assertEqual(
+            response.json(),
+            {'user': ['User does not match the one from url']},
+            "Response body does not match the expected one"
+        )
 
 
 class UserStartupTestCase(BaseUserStartupsTestCase):
@@ -174,6 +261,11 @@ class UserStartupTestCase(BaseUserStartupsTestCase):
                 self.assertEqual(
                     response.status_code, status.HTTP_404_NOT_FOUND, "Status code is different from 404"
                 )
+                self.assertEqual(
+                    response.json(),
+                    {'detail': 'No Startup matches the given query.'},
+                    "Response body does not match the expected one"
+                )
 
     def test_update_startup(self):
         response = self.client.patch(
@@ -211,6 +303,11 @@ class UserStartupTestCase(BaseUserStartupsTestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, "Status code is different from 400")
+        self.assertEqual(
+            response.json(),
+            {'name': ['Ensure this field has no more than 200 characters.']},
+            "Response body does not match the expected one"
+        )
 
         startup = Startup.objects.get(startup_id=self.startup3.startup_id)
 
@@ -232,6 +329,11 @@ class UserStartupTestCase(BaseUserStartupsTestCase):
 
                 self.assertEqual(
                     response.status_code, status.HTTP_404_NOT_FOUND, "Status code is different from 404"
+                )
+                self.assertEqual(
+                    response.json(),
+                    {'detail': 'No Startup matches the given query.'},
+                    "Response body does not match the expected one"
                 )
 
     def test_delete_startup(self):
@@ -263,4 +365,9 @@ class UserStartupTestCase(BaseUserStartupsTestCase):
 
                 self.assertEqual(
                     response.status_code, status.HTTP_404_NOT_FOUND, "Status code is different from 404"
+                )
+                self.assertEqual(
+                    response.json(),
+                    {'detail': 'No Startup matches the given query.'},
+                    "Response body does not match the expected one"
                 )
