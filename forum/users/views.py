@@ -5,33 +5,22 @@ from django.contrib.sites.shortcuts import get_current_site
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as BaseTokenObtainPairView,
     TokenRefreshView as BaseTokenRefreshView
 )
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
-from startups.models import Startup
-from startups.serializers import StartupSerializer
-
-from projects.models import Project
-from projects.serializers import ProjectSerializer
-
 from users.models import CustomUser
-from users.serializers import NamespaceSerializer
+from users.serializers import NamespaceSerializer, UserRegisterSerializer
 from users.permissions import *
 from drf_yasg.utils import swagger_auto_schema
 
 from forum import settings
-from users.models import CustomUser
-from users.serializers import UserRegisterSerializer
 from users.utils import Util
 from users.swagger_auto_schema_settings import *
+
 
 class TokenObtainPairView(BaseTokenObtainPairView):
     throttle_scope = 'token_obtain'
