@@ -20,7 +20,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        exclude = ['password']
         fields = ('user_id', 'first_name', 'last_name', 'email', 'password', 'password2', 'user_phone', 'description',)
    
     def create(self, validated_data):
