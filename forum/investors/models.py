@@ -10,6 +10,7 @@ class Investor(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     last_updated = models.DateTimeField(auto_now=True)
     contacts = models.JSONField(blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'investor'
