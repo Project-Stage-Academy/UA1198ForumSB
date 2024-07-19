@@ -13,6 +13,9 @@ class ProjectStatus(models.Model):
         db_table = 'project_status'
         verbose_name = 'ProjectStatus'
         verbose_name_plural = 'ProjectStatuses'
+    
+    def __str__(self):
+        return self.title
 
 
 class Project(models.Model):
