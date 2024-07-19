@@ -53,5 +53,6 @@ class UserInvestorView(APIView):
 
     def delete(self, request, user_id, investor_id):
         investor = get_object_or_404(Investor, user=user_id, investor_id=investor_id)
-        investor.delete()
+        investor.is_deleted = True
+        investor.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
