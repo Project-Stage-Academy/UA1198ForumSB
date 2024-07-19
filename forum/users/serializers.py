@@ -54,8 +54,12 @@ class NamespaceSerializer(serializers.Serializer):
     def validate(self, data):
         namespace_id: int = data.get('name_space_id')
         namespace_name: str = data.get('name_space_name')
+        
+        if 'user' not in self.context:
+            raise serializers.ValidationError("Context must include 'user'.")
+        
         user: CustomUser = self.context['user']
-
+                
         if namespace_name == 'investor':
             get_object_or_404(Investor, user=user, investor_id=namespace_id)
         elif namespace_name == 'startup':

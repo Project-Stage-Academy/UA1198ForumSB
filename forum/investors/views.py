@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from .models import Investor
@@ -7,7 +8,7 @@ from .serializers import InvestorSerializer
 
 from users.permissions import *
 from rest_framework.permissions import IsAuthenticated
-# Create your views here.
+
 
 class UserInvestorsView(APIView):
     permission_classes = [
@@ -19,14 +20,14 @@ class UserInvestorsView(APIView):
     def get(self, request, user_id):
         investors = get_list_or_404(Investor, user=user_id)
         serializer = InvestorSerializer(investors, many=True)
-        return Response(serializer.data, status=200)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, user_id):
         serializer = InvestorSerializer(data={**request.data, 'user': user_id})
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserInvestorView(APIView):
@@ -40,17 +41,17 @@ class UserInvestorView(APIView):
     def get(self, request, user_id, investor_id):
         investor = get_object_or_404(Investor, user=user_id, investor_id=investor_id)
         serializer = InvestorSerializer(investor)
-        return Response(serializer.data, status=200)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, user_id, investor_id):
         investor = get_object_or_404(Investor, user=user_id, investor_id=investor_id)
         serializer = InvestorSerializer(investor, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=200)
-        return Response(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, user_id, investor_id):
         investor = get_object_or_404(Investor, user=user_id, investor_id=investor_id)
         investor.delete()
-        return Response(status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
