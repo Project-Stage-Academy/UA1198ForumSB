@@ -37,6 +37,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,7 +85,23 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = "forum.asgi.application"
 WSGI_APPLICATION = 'forum.wsgi.application'
+
+# setup channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                (
+                    environ.get('FORUM_REDIS_HOST', 'localhost'),
+                    environ.get('FORUM_REDIS_PORT', 6379)
+                ),
+            ],
+        },
+    },
+}
 
 
 # Database

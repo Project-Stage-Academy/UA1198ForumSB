@@ -33,6 +33,12 @@ services:
     depends_on:
       - db
 
+  mongo:
+    image: mongo:4.4.6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+
   redis:
     container_name: forum-redis
     image: redis:alpine
@@ -46,14 +52,6 @@ services:
     env_file:
       - .env
     command: ["celery", "-A", "forum", "worker", "-l", "INFO"]
-
-  celery_beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    command: ["celery", "-A", "forum", "beat", "-l", "INFO"]
 
   dummy_smtp_server:
     container_name: dummy-smpt-server
