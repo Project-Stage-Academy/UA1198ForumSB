@@ -90,48 +90,6 @@ class NamespaceSelectionView(APIView):
             )
             return response
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
-# This view has been created to test uesrs.permissions and can be deleted
-class UserStartupProjectView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        ThisUserPermission,
-        IsStartupNamespaceSelected,
-        ThisStartup
-    ]
-
-    def get(self, request, user_id, startup_id):
-        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
-        project = get_object_or_404(Project, startup=startup)
-        serializer = StartupSerializer(project)
-        return Response(serializer.data, status=200)
-
-    def post(self, request, user_id, startup_id):
-        serializer = StartupSerializer(data={
-            **request.data,
-            'user': user_id,
-            'startup': startup_id
-        })
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-
-    def patch(self, request, user_id, startup_id):
-        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
-        project = get_object_or_404(Project, startup=startup)
-        serializer = ProjectSerializer(project, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=200)
-        return Response(serializer.errors, status=400)
-
-    def delete(self, request, user_id, startup_id):
-        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
-        project = get_object_or_404(Project, startup=startup)
-        project.delete()
-        return Response(status=204)
     
 
 class UserRegisterView(APIView):
