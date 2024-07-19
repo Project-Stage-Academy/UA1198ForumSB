@@ -19,6 +19,4 @@ urlpatterns = [
     path('email-verify/<str:token>/', views.SendEmailConfirmationView.as_view(), name='email-verify'),
     path('<int:user_id>/startups/', UserStartupsView.as_view(), name='user_startups'),
     path('<int:user_id>/startups/<int:startup_id>/', UserStartupView.as_view(), name='user_startup'),
-    path('<int:user_id>/startups/<int:startup_id>/project',
-         views.UserStartupProjectView.as_view(), name='user_startup_project'),
 ]
