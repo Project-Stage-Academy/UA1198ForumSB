@@ -14,6 +14,13 @@ from rest_framework.permissions import IsAuthenticated
 from .helpers import select_startups_by_search_string, filter_startups, get_details_about_startup
 
 
+STARTUP_BASE_PERMISSIONS = [
+    IsAuthenticated,
+    ThisUserPermission,
+    IsStartupNamespaceSelected
+]
+
+
 class StartupSizeViewSet(GenericViewSet, ListModelMixin):
     queryset = StartupSize.objects.all()
     serializer_class = StartupSizeSerializer
@@ -33,11 +40,7 @@ class StartupSizeViewSet(GenericViewSet, ListModelMixin):
 
 
 class UserStartupsView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        ThisUserPermission,
-        IsStartupNamespaceSelected
-    ]
+    permission_classes = STARTUP_BASE_PERMISSIONS
 
     @swagger_auto_schema(
         operation_description="Retrieve a list of startups",
@@ -68,10 +71,7 @@ class UserStartupsView(APIView):
 
 
 class UserStartupView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        ThisUserPermission,
-        IsStartupNamespaceSelected,
+    permission_classes = STARTUP_BASE_PERMISSIONS+[
         ThisStartup
     ]
 
@@ -125,6 +125,8 @@ class UserStartupView(APIView):
 
       
 class StartupViewSet(ViewSet):
+    #TODO only investors can view whole list of startups
+    #TODO add appropriate permission
     @swagger_auto_schema(
         operation_description="Retrieve a list of startups based on search criteria",
         operation_summary="List Startups",
