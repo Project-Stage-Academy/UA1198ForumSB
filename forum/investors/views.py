@@ -10,12 +10,15 @@ from users.permissions import *
 from rest_framework.permissions import IsAuthenticated
 
 
+INVESTOR_BASE_PERMISSIONS = [
+    IsAuthenticated,
+    ThisUserPermission,
+    IsInvestorNamespaceSelected
+]
+
+
 class UserInvestorsView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        ThisUserPermission,
-        IsInvestorNamespaceSelected
-    ]
+    permission_classes = INVESTOR_BASE_PERMISSIONS
 
     def get(self, request, user_id):
         investors = get_list_or_404(Investor, user=user_id)
@@ -31,10 +34,7 @@ class UserInvestorsView(APIView):
 
 
 class UserInvestorView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        ThisUserPermission,
-        IsInvestorNamespaceSelected,
+    permission_classes = INVESTOR_BASE_PERMISSIONS+[
         ThisInvestor
     ]
 
