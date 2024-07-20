@@ -48,6 +48,7 @@ def listen_for_notification(ws_client: WebSocket, timeout: float = 0.5):
     message_num = 1
     while True:
         data = json.loads(ws_client.recv())
+        logger.info(f"Notification: [{message_num}] {data}")
 
         ws_client.send(
             json.dumps(
@@ -57,7 +58,7 @@ def listen_for_notification(ws_client: WebSocket, timeout: float = 0.5):
                 }
             )
         )
-        logger.info(f"Notification: [{message_num}] {ws_client.recv()}")
+
         message_num += 1
         time.sleep(timeout)
 
