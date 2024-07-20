@@ -1,16 +1,17 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.mixins import ListModelMixin
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ViewSet
+from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import get_object_or_404
 
 from .models import StartupSize, Startup
 from .serializers import StartupSizeSerializer, StartupSerializer
 
 from users.permissions import *
 from rest_framework.permissions import IsAuthenticated
+from .helpers import select_startups_by_search_string, filter_startups, get_details_about_startup
 
 
 class StartupSizeViewSet(GenericViewSet, ListModelMixin):
@@ -121,3 +122,32 @@ class UserStartupView(APIView):
         startup.is_deleted = True
         startup.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+      
+class StartupViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of startups based on search criteria",
+        operation_summary="List Startups",
+        responses={200: StartupSerializer(many=True)}
+    )
+    def list(self, request):
+        search_string = request.query_params.get('search')
+        if search_string:
+            startups = select_startups_by_search_string(search_string)
+        elif request.query_params:
+            startups = filter_startups(request.query_params)
+        else:
+            startups = Startup.objects.all()
+        serializer = StartupSerializer(startups, many=True)
+        return Response(serializer.data, status=200)
+    
+    @swagger_auto_schema(
+        operation_description="Retrieve detailed information about a specific startup",
+        operation_summary="Retrieve Startup",
+        responses={200: StartupSerializer}
+    )
+    def retrieve(self, request, pk):
+        startups = Startup.objects.all()
+        startup = get_object_or_404(startups, startup_id=pk)
+        response_data = get_details_about_startup(startup)
+        return Response(response_data, status=200)
