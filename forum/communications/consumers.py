@@ -73,14 +73,24 @@ class NotificationConsumer(BaseCommunicationConsumer):
     async def receive_json(self, content: dict, **kwargs):
         notification_id = content.get("notification_id")
         if not notification_id:
-            # NOTE: we can notify user about wrong ID
-            return
+            await self.send_json(
+                {"message": "notification_id was not provided"},
+                close=True
+            )
 
         try:
             notification_id = ObjectId(notification_id)
         except InvalidId:
-            # NOTE: we can notify user about wrong ID
-            return
+            await self.send_json(
+                {"message": "Invalid notification_id was provided"},
+                close=True
+            )
+        except Exception:
+            # TODO: call logging function
+            await self.send_json(
+                {"message": "Something gone wrong, please verify if notification_id is correct"},
+                close=True
+            )
 
         Notification.objects(pk=notification_id).update(
             __raw__={
