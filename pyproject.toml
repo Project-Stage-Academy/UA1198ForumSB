@@ -19,6 +19,7 @@ channels-redis = "^4.2.0"
 pymongo = "^4.8.0"
 mongoengine = "^0.28.2"
 celery = {extras = ["redis"], version = "^5.4.0"}
+django-celery-results = "^2.5.1"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.2.5"
