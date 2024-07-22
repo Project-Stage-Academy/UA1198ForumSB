@@ -7,16 +7,19 @@ import jwt
 from django.contrib.sites.shortcuts import get_current_site
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as BaseTokenObtainPairView,
     TokenRefreshView as BaseTokenRefreshView,
 )
+
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from users.permissions import *
+
 from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
-from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
-from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
 from users.models import CustomUser
@@ -25,11 +28,13 @@ from forum.utils import build_email_message
 from .models import PasswordResetModel
 from .serializers import (
     PasswordResetRequestSerializer,
-    PasswordResetSerializer
+    PasswordResetSerializer,
+    NamespaceSerializer,
+    UserRegisterSerializer
 )
 from .throttling import PasswordResetThrottle
 from forum import settings
-from users.serializers import UserRegisterSerializer
+
 from users.utils import Util
 from users.swagger_auto_schema_settings import (
     userRegisterView_request_body,
@@ -44,7 +49,58 @@ class TokenObtainPairView(BaseTokenObtainPairView):
 
 class TokenRefreshView(BaseTokenRefreshView):
     throttle_scope = 'token_refresh'
+    
 
+class NamespaceSelectionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        refresh_token: str = request.COOKIES.get('refresh_token')
+        
+        if not refresh_token:
+            return Response({"error": "Authentication credentials were not provided."}, 
+                            status=status.HTTP_401_UNAUTHORIZED)
+            
+        try:
+            old_refresh_token = RefreshToken(refresh_token)
+        except TokenError:
+            return Response({"error": "Invalid or expired token."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+             
+        user_id = old_refresh_token.payload.get('user_id')
+        user = get_object_or_404(CustomUser, user_id=user_id)
+
+        serializer = NamespaceSerializer(data=request.data, context={'user': user})
+        if serializer.is_valid():
+            namespace_id: int = serializer.validated_data['name_space_id']
+            namespace_name: str = serializer.validated_data['name_space_name']
+
+            old_refresh_token.blacklist()
+            new_refresh_token = RefreshToken.for_user(user)
+            new_refresh_token.payload.update({
+                'name_space_id': namespace_id,
+                'name_space_name': namespace_name
+            })
+
+            response = Response("Namespace has been successfully updated.", 
+                                status=status.HTTP_200_OK)
+            response.set_cookie(
+                'refresh_token',
+                new_refresh_token,
+                httponly=True,
+                secure=True,
+                samesite='Strict',
+            )
+            response.set_cookie(
+                'access_token',
+                new_refresh_token.access_token,
+                httponly=True,
+                secure=True,
+                samesite='Strict',
+            )
+            return response
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class PasswordResetRequestView(GenericAPIView):
     serializer_class = PasswordResetRequestSerializer
@@ -156,7 +212,7 @@ class UserRegisterView(APIView):
                 return Response({"error": "An error occurred during sending email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-
+      
 class SendEmailConfirmationView(APIView):
     permission_classes = [AllowAny]
 

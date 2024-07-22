@@ -9,6 +9,12 @@ class ProjectSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class SimpleProjectSerializer(ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['title', 'last_updated']
+
+
 class ProjectSubscriptionSerializer(ModelSerializer):
     class Meta:
         model = ProjectSubscription
