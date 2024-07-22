@@ -8,6 +8,7 @@ from .serializers import InvestorSerializer, InvestorSaveStartupSerializer
 
 from users.permissions import *
 from rest_framework.permissions import IsAuthenticated
+from .permissions import InvestorSaveStartupPermission
 
 
 INVESTOR_BASE_PERMISSIONS = [
