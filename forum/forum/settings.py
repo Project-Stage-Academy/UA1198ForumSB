@@ -204,9 +204,6 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
-AUTH_USER_MODEL = 'users.CustomUser'
-
-
 # email configuration
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

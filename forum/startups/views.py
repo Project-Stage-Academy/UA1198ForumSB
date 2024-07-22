@@ -64,7 +64,7 @@ class UserStartupsView(APIView):
     )
     def post(self, request, user_id):
         serializer = StartupSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid() and serializer.validate_user_id(user_id):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -86,6 +86,7 @@ class UserStartupView(APIView):
     def get(self, request, user_id, startup_id):
         startup = get_object_or_404(
             Startup.objects.select_related('size').prefetch_related('project'),
+            user_id=user_id,
             startup_id=startup_id,
             is_deleted=False,
         )
@@ -102,7 +103,7 @@ class UserStartupView(APIView):
         }
     )
     def patch(self, request, user_id, startup_id):
-        startup = get_object_or_404(Startup, startup_id=startup_id, is_deleted=False)
+        startup = get_object_or_404(Startup, user_id=user_id, startup_id=startup_id, is_deleted=False)
         serializer = StartupSerializer(startup, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -118,7 +119,7 @@ class UserStartupView(APIView):
         }
     )
     def delete(self, request, user_id, startup_id):
-        startup = get_object_or_404(Startup, startup_id=startup_id, is_deleted=False)
+        startup = get_object_or_404(Startup, user_id=user_id, startup_id=startup_id, is_deleted=False)
         startup.is_deleted = True
         startup.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
