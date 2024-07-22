@@ -3,6 +3,7 @@ from rest_framework.throttling import ScopedRateThrottle
 
 from investors.views import UserInvestorsView, UserInvestorView
 from startups.views import UserStartupsView, UserStartupView
+
 from users import views
 
 
@@ -40,4 +41,5 @@ urlpatterns = [
         views.SendEmailConfirmationView.as_view(),
         name='email-verify'
     ),
+    path('logout/', views.LogoutAndBlacklistRefreshTokenView.as_view(), name='token_blacklist'), 
 ]

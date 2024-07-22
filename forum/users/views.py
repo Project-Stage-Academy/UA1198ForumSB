@@ -21,7 +21,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.request import Request
 from rest_framework.exceptions import NotFound
 from drf_yasg.utils import swagger_auto_schema
-
+from rest_framework.permissions import IsAuthenticated
 from users.models import CustomUser
 from forum.tasks import send_email_task
 from forum.utils import build_email_message
@@ -236,4 +236,22 @@ class SendEmailConfirmationView(APIView):
         except jwt.ExpiredSignatureError:
             return Response({"error": "Verification link expired"}, status=status.HTTP_400_BAD_REQUEST)
         except (jwt.exceptions.DecodeError, jwt.exceptions.InvalidTokenError):
-            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
+                            
+                            
+class LogoutAndBlacklistRefreshTokenView(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        try:
+            refresh_token = request.COOKIES.get('refresh_token')
+            if not refresh_token:
+                return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            response = Response(status=status.HTTP_205_RESET_CONTENT)
+            response.delete_cookie('refresh_token')
+            response.delete_cookie('access_token')
+            return response
+        except Exception as e:
+            return Response({"detail": "Token is invalid or expired."}, status=status.HTTP_400_BAD_REQUEST)
