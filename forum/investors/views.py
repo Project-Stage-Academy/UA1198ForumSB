@@ -4,7 +4,7 @@ from rest_framework import status
 from django.shortcuts import get_list_or_404, get_object_or_404
 
 from .models import Investor
-from .serializers import InvestorSerializer
+from .serializers import InvestorSerializer, InvestorSaveStartupSerializer
 
 from users.permissions import *
 from rest_framework.permissions import IsAuthenticated
