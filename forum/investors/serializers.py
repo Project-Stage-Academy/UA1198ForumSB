@@ -13,12 +13,12 @@ class InvestorSerializer(ModelSerializer):
 
 
 class InvestorSaveStartupSerializer(Serializer):
-    investor = serializers.IntegerField(required=True)
-    startup = serializers.IntegerField(required=True)
+    investor_id = serializers.IntegerField(required=True)
+    startup_id = serializers.IntegerField(required=True)
 
     def validate(self, data):
-        investor_id = data.get(investor)
-        startup_id = data.get(startup)
+        investor_id = data.get("investor_id")
+        startup_id = data.get("startup_id")
 
         investor = get_object_or_404(Investor, investor_id=investor_id)
         startup = get_object_or_404(Startup, startup_id=startup_id)
@@ -32,4 +32,4 @@ class InvestorSaveStartupSerializer(Serializer):
         return data
     
     def create(self, validated_data):
-        return InvestorStartup.objects.create(validated_data)
+        return InvestorStartup.objects.create(**validated_data)

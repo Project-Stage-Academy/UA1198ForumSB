@@ -69,8 +69,8 @@ class InvestorSaveStartupView(APIView):
         payload = get_token_payload_from_cookies(request)
         investor_id = payload.get("name_space_id")
         investor_save_startup_data = {
-            "investor": investor_id,
-            "startup": startup_id
+            "investor_id": investor_id,
+            "startup_id": startup_id
         }
         serializer = InvestorSaveStartupSerializer(data=investor_save_startup_data)
         if serializer.is_valid():
