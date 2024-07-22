@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('investors', '0002_initial'),
+        ('investors', '0003_investor_is_deleted'),
         ('startups', '0002_initial'),
     ]
 
