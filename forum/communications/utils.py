@@ -1,7 +1,6 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from rest_framework.serializers import Serializer
-from users.models import CustomUser
 
 from .serializers import (
     ChatMessageSerializer,
@@ -19,12 +18,21 @@ MESSAGE_TYPES: dict[str, Serializer] = {
 }
 
 
-def send_raw_ws_message(receiver_id: int, raw_message: dict) -> None:
+async def async_send_raw_ws_message(receiver_id: int, raw_message: dict) -> None:
     channel_layer = get_channel_layer()
 
     room_name = f"notifications_{receiver_id}"
 
-    async_to_sync(channel_layer.group_send)(room_name, raw_message)
+    try:
+        await channel_layer.group_send(room_name, raw_message)
+    except ValueError:
+        # TODO: call logging function
+        # no handler for this message type
+        ...
+
+
+def send_raw_ws_message(receiver_id: int, raw_message: dict) -> None:
+    async_to_sync(async_send_raw_ws_message)(receiver_id, raw_message)
 
 
 def _is_valid_message_type(message_type: str) -> bool:
