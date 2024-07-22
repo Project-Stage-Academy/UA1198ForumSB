@@ -6,11 +6,11 @@ from .utils import apply_serializer
 
 class BaseConsumer(AsyncJsonWebsocketConsumer):
     async def server_error(self, event: dict):
-        validated_data = apply_serializer(event, self.room_group_name)
+        validated_data = await apply_serializer(event, self.room_group_name)
         await self.send_json(validated_data, close=True)
 
     async def client_error(self, event: dict):
-        validated_data = apply_serializer(event, self.room_group_name)
+        validated_data = await apply_serializer(event, self.room_group_name)
         await self.send_json(validated_data, close=True)
 
     async def disconnect(self, code: int):
@@ -43,7 +43,7 @@ class ChatConsumer(BaseConsumer):
         )
 
     async def chat_message(self, event: dict):
-        validated_data = apply_serializer(event, self.room_group_name)
+        validated_data = await apply_serializer(event, self.room_group_name)
         await self.send_json(validated_data)
 
 
@@ -61,5 +61,5 @@ class NotificationConsumer(BaseConsumer):
         await self.accept()
 
     async def notify_user(self, event: dict):
-        validated_data = apply_serializer(event, self.room_group_name)
+        validated_data = await apply_serializer(event, self.room_group_name)
         await self.send_json(validated_data)

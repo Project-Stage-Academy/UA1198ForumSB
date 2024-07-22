@@ -1,3 +1,6 @@
+import asyncio
+from typing import Any, Awaitable
+
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from rest_framework.serializers import Serializer
@@ -11,6 +14,7 @@ from .serializers import (
 
 MESSAGE_TYPES: dict[str, Serializer] = {
     "chat_message": ChatMessageSerializer,         # used in chat implementation
+    # TODO: in 23-2 change it to WSNotificationSerializer
     "notify_user": WSServerMessageSerializer,      # for notifications
     "notification_ack": WSNotificationSerializer,  # for notification acknowledge
     "server_error": WSServerMessageSerializer,     # server side error (connection will be closed)
@@ -18,10 +22,14 @@ MESSAGE_TYPES: dict[str, Serializer] = {
 }
 
 
-async def async_send_raw_ws_message(receiver_id: int, raw_message: dict) -> None:
-    channel_layer = get_channel_layer()
+def run_in_loop(future: Awaitable) -> Any:
+    # NOTE: we can use another implementation
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(future)
 
-    room_name = f"notifications_{receiver_id}"
+
+async def send_raw_ws_message(room_name: str, raw_message: dict) -> None:
+    channel_layer = get_channel_layer()
 
     try:
         await channel_layer.group_send(room_name, raw_message)
@@ -31,15 +39,11 @@ async def async_send_raw_ws_message(receiver_id: int, raw_message: dict) -> None
         ...
 
 
-def send_raw_ws_message(receiver_id: int, raw_message: dict) -> None:
-    async_to_sync(async_send_raw_ws_message)(receiver_id, raw_message)
-
-
 def _is_valid_message_type(message_type: str) -> bool:
     return bool(MESSAGE_TYPES.get(message_type))
 
 
-def _get_serializer(
+async def _get_serializer(
     message_type: str,
     room_name: str,
     *,
@@ -47,7 +51,7 @@ def _get_serializer(
 ) -> Serializer:
     if not _is_valid_message_type(message_type):
         if by_client:
-            send_raw_ws_message(
+            await send_raw_ws_message(
                 room_name,
                 {
                     "type": "client_error",
@@ -57,7 +61,7 @@ def _get_serializer(
             return
         else:
             # TODO: call logging function
-            send_raw_ws_message(
+            await send_raw_ws_message(
                 room_name,
                 {
                     "type": "server_error",
@@ -69,7 +73,7 @@ def _get_serializer(
     return MESSAGE_TYPES[message_type]
 
 
-def apply_serializer(
+async def apply_serializer(
     raw_message: dict,
     room_name: str,
     *,
@@ -77,7 +81,7 @@ def apply_serializer(
 ) -> dict:
     if not raw_message.get("type"):
         if by_client:
-            send_raw_ws_message(
+            await send_raw_ws_message(
                 room_name,
                 {
                     "type": "client_error",
@@ -87,7 +91,7 @@ def apply_serializer(
             return
         else:
             # TODO: call logging function
-            send_raw_ws_message(
+            await send_raw_ws_message(
                 room_name,
                 {
                     "type": "server_error",
@@ -96,13 +100,14 @@ def apply_serializer(
             )
             return
 
-    serializer: Serializer = _get_serializer(
+    serializer_class: Serializer = await _get_serializer(
         raw_message["type"],
         room_name
-    )(data=raw_message)
+    )
+    serializer: Serializer = serializer_class(data=raw_message)
     if not serializer.is_valid():
         if by_client:
-            send_raw_ws_message(
+            await send_raw_ws_message(
                 room_name,
                 {
                     "type": "client_error",
@@ -112,7 +117,7 @@ def apply_serializer(
             return
         else:
             # TODO: call logging function
-            send_raw_ws_message(
+            await send_raw_ws_message(
                 room_name,
                 {
                     "type": "server_error",
