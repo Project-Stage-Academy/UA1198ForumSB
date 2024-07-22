@@ -56,3 +56,24 @@ class UserInvestorView(APIView):
         investor.is_deleted = True
         investor.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class InvestorSaveStartupView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        InvestorSaveStartupPermission
+    ]
+    
+    def post(self, request, startup_id):
+        payload = get_token_payload_from_cookies(request)
+        investor_id = payload.get("name_space_id")
+        investor_save_startup_data = {
+            "investor": investor_id,
+            "startup": startup_id
+        }
+        serializer = InvestorSaveStartupSerializer(data=investor_save_startup_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response("The startup has been successfully saved.",
+                            status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
