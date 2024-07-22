@@ -1,3 +1,8 @@
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+
+from investors.models import Investor
+from startups.models import Startup
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -68,5 +73,27 @@ class UserSerializer(ModelSerializer):
         CustomUserValidator.validate_password(data.get('password'))
         if data.get('user_phone') is not None:
             CustomUserValidator.validate_user_phone(data.get('user_phone'))
+
+        return data
+
+
+class NamespaceSerializer(serializers.Serializer):
+    name_space_id = serializers.IntegerField(required=True)
+    name_space_name = serializers.CharField(required=True)
+    
+    def validate(self, data):
+        namespace_id: int = data.get('name_space_id')
+        namespace_name: str = data.get('name_space_name')
+        user = self.context.get('user')
+
+        if not user:
+            raise serializers.ValidationError("Context must include 'user'.")
+                
+        if namespace_name == 'investor':
+            get_object_or_404(Investor, user=user, investor_id=namespace_id)
+        elif namespace_name == 'startup':
+            get_object_or_404(Startup, user=user, startup_id=namespace_id)
+        else:
+            raise serializers.ValidationError("Invalid namespace.")
 
         return data
