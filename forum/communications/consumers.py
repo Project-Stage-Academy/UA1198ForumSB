@@ -1,8 +1,22 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from users.models import CustomUser
 
+from .utils import apply_serializer
 
-class ChatConsumer(AsyncJsonWebsocketConsumer):
+
+class BaseConsumer(AsyncJsonWebsocketConsumer):
+    room_group_name: str = ""
+
+    async def server_error(self, event: dict):
+        validated_data = apply_serializer(event, self.room_group_name)
+        await self.send_json(validated_data, close=True)
+
+    async def client_error(self, event: dict):
+        validated_data = apply_serializer(event, self.room_group_name)
+        await self.send_json(validated_data, close=True)
+
+
+class ChatConsumer(BaseConsumer):
     async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = f"chat_{self.room_name}"
@@ -26,12 +40,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def chat_message(self, event: dict):
-        message = event["message"]
+        validated_data = apply_serializer(event, self.room_group_name)
+        await self.send_json(validated_data)
 
-        await self.send(text_data=message)
 
-
-class NotificationConsumer(AsyncJsonWebsocketConsumer):
+class NotificationConsumer(BaseConsumer):
     async def connect(self):
         user: CustomUser = self.scope["user"]
 
@@ -45,4 +58,5 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
 
     async def notify_user(self, event: dict):
-        await self.send_json(event)
+        validated_data = apply_serializer(event, self.room_group_name)
+        await self.send_json(validated_data)
