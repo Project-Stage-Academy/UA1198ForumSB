@@ -15,6 +15,14 @@ from communications.mongo_models import Notification
 class NotificationListView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Retrieve all notifications for the authenticated user.",
+        operation_summary="Retrieve user notifications",
+        responses={
+            200: NotificationSerializer(many=True),
+            404: openapi.Response(description="Notifications not found.")
+        }
+    )
     def get(self, request):
         notifications = Notification.objects(receivers__user_id=request.user.user_id)
         
@@ -24,6 +32,16 @@ class NotificationListView(APIView):
 class NotificationDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Mark a notification as read by removing the user from the receivers list. \
+        If no receivers are left, the notification is deleted.",
+        operation_summary="Mark notification as read",
+        responses={
+            200: NotificationSerializer(),
+            400: openapi.Response(description="Invalid notification_id."),
+            404: openapi.Response(description="Notification not found.")
+        }
+    )
     def put(self, request, notification_id):
         try:
             notification_id = ObjectId(notification_id)
