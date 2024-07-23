@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'simple_history',
     'django_celery_results',
-    'channels',
     'communications',
     'investors',
     'projects',
@@ -87,17 +86,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'forum.wsgi.application'
-ASGI_APPLICATION = 'forum.asgi.application'
-
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'host': [('127.0.0.1', 6379)],
-        },
-    },
-}
-
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
