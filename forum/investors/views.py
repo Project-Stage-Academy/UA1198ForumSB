@@ -1,8 +1,11 @@
+import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_list_or_404, get_object_or_404
 
+from startups.models import Startup
+from startups.serializers import StartupSerializer
 from .models import Investor
 from .serializers import InvestorSerializer, InvestorSaveStartupSerializer
 
@@ -64,7 +67,7 @@ class InvestorSaveStartupView(APIView):
         IsAuthenticated,
         InvestorSaveStartupPermission
     ]
-    
+
     def post(self, request, startup_id):
         payload = get_token_payload_from_cookies(request)
         investor_id = payload.get("name_space_id")
@@ -78,3 +81,36 @@ class InvestorSaveStartupView(APIView):
             return Response("The startup has been successfully saved.",
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class InvestorSavedStartupsView(APIView):
+
+    def get(self, request, user_id, investor_id):
+        order_by = request.query_params.get('order_by')
+        filter_ = request.query_params.get('filter')
+
+        if filter_:
+            try:
+                filter_data = json.loads(filter_)
+            except json.JSONDecodeError:
+                return Response({'error': 'Invalid filter parameter'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            filter_data = {}
+
+        startups = Startup.objects.filter(
+            is_deleted=False,
+            interested_investors__investor__investor_id=investor_id,
+            interested_investors__investor__user_id=user_id
+        )
+
+        for key, value in filter_data.items():
+            if key == 'size':
+                lookup = key
+            else:
+                lookup = f'{key}__icontains'
+            startups = startups.filter(**{lookup: value})
+
+        if order_by:
+            startups = startups.order_by(order_by)
+
+        serializer = StartupSerializer(startups, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
