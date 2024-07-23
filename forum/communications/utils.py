@@ -20,8 +20,7 @@ from .serializers import (
 
 MESSAGE_TYPES: dict[str, Serializer] = {
     "chat_message": ChatMessageSerializer,         # used in chat implementation
-    # TODO: in 23-2 change it to WSNotificationSerializer
-    "notify_user": WSServerMessageSerializer,      # for notifications
+    "notify_user": WSNotificationSerializer,      # for notifications
     "notification_ack": WSNotificationSerializer,  # for notification acknowledge
     "server_error": WSServerMessageSerializer,     # server side error (connection will be closed)
     "client_error": WSClientMessageSerializer      # client side error (connection will be closed)
