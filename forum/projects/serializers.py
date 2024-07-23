@@ -1,8 +1,8 @@
-from rest_framework import serializers
-from .models import Project
+from rest_framework.serializers import ModelSerializer, ValidationError
+from .models import Project, ProjectSubscription, Industry
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectSerializer(ModelSerializer):
     """
     Serializer for Project model
     """
@@ -12,10 +12,27 @@ class ProjectSerializer(serializers.ModelSerializer):
     
     def validate_budget(self, value):
         if value < 0:
-            raise serializers.ValidationError("Budget can not be negative")
+            raise ValidationError("Budget can not be negative")
         return value
 
-class HistoricalProjectSerializer(serializers.ModelSerializer):
+class SimpleProjectSerializer(ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['title', 'last_updated']
+
+
+class ProjectSubscriptionSerializer(ModelSerializer):
+    class Meta:
+        model = ProjectSubscription
+        fields = '__all__'
+
+
+class IndustrySerializer(ModelSerializer):
+    class Meta:
+        model = Industry
+        exclude = ['projects']
+
+class HistoricalProjectSerializer(ModelSerializer):
     """
     Historical records serializer
     """

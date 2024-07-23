@@ -34,7 +34,6 @@ DEBUG = bool(int(environ.get('DEBUG', 1)))
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -143,6 +143,8 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTH_USER_MODEL = 'users.CustomUser'
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -203,15 +205,14 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
-AUTH_USER_MODEL = 'users.CustomUser'
-
-
 # email configuration
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = environ.get('FORUM_EMAIL_HOST', 'localhost')
 EMAIL_PORT = environ.get('FORUM_EMAIL_PORT', '8025')
 EMAIL_HOST_USER = environ.get('FORUM_EMAIL_USER', '')
 EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')
+EMAIL_USE_TLS = environ.get('EMAIL_USE_TLS')
 
 
 # Celery configuration

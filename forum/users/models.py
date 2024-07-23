@@ -60,7 +60,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 
 class PasswordResetModel(models.Model):
-    email = models.EmailField()
+    email = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     reset_token = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 

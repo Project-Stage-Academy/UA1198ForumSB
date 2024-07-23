@@ -15,6 +15,9 @@ class ProjectStatus(models.Model):
         db_table = 'project_status'
         verbose_name = 'ProjectStatus'
         verbose_name_plural = 'ProjectStatuses'
+    
+    def __str__(self):
+        return self.title
 
 
 class Project(models.Model):
@@ -34,6 +37,9 @@ class Project(models.Model):
         db_table = 'project'
         verbose_name = 'Project'
         verbose_name_plural = 'Projects'
+
+    def __str__(self) -> str:
+        return f"{self.project_id} {self.title}"
 
 
 class ProjectSubscription(models.Model):
@@ -57,4 +63,3 @@ class Industry(models.Model):
         db_table = 'industry'
         verbose_name = 'Industry'
         verbose_name_plural = 'Industries'
-
