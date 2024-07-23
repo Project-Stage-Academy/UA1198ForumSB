@@ -1,3 +1,5 @@
+from typing import Any
+
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from users.models import CustomUser
 
@@ -5,12 +7,19 @@ from .utils import apply_serializer
 
 
 class BaseConsumer(AsyncJsonWebsocketConsumer):
+    async def send_json(self, content: Any, close: bool = False):
+        try:
+            await super().send_json(content, close)
+        except Exception:
+            # TODO: call logging function
+            ...
+
     async def server_error(self, event: dict):
-        validated_data = await apply_serializer(event, self.room_group_name)
+        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
         await self.send_json(validated_data, close=True)
 
     async def client_error(self, event: dict):
-        validated_data = await apply_serializer(event, self.room_group_name)
+        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
         await self.send_json(validated_data, close=True)
 
     async def disconnect(self, code: int):
@@ -43,7 +52,7 @@ class ChatConsumer(BaseConsumer):
         )
 
     async def chat_message(self, event: dict):
-        validated_data = await apply_serializer(event, self.room_group_name)
+        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
         await self.send_json(validated_data)
 
 
@@ -61,5 +70,5 @@ class NotificationConsumer(BaseConsumer):
         await self.accept()
 
     async def notify_user(self, event: dict):
-        validated_data = await apply_serializer(event, self.room_group_name)
+        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
         await self.send_json(validated_data)

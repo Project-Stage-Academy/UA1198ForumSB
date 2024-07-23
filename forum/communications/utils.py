@@ -79,6 +79,20 @@ async def apply_serializer(
     *,
     by_client: bool = True
 ) -> dict:
+    """
+        Automatically determine which serializer should be used to validate data.
+        Return validated data.
+
+    Args:
+        raw_message (dict): websocket message
+        room_name (str): _description_
+        by_client (bool, optional): Side where websocket message built. Defaults to True.
+        If the message is built by the client and any error occurs client is responsible for it.
+
+    Returns:
+        dict: Validated data
+    """
+
     if not raw_message.get("type"):
         if by_client:
             await send_raw_ws_message(
