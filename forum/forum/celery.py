@@ -9,7 +9,7 @@ from .tasks import password_reset_ttl_task
 
 environ.setdefault('DJANGO_SETTINGS_MODULE', 'forum.settings')
 
-app = Celery('projects', include=['projects.tasks'])
+app = Celery('forum', include=['forum.tasks'])
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
