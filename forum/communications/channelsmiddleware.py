@@ -30,7 +30,10 @@ class JwtAuthMiddleware(BaseMiddleware):
             raise AuthenticationFailed("Auth header was not provided")
 
         try:
-            _, token_key = headers[AUTH_HEADER_KEY].decode().split()
+            header, token_key = headers[AUTH_HEADER_KEY].decode().split()
+            if header != "Bearer":
+                raise AuthenticationFailed("Bearer token should be provided")
+
             jwt_payload: dict = AccessToken(token_key).payload
 
             scope["user"] = await get_user(jwt_payload["user_id"])

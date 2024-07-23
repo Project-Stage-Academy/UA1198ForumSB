@@ -31,13 +31,15 @@ class Startup(models.Model):
     startup_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="startups")
     name = models.CharField(max_length=200)
+    # TODO: change the size field as a required field. Migration with defined startup sizes must be added.
     size = models.ForeignKey(StartupSize, on_delete=models.CASCADE, blank=True, null=True, related_name="startup_sizes")
-    location = models.CharField(max_length=200, blank=True, null=True)
+    location = models.CharField(max_length=200)
     startup_logo = models.BinaryField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField()
     last_updated = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    contacts = models.JSONField(blank=True, null=True)
+    contacts = models.JSONField()
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'startup'
