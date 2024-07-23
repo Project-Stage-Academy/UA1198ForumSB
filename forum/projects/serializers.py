@@ -14,18 +14,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         if value < 0:
             raise serializers.ValidationError("Budget can not be negative")
         return value
-    
-    def create(self, validated_data):
-        """
-        Create and return a new Project instance, given the validated data.
-        """
-        return Project.objects.create(**validated_data)
-    
-    def update(self, instance, validated_data):
-        """
-        Update and return an existing Project instance, given the validated data.
-        """
-        return super().update(instance, validated_data)
 
 class HistoricalProjectSerializer(serializers.ModelSerializer):
     """
@@ -34,3 +22,4 @@ class HistoricalProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project.history.model
         fields = '__all__'
+        
