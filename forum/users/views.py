@@ -1,46 +1,46 @@
 from os import environ
 
+import jwt
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-import jwt
-from django.contrib.sites.shortcuts import get_current_site
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import (
     TokenObtainPairView as BaseTokenObtainPairView,
+)
+from rest_framework_simplejwt.views import (
     TokenRefreshView as BaseTokenRefreshView,
 )
 
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from users.permissions import *
-
-from rest_framework.generics import GenericAPIView
-from rest_framework.request import Request
-from rest_framework.exceptions import NotFound
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework.permissions import IsAuthenticated
-from users.models import CustomUser
+from forum import settings
 from forum.tasks import send_email_task
 from forum.utils import build_email_message
-from .models import PasswordResetModel
-from .serializers import (
-    PasswordResetRequestSerializer,
-    PasswordResetSerializer,
-    NamespaceSerializer,
-    UserRegisterSerializer
-)
-from .throttling import PasswordResetThrottle
-from forum import settings
-
-from users.utils import Util
+from users.models import CustomUser
+from users.permissions import *
 from users.swagger_auto_schema_settings import (
+    sendEmailConfirmationView_responses,
     userRegisterView_request_body,
     userRegisterView_responses,
-    sendEmailConfirmationView_responses
 )
+from users.utils import Util
+
+from .models import PasswordResetModel
+from .serializers import (
+    NamespaceSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetSerializer,
+    UserRegisterSerializer,
+)
+from .throttling import PasswordResetThrottle
 
 
 class TokenObtainPairView(BaseTokenObtainPairView):
@@ -236,11 +236,12 @@ class SendEmailConfirmationView(APIView):
         except jwt.ExpiredSignatureError:
             return Response({"error": "Verification link expired"}, status=status.HTTP_400_BAD_REQUEST)
         except (jwt.exceptions.DecodeError, jwt.exceptions.InvalidTokenError):
-            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST
-                            
-                            
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class LogoutAndBlacklistRefreshTokenView(APIView):
     permission_classes = (IsAuthenticated,)
+
     def post(self, request):
         try:
             refresh_token = request.COOKIES.get('refresh_token')

@@ -20,6 +20,7 @@ pymongo = "^4.8.0"
 mongoengine = "^0.28.2"
 celery = {extras = ["redis"], version = "^5.4.0"}
 django-celery-results = "^2.5.1"
+django-simple-history = "^3.7.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.2.5"
