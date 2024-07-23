@@ -8,6 +8,7 @@ from rest_framework import status
 
 from .models import StartupSize, Startup
 from .serializers import StartupSizeSerializer, StartupSerializer
+from investors.models import InvestorStartup
 
 from users.permissions import *
 from rest_framework.permissions import IsAuthenticated
@@ -154,3 +155,17 @@ class StartupViewSet(ViewSet):
         startup = get_object_or_404(startups, startup_id=pk)
         response_data = get_details_about_startup(startup)
         return Response(response_data, status=200)
+
+
+class UnsaveStartupView(APIView):
+
+    def delete(self, request, startup_id):
+        payload = get_token_payload_from_cookies(request)
+        investor_id = payload.get("name_space_id")
+        try:
+            startup = InvestorStartup.objects.get(startup_id=startup_id, investor_id=investor_id)
+            startup.delete()
+        except InvestorStartup.DoesNotExist:
+            return Response({'error': 'Subscription is not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
