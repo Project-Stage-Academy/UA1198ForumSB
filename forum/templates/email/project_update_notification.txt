@@ -1,0 +1,12 @@
+Hello,
+
+The project "{{ project_title }}" has been updated. Here are the changes:
+
+{% for field, values in changes.items %}
+{{ field|capfirst }}:
+  - Old: {{ values.old }}
+  - New: {{ values.new }}
+{% endfor %}
+
+Thank you,
+{{ startap_name }}
