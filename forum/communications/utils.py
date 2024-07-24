@@ -14,16 +14,17 @@ from .mongo_models import NamespaceInfo, Notification
 from .serializers import (
     ChatMessageSerializer,
     WSClientMessageSerializer,
+    WSNotificationAckSerializer,
     WSNotificationSerializer,
     WSServerMessageSerializer,
 )
 
 MESSAGE_TYPES: dict[str, Serializer] = {
-    "chat_message": ChatMessageSerializer,         # used in chat implementation
-    "notify_user": WSNotificationSerializer,      # for notifications
-    "notification_ack": WSNotificationSerializer,  # for notification acknowledge
-    "server_error": WSServerMessageSerializer,     # server side error (connection will be closed)
-    "client_error": WSClientMessageSerializer      # client side error (connection will be closed)
+    "chat_message": ChatMessageSerializer,            # used in chat implementation
+    "notify_user": WSNotificationSerializer,          # for notifications
+    "notification_ack": WSNotificationAckSerializer,  # for notification acknowledge
+    "server_error": WSServerMessageSerializer,        # server side error (connection will be closed)
+    "client_error": WSClientMessageSerializer         # client side error (connection will be closed)
 }
 
 

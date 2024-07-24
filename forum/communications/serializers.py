@@ -19,5 +19,14 @@ class WSClientMessageSerializer(BaseWSMessageSerializer):
     ...
 
 
-class WSNotificationSerializer(BaseWSMessageSerializer):
+class WSBaseNotificationSerializer(BaseWSMessageSerializer):
     notification_id = serializers.CharField(required=True)
+
+
+class WSNotificationSerializer(WSBaseNotificationSerializer):
+    initiator = serializers.DictField(required=True)
+    created_at = serializers.DateTimeField(required=True)
+
+
+class WSNotificationAckSerializer(WSBaseNotificationSerializer):
+    ...
