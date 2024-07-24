@@ -5,6 +5,10 @@ from django.core.mail import send_mail
 from django.db.models.functions import Now
 from celery import shared_task
 
+from projects.models import Project, ProjectSubscription
+
+from .utils import  build_email_message
+
 
 @shared_task(bind=True)
 def send_email_task(
@@ -20,7 +24,6 @@ def send_email_task(
         sender,
         receivers
     )
-
 
 @shared_task(bind=True)
 def password_reset_ttl_task(self):

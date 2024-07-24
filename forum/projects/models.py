@@ -3,6 +3,8 @@ from startups.models import Startup
 from investors.models import Investor
 from django.utils import timezone
 
+from simple_history.models import HistoricalRecords
+
 
 class ProjectStatus(models.Model):
     status_id = models.AutoField(primary_key=True)
@@ -28,7 +30,8 @@ class Project(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     description = models.TextField(blank=True, null=True)
-    budget = models.PositiveIntegerField(blank=True, null=True)
+    budget = models.IntegerField(blank=True, null=True)
+    history = HistoricalRecords()
 
     class Meta:
         db_table = 'project'

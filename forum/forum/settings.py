@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from datetime import timedelta
-from pathlib import Path
 from os import environ
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -37,6 +37,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,12 +49,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'simple_history',
     'django_celery_results',
     'communications',
     'investors',
     'projects',
     'startups',
-    'users'
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'forum.urls'
@@ -83,7 +87,23 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = "forum.asgi.application"
 WSGI_APPLICATION = 'forum.wsgi.application'
+
+# setup channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                (
+                    environ.get('FORUM_REDIS_HOST', 'localhost'),
+                    environ.get('FORUM_REDIS_PORT', 6379)
+                ),
+            ],
+        },
+    },
+}
 
 
 # Database
