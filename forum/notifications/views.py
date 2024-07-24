@@ -10,6 +10,8 @@ from drf_yasg import openapi
 from .serializers import NotificationSerializer
 
 from communications.mongo_models import Notification
+from users.permissions import get_token_payload_from_cookies
+
 
 
 class NotificationListView(APIView):
@@ -20,11 +22,17 @@ class NotificationListView(APIView):
         operation_summary="Retrieve user notifications",
         responses={
             200: NotificationSerializer(many=True),
-            404: openapi.Response(description="Notifications not found.")
+            400: openapi.Response(description="Bad request."),
         }
     )
     def get(self, request):
-        notifications = Notification.objects(receivers__user_id=request.user.user_id)
+        payload = get_token_payload_from_cookies(request)
+        user_id = payload.get('user_id')
+        
+        if not user_id:
+            return Response({"error": "User ID not found in token payload."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        notifications = Notification.objects(receivers__user_id=user_id)
         
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -38,7 +46,7 @@ class NotificationDetailView(APIView):
         operation_summary="Mark notification as read",
         responses={
             200: NotificationSerializer(),
-            400: openapi.Response(description="Invalid notification_id."),
+            400: openapi.Response(description="Bad request."),
             404: openapi.Response(description="Notification not found.")
         }
     )
@@ -46,9 +54,15 @@ class NotificationDetailView(APIView):
         try:
             notification_id = ObjectId(notification_id)
         except InvalidId:
-            return Response({"error": "Invalid notification_id."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid notification ID."}, status=status.HTTP_400_BAD_REQUEST)
 
-        notification = Notification.objects(pk=notification_id, receivers__user_id=request.user.user_id)
+        payload = get_token_payload_from_cookies(request)
+        user_id = payload.get('user_id')
+        
+        if not user_id:
+            return Response({"error": "User ID not found in token payload."}, status=status.HTTP_400_BAD_REQUEST)
+
+        notification = Notification.objects(pk=notification_id, receivers__user_id=user_id)
         if not notification:
             return Response({"error": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)
         notification_obj = notification.first()
@@ -56,7 +70,7 @@ class NotificationDetailView(APIView):
         notification.update_one(
             __raw__={
                 "$pull": {
-                    "receivers": {"user_id": request.user.user_id}
+                    "receivers": {"user_id": user_id}
                 }
             }
         )

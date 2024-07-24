@@ -7,7 +7,8 @@ from websocket_client import get_jwt_access, FORUM_HOST, FORUM_PORT
 def get_notifications(access_token):
     response = requests.get(
         f"http://{FORUM_HOST}:{FORUM_PORT}/notifications/",
-        headers={"Authorization": f"Bearer {access_token}"}
+        headers={"Authorization": f"Bearer {access_token}"},
+        cookies={"access_token": access_token}
     )
     if response.status_code == 200:
         logger.info("Notifications:")
@@ -20,7 +21,8 @@ def get_notifications(access_token):
 def mark_notification_as_read(access_token, notification_id):
     response = requests.put(
         f"http://{FORUM_HOST}:{FORUM_PORT}/notifications/{notification_id}/",
-        headers={"Authorization": f"Bearer {access_token}"}
+        headers={"Authorization": f"Bearer {access_token}"},
+        cookies={"access_token": access_token}
     )
     if response.status_code == 200:
         logger.info("Notification marked as read:")
