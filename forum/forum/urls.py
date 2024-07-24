@@ -42,4 +42,5 @@ urlpatterns = [
     path('startups/', include('startups.urls')),
     path('startups/projects/', include('projects.urls')),
     path('users/', include('users.urls')),
+    path('startups/projects/', include('projects.urls')),
 ]

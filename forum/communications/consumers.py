@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
@@ -7,6 +8,8 @@ from users.models import CustomUser
 
 from communications.mongo_models import Notification
 
+from .utils import apply_serializer
+
 
 class BaseCommunicationConsumer(ABC, AsyncJsonWebsocketConsumer):
     @abstractmethod
@@ -14,17 +17,38 @@ class BaseCommunicationConsumer(ABC, AsyncJsonWebsocketConsumer):
         ...
 
     @abstractmethod
-    async def disconnect(self, code):
-        ...
-
-    @abstractmethod
     async def receive_json(self, content: dict, **kwargs):
         ...
+
+    async def send_json(self, content: Any, close: bool = False):
+        try:
+            await super().send_json(content, close)
+        except Exception:
+            # TODO: call logging function
+            ...
+
+    async def server_error(self, event: dict):
+        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
+        await self.send_json(validated_data, close=True)
+
+    async def client_error(self, event: dict):
+        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
+        await self.send_json(validated_data, close=True)
+
+    async def disconnect(self, code: int):
+        await self.channel_layer.group_discard(
+            self.room_group_name, self.channel_name
+        )
 
 
 class ChatConsumer(BaseCommunicationConsumer):
     async def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        self.room_name = self.scope["url_route"]["kwargs"].get("room_name")
+        if self.room_name is None:
+            await self.close(
+                reason="Query parameter 'room_name' was not provided"
+            )
+
         self.room_group_name = f"chat_{self.room_name}"
 
         await self.channel_layer.group_add(
@@ -32,11 +56,6 @@ class ChatConsumer(BaseCommunicationConsumer):
         )
 
         await self.accept()
-
-    async def disconnect(self, code: int):
-        await self.channel_layer.group_discard(
-            self.room_group_name, self.channel_name
-        )
 
     async def receive_json(self, content: dict, **kwargs):
         message = content["message"]
@@ -46,9 +65,8 @@ class ChatConsumer(BaseCommunicationConsumer):
         )
 
     async def chat_message(self, event: dict):
-        message = event["message"]
-
-        await self.send(text_data=message)
+        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
+        await self.send_json(validated_data)
 
 
 class NotificationConsumer(BaseCommunicationConsumer):
@@ -101,4 +119,5 @@ class NotificationConsumer(BaseCommunicationConsumer):
         )
 
     async def notify_user(self, event: dict):
-        await self.send_json(event)
+        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
+        await self.send_json(validated_data)

@@ -21,3 +21,4 @@ class ProjectSubscriptionModelAdmin(admin.ModelAdmin):
 @admin.register(Industry)
 class IndustryModelAdmin(admin.ModelAdmin):
     ...
+    
