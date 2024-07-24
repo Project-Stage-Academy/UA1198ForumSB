@@ -158,9 +158,9 @@ def send_notification(notification: Notification):
             {
                 "type": "notify_user",
                 "notification_id": str(notification.pk),
-                "initiator": notification.initiator,
+                "initiator": notification.initiator.to_mongo().to_dict(),
                 "message": notification.message,
-                "created_at": notification.created_at
+                "created_at": str(notification.created_at)
             }
         )
 

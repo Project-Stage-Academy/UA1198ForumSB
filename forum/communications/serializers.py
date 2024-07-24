@@ -25,7 +25,7 @@ class WSBaseNotificationSerializer(BaseWSMessageSerializer):
 
 class WSNotificationSerializer(WSBaseNotificationSerializer):
     initiator = serializers.DictField(required=True)
-    created_at = serializers.DateTimeField(required=True)
+    created_at = serializers.CharField(required=True)
 
 
 class WSNotificationAckSerializer(WSBaseNotificationSerializer):
