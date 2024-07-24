@@ -157,7 +157,9 @@ def send_notification(notification: Notification):
             {
                 "type": "notify_user",
                 "notification_id": str(notification.pk),
-                "message": notification.message
+                "initiator": notification.initiator,
+                "message": notification.message,
+                "created_at": notification.created_at
             }
         )
 
