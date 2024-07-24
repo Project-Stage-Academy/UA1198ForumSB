@@ -1,8 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from .views import StartupSizeViewSet, StartupViewSet, UnsaveStartupView
-from investors.views import InvestorSaveStartupView
+from .views import StartupSizeViewSet, StartupViewSet
+from investors.views import InvestorSaveStartupView, UnsaveStartupView
 
 router = DefaultRouter()
 router.register('', StartupViewSet, basename='startup')
