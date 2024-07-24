@@ -8,7 +8,6 @@ from rest_framework import status
 
 from .models import StartupSize, Startup
 from .serializers import StartupSizeSerializer, StartupSerializer
-from investors.models import InvestorStartup
 
 from users.permissions import *
 from rest_framework.permissions import IsAuthenticated
