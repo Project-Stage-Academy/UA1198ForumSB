@@ -1,10 +1,9 @@
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
-
-from .models import ProjectSubscription, Investor
-
-from forum.tasks import build_email_message, send_email_task
 from startups.models import Startup
+
+from forum.tasks import send_email_task
+from forum.utils import build_email_message
+
+from .models import Investor, ProjectSubscription
 
 
 def notify_investors_via_email(project, changes):
@@ -27,4 +26,3 @@ def notify_investors_via_email(project, changes):
         sender="from@example.com",
         receivers=recipients,
     )
-    
