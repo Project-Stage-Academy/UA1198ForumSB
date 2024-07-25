@@ -41,5 +41,7 @@ urlpatterns = [
         views.SendEmailConfirmationView.as_view(),
         name='email-verify'
     ),
-    path('logout/', views.LogoutAndBlacklistRefreshTokenView.as_view(), name='token_blacklist'), 
+
+    path('login/', views.UserLoginView.as_view(), name='login'),
+    path('logout/', views.LogoutAndBlacklistRefreshTokenView.as_view(), name='token_blacklist'),
 ]

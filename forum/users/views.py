@@ -4,6 +4,8 @@ import jwt
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import login
+from django.http import JsonResponse
 from django.urls import reverse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -26,11 +28,13 @@ from forum.tasks import send_email_task
 from forum.utils import build_email_message
 from users.models import CustomUser
 from users.permissions import *
+
 from users.swagger_auto_schema_settings import (
     sendEmailConfirmationView_responses,
     userRegisterView_request_body,
     userRegisterView_responses,
 )
+from users.serializers import UserRegisterSerializer,UserLoginSerializer,CustomTokenRefreshSerializer
 from users.utils import Util
 
 from .models import PasswordResetModel
@@ -43,13 +47,32 @@ from .serializers import (
 from .throttling import PasswordResetThrottle
 
 
+
 class TokenObtainPairView(BaseTokenObtainPairView):
     throttle_scope = 'token_obtain'
 
 
 class TokenRefreshView(BaseTokenRefreshView):
     throttle_scope = 'token_refresh'
-    
+    serializer_class = CustomTokenRefreshSerializer
+
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            return JsonResponse({'detail': 'Refresh token not found in cookies'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data={'refresh': refresh_token})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return JsonResponse({'detail': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        response = Response(serializer.validated_data, status=status.HTTP_200_OK)
+        response.set_cookie('access_token', serializer.validated_data['access'], httponly=True, secure=True)
+        if 'refresh' in serializer.validated_data:
+            response.set_cookie('refresh_token', serializer.validated_data['refresh'], httponly=True, secure=True)
+        return response
 
 class NamespaceSelectionView(APIView):
     permission_classes = [IsAuthenticated]
@@ -238,6 +261,26 @@ class SendEmailConfirmationView(APIView):
         except (jwt.exceptions.DecodeError, jwt.exceptions.InvalidTokenError):
             return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 
+class UserLoginView(APIView):
+    serializer_class = UserLoginSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+
+        user_data = serializer.validated_data
+        login(request, user_data)
+        refresh = RefreshToken.for_user(user_data)
+        data = {
+            "email": user_data.email,
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            }
+
+        response = Response(data, status=status.HTTP_200_OK)
+        response.set_cookie('access_token', str(refresh.access_token), httponly=True, secure=True)
+        response.set_cookie('refresh_token', str(refresh), httponly=True, secure=True)
+        return response
 
 class LogoutAndBlacklistRefreshTokenView(APIView):
     permission_classes = (IsAuthenticated,)
