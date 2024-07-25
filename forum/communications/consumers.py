@@ -6,9 +6,8 @@ from bson.objectid import ObjectId
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from users.models import CustomUser
 
-from communications.mongo_models import Notification
-
-from .utils import apply_serializer
+from .mongo_models import Notification
+from .utils import AutoSerializer
 
 
 class BaseCommunicationConsumer(ABC, AsyncJsonWebsocketConsumer):
@@ -28,11 +27,13 @@ class BaseCommunicationConsumer(ABC, AsyncJsonWebsocketConsumer):
             ...
 
     async def server_error(self, event: dict):
-        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
+        auto_serializer = AutoSerializer(event, self.room_group_name)
+        validated_data = await auto_serializer.apply_for_server_message()
         await self.send_json(validated_data, close=True)
 
     async def client_error(self, event: dict):
-        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
+        auto_serializer = AutoSerializer(event, self.room_group_name)
+        validated_data = await auto_serializer.apply_for_server_message()
         await self.send_json(validated_data, close=True)
 
     async def disconnect(self, code: int):
@@ -65,7 +66,8 @@ class ChatConsumer(BaseCommunicationConsumer):
         )
 
     async def chat_message(self, event: dict):
-        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
+        auto_serializer = AutoSerializer(event, self.room_group_name)
+        validated_data = await auto_serializer.apply_for_server_message()
         await self.send_json(validated_data)
 
 
@@ -89,15 +91,11 @@ class NotificationConsumer(BaseCommunicationConsumer):
         )
 
     async def receive_json(self, content: dict, **kwargs):
-        notification_id = content.get("notification_id")
-        if not notification_id:
-            await self.send_json(
-                {"message": "notification_id was not provided"},
-                close=True
-            )
+        auto_serializer = AutoSerializer(content, self.room_group_name)
+        validated_data = await auto_serializer.apply_for_client_message()
 
         try:
-            notification_id = ObjectId(notification_id)
+            notification_id = ObjectId(validated_data["notification_id"])
         except InvalidId:
             await self.send_json(
                 {"message": "Invalid notification_id was provided"},
@@ -119,5 +117,6 @@ class NotificationConsumer(BaseCommunicationConsumer):
         )
 
     async def notify_user(self, event: dict):
-        validated_data = await apply_serializer(event, self.room_group_name, by_client=False)
+        auto_serializer = AutoSerializer(event, self.room_group_name)
+        validated_data = await auto_serializer.apply_for_server_message()
         await self.send_json(validated_data)
