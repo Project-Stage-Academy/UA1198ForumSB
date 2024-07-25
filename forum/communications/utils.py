@@ -79,14 +79,16 @@ class AutoSerializer:
         self.raw_message = raw_message
         self.room_name = room_name
 
-    def _is_valid_message_type(self) -> bool:
-        return bool(self.MESSAGE_TYPES.get(self.raw_message["type"]))
-
-    async def _get_serializer(self) -> Serializer:
+    def _has_field_type(self) -> None:
         if not self.raw_message.get("type"):
             raise MessageTypeError()
 
-        if not self._is_valid_message_type(self.raw_message["type"]):
+    def _is_valid_message_type(self) -> bool:
+        self._has_field_type()
+        return bool(self.MESSAGE_TYPES.get(self.raw_message["type"]))
+
+    async def _get_serializer(self) -> Serializer:
+        if not self._is_valid_message_type():
             raise MessageTypeError()
 
         return self.MESSAGE_TYPES[self.raw_message["type"]]

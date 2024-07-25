@@ -7,7 +7,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from users.models import CustomUser
 
 from .mongo_models import Notification
-from .utils import AutoSerializer
+from .utils import AutoSerializer, ClientErrorBuilder
 
 
 class BaseCommunicationConsumer(ABC, AsyncJsonWebsocketConsumer):
@@ -94,19 +94,19 @@ class NotificationConsumer(BaseCommunicationConsumer):
         auto_serializer = AutoSerializer(content, self.room_group_name)
         validated_data = await auto_serializer.apply_for_client_message()
 
+        client_error_builder = ClientErrorBuilder()
+
         try:
             notification_id = ObjectId(validated_data["notification_id"])
         except InvalidId:
-            await self.send_json(
-                {"message": "Invalid notification_id was provided"},
-                close=True
-            )
+            client_error_builder.build("Invalid notification_id was provided")
+            await client_error_builder.send(self.room_group_name)
+            return
         except Exception:
             # TODO: call logging function
-            await self.send_json(
-                {"message": "Something gone wrong, please verify if notification_id is correct"},
-                close=True
-            )
+            client_error_builder.build("Something gone wrong, please verify if notification_id is correct")
+            await client_error_builder.send(self.room_group_name)
+            return
 
         Notification.objects(pk=notification_id).update(
             __raw__={

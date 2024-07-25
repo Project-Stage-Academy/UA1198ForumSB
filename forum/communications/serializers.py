@@ -28,5 +28,6 @@ class WSNotificationSerializer(WSBaseNotificationSerializer):
     created_at = serializers.CharField(required=True)
 
 
-class WSNotificationAckSerializer(WSBaseNotificationSerializer):
-    ...
+class WSNotificationAckSerializer(serializers.Serializer):
+    type = serializers.CharField(required=True)
+    notification_id = serializers.CharField(required=True)
