@@ -1,6 +1,4 @@
-import asyncio
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -26,12 +24,6 @@ MESSAGE_TYPES: dict[str, Serializer] = {
     "server_error": WSServerMessageSerializer,        # server side error (connection will be closed)
     "client_error": WSClientMessageSerializer         # client side error (connection will be closed)
 }
-
-
-def run_in_loop(future: Awaitable) -> Any:
-    # NOTE: we can use another implementation
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(future)
 
 
 async def send_raw_ws_message(room_name: str, raw_message: dict) -> None:
