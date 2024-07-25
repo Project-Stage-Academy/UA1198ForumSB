@@ -1,9 +1,9 @@
 from datetime import timedelta
 from os import environ
 
+from celery import shared_task
 from django.core.mail import send_mail
 from django.db.models.functions import Now
-from celery import shared_task
 
 
 @shared_task(bind=True)
@@ -20,7 +20,6 @@ def send_email_task(
         sender,
         receivers
     )
-
 
 @shared_task(bind=True)
 def password_reset_ttl_task(self):

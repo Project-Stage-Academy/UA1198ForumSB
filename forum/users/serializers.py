@@ -1,4 +1,10 @@
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+
+from investors.models import Investor
+from startups.models import Startup
+
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.password_validation import validate_password
@@ -76,7 +82,6 @@ class UserSerializer(ModelSerializer):
 
         return data
 
-
 class UserLoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
@@ -117,5 +122,24 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
             refresh.set_exp()
 
             data['refresh'] = str(refresh)
+        return data
 
+class NamespaceSerializer(serializers.Serializer):
+    name_space_id = serializers.IntegerField(required=True)
+    name_space_name = serializers.CharField(required=True)
+    
+    def validate(self, data):
+        namespace_id: int = data.get('name_space_id')
+        namespace_name: str = data.get('name_space_name')
+        user = self.context.get('user')
+
+        if not user:
+            raise serializers.ValidationError("Context must include 'user'.")
+                
+        if namespace_name == 'investor':
+            get_object_or_404(Investor, user=user, investor_id=namespace_id)
+        elif namespace_name == 'startup':
+            get_object_or_404(Startup, user=user, startup_id=namespace_id)
+        else:
+            raise serializers.ValidationError("Invalid namespace.")
         return data
