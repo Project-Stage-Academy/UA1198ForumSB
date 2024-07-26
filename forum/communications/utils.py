@@ -10,7 +10,7 @@ from rest_framework.serializers import Serializer
 from startups.models import Startup
 
 from .exceptions import BaseNotificationException, InvalidDataError, MessageTypeError
-from .mongo_models import NamespaceInfo, Notification
+from .mongo_models import NamespaceEnum, NamespaceInfo, Notification
 from .serializers import (
     ChatMessageSerializer,
     WSClientMessageSerializer,
@@ -176,8 +176,8 @@ class NotificationManager(ABC):
 
 
 class StartupNotificationManager(NotificationManager):
-    NAMESPACE_NAME = "startup"
-    NAMESPACE_RECEIVERS_NAME = "investor"
+    NAMESPACE_NAME = NamespaceEnum.STARTUP
+    NAMESPACE_RECEIVERS_NAME = NamespaceEnum.INVESTOR
 
     def _create_receivers_namespaces(self) -> list[NamespaceInfo]:
         receivers: list[NamespaceInfo] = []
@@ -202,8 +202,8 @@ class StartupNotificationManager(NotificationManager):
 
 
 class InvestorNotificationManager(NotificationManager):
-    NAMESPACE_NAME = "investor"
-    NAMESPACE_RECEIVERS_NAME = "startup"
+    NAMESPACE_NAME = NamespaceEnum.INVESTOR
+    NAMESPACE_RECEIVERS_NAME = NamespaceEnum.STARTUP
 
     def _create_receivers_namespaces(self) -> list[NamespaceInfo]:
         receivers: list[NamespaceInfo] = []
