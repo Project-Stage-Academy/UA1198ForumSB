@@ -6,12 +6,11 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from users.permissions import get_token_payload_from_cookies
 
 from .serializers import NotificationSerializer
 
 from communications.mongo_models import Notification
-from users.permissions import get_token_payload_from_cookies
-
 
 
 class NotificationListView(APIView):
@@ -36,6 +35,7 @@ class NotificationListView(APIView):
         
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class NotificationDetailView(APIView):
     permission_classes = [IsAuthenticated]

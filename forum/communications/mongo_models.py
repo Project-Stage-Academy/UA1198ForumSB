@@ -1,11 +1,17 @@
 from datetime import datetime
+from enum import Enum
 
 from mongoengine import Document, EmbeddedDocument, fields
 
 
+class NamespaceEnum(Enum):
+    STARTUP = "startup"
+    INVESTOR = "investor"
+
+
 class NamespaceInfo(EmbeddedDocument):
     user_id = fields.LongField()
-    namespace = fields.StringField(required=True)
+    namespace = fields.EnumField(NamespaceEnum, required=True)
     namespace_id = fields.LongField()
 
 
