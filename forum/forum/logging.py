@@ -21,17 +21,20 @@ class ColoredFormatter(logging.Formatter):
     ) -> None:
         super().__init__(fmt, datefmt, style, validate, defaults=defaults)
         self.FORMATS = {
-            logging.DEBUG: self.grey + self._fmt + self.reset,
-            logging.INFO: self.green + self._fmt + self.reset,
-            logging.WARNING: self.yellow + self._fmt + self.reset,
-            logging.ERROR: self.red + self._fmt + self.reset,
-            logging.CRITICAL: self.magenta + self._fmt + self.reset
+            logging.DEBUG: logging.Formatter(self.grey + self._fmt + self.reset),
+            logging.INFO: logging.Formatter(self.green + self._fmt + self.reset),
+            logging.WARNING: logging.Formatter(self.yellow + self._fmt + self.reset),
+            logging.ERROR: logging.Formatter(self.red + self._fmt + self.reset),
+            logging.CRITICAL: logging.Formatter(self.magenta + self._fmt + self.reset)
         }
 
     def format(self, record: logging.LogRecord) -> str:
         log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt)
-        return formatter.format(record)
+
+        if not log_fmt:
+            return self.FORMATS.get(logging.INFO)
+
+        return log_fmt.format(record)
 
 
 logger = logging.getLogger("django")
