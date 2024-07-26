@@ -3,14 +3,14 @@ from datetime import datetime
 from mongoengine import Document, EmbeddedDocument, fields, CASCADE
 
 class NamespaceInfo(EmbeddedDocument):
-    user_id = fields.LongField()
+    user_id = fields.LongField(required=True)
     namespace = fields.StringField(required=True)
-    namespace_id = fields.LongField()
+    namespace_id = fields.LongField(required=True)
 
 
 class Notification(Document):
     initiator = fields.EmbeddedDocumentField(NamespaceInfo, required=True)
-    receivers = fields.EmbeddedDocumentListField(NamespaceInfo)
+    receivers = fields.EmbeddedDocumentListField(NamespaceInfo, required=True)
     message = fields.StringField(required=True, max_length=255)
     created_at = fields.DateTimeField(default=datetime.now)
     
