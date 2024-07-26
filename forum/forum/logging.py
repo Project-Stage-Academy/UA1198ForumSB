@@ -1,5 +1,5 @@
 import logging
-from typing import Literal
+from typing import Dict, Literal, Optional
 
 
 class ColoredFormatter(logging.Formatter):
@@ -12,12 +12,12 @@ class ColoredFormatter(logging.Formatter):
 
     def __init__(
         self,
-        fmt: str | None = None,
-        datefmt: str | None = None,
-        style: Literal['%'] | Literal['{'] | Literal['$'] = "%",
+        fmt: Optional[str] = None,
+        datefmt: Optional[str] = None,
+        style: Literal['%', '{', '$'] = '%',
         validate: bool = True,
         *,
-        defaults=None
+        defaults: Optional[Dict] = None
     ) -> None:
         super().__init__(fmt, datefmt, style, validate, defaults=defaults)
         self.FORMATS = {
@@ -28,7 +28,7 @@ class ColoredFormatter(logging.Formatter):
             logging.CRITICAL: self.magenta + self._fmt + self.reset
         }
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
