@@ -165,7 +165,6 @@ class UserStartupsTestCase(BaseUserStartupsTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, "Status code is different from 201")
 
         self.assertIn('startup_id', response.json())
-        from django.shortcuts import get_object_or_404
 
         startup = Startup.objects.get(startup_id=response.json()['startup_id'])
 
