@@ -1,3 +1,16 @@
-from django.shortcuts import render
+from rest_framework.views import APIView
 
-# Create your views here.
+
+class CreateConversationView(APIView):
+    def post(request):
+        pass
+
+
+class SendMessageView(APIView):
+    def post(request):
+        pass
+
+
+class MessagesListView(APIView):
+    def get(request, conversation_id):
+        pass
