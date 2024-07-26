@@ -12,14 +12,14 @@ class Notification(Document):
     initiator = fields.EmbeddedDocumentField(NamespaceInfo, required=True)
     receivers = fields.EmbeddedDocumentListField(NamespaceInfo, required=True)
     message = fields.StringField(required=True, max_length=255)
-    created_at = fields.DateTimeField(default=datetime.now)
+    created_at = fields.DateTimeField(default=datetime.utcnow)
     
 
 class Room(Document):
     name = fields.StringField(max_length=128, unique=True, required=True)
     participants_id = fields.ListField(fields.IntField(), required=True)
-    created_at = fields.DateTimeField(default=datetime.now)
-    updated_at = fields.DateTimeField(default=datetime.now)
+    created_at = fields.DateTimeField(default=datetime.utcnow)
+    updated_at = fields.DateTimeField(default=datetime.utcnow)
 
 
 class Message(Document):
@@ -27,29 +27,8 @@ class Message(Document):
     namespace_id = fields.IntField(required=True)
     namespace_name = fields.StringField(required=True)
     content = fields.StringField(required=True)
-    timestamp = fields.DateTimeField(default=datetime.now)
+    timestamp = fields.DateTimeField(default=datetime.utcnow)
 
     def save(self, *args, **kwargs):
-        self.room.update(updated_at=datetime.now())
+        self.room.update(updated_at=datetime.utcnow())
         super().save(*args, **kwargs)
-
-
-# Notification schema
-# {
-#     "initiator": {
-#         "namespace": "",
-#         "namespace_id": 0
-#     },
-#     "receivers": [
-#         {
-#             "namespace": "",
-#             "namespace_id": 0
-#         },
-#         {
-#             "namespace": "",
-#             "namespace_id": 0
-#         }
-#     ],
-#     "message": "",
-#     "created_at": ""
-# }
