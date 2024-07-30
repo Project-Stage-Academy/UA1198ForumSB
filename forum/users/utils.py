@@ -3,7 +3,7 @@ import smtplib
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
-logging.basicConfig(format="%(name)s - %(levelname)s - %(message)s", level=logging.DEBUG)
+logger = logging.getLogger("django")
 
 class Util:
     @staticmethod
@@ -24,7 +24,7 @@ class Util:
             email.send()
             return True
         except smtplib.SMTPException as e:
-            logging.error(f'SMTP error occurred: {e}')
+            logger.error(f"SMTP error occurred: {e}")
         except Exception as e:
-            logging.error(f"An error occurred during sending email to {user_data['first_name']}: {str(e)}")
+            logger.error(f"An error occurred during sending email to {user_data['first_name']}: {str(e)}")
         return False
