@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  forum
+  namespace: default
+  labels:
+    app:  forum
+spec:
+  selector:
+    matchLabels:
+      app: forum
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app:  forum
+    spec:
+      containers:
+      - name:  forum
+        image:  nginx:latest
+        ports:
+        - containerPort:  80
+          name:  forum
+      restartPolicy: Always
