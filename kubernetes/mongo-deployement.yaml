@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: forum-mongo
+  namespace: default
+spec:
+  selector:
+    app: forum-mongo
+  type: ClusterIP
+  ports:
+  - name: forum-mongo
+    protocol: TCP
+    port: 27017
+    targetPort: 27017
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  forum-mongo
+  namespace: default
+  labels:
+    app:  forum-mongo
+spec:
+  selector:
+    matchLabels:
+      app: forum-mongo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app:  forum-mongo
+    spec:
+      containers:
+      - name:  forum-mongo
+        image:  mongo:4.4.24
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: forum-secret
+              key: mongo_initdb_root_username
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: forum-secret
+              key: mongo_initdb_root_password
+        ports:
+        - containerPort:  27017
+          name:  forum-mongo
+        volumeMounts:
+        - name: mongo-volume
+          mountPath: /data/db
+      #  for now, all data will be stored on the same machine
+      volumes:
+        - name: mongo-volume
+          hostPath:
+            path: /mnt/volumes
+      restartPolicy: Always
