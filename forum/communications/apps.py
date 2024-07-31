@@ -5,7 +5,7 @@ from forum.config import EnvConfig
 
 from mongoengine import connect
 
-logger = logging.getLogger("django")
+from forum.logging import logger
 
 
 class CommunicationsConfig(AppConfig):

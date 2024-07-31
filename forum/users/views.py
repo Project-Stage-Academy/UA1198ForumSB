@@ -35,7 +35,6 @@ from users.swagger_auto_schema_settings import (
     userRegisterView_responses,
 )
 from users.serializers import UserRegisterSerializer,UserLoginSerializer,CustomTokenRefreshSerializer
-from users.utils import Util
 
 from .models import PasswordResetModel
 from .serializers import (
@@ -155,7 +154,7 @@ class PasswordResetRequestView(GenericAPIView):
                     "reset_link": environ.get('FORUM_PASSWORD_RESET_LINK') + reset_token
                 }
             ),
-            sender="from@example.com",
+            sender=settings.EMAIL_HOST_USER,
             receivers=[user.email],
         )
 
@@ -221,18 +220,22 @@ class UserRegisterView(APIView):
             for key, value in user_data.items():
                 token[key] = str(value)
 
-            message_data = {
-                'subject': 'Verify your email',
-                'from_email': settings.EMAIL_HOST_USER,
-                'to_email': user_data['email']
-            }
             domain = get_current_site(request).domain
             verification_link = reverse('users:email-verify', kwargs={'token': str(token)})
-            email_sent = Util.send_email(domain, verification_link, message_data, user_data)
-            if email_sent:
-                return Response("Verification link was sent to your email", status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "An error occurred during sending email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            send_email_task.delay(
+                subject="Email Verification Request",
+                body=build_email_message(
+                    "email/email_confirmation_request.txt",
+                    {
+                        "first_name": user_data['first_name'],
+                        "confirmation_email_link": domain + verification_link
+                    }
+                ),
+                sender=settings.EMAIL_HOST_USER,
+                receivers=[user_data['email']],
+            )
+            return Response("Verification link was sent to your email", status=status.HTTP_200_OK)
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
       
