@@ -1,9 +1,3 @@
-from bson import ObjectId
-from bson.errors import InvalidId
-
-from communications.mongo_models import Notification
-from forum.config import ERROR_MESSAGES
-
 class NotificationService:
     @staticmethod
     def mark_notification_as_read(notification, user_id):
