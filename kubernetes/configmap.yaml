@@ -5,7 +5,7 @@ metadata:
   namespace: default
 data:
   forum_db_name: "forum_db"
-  forum_db_host: "megaforum-db-1"
+  forum_db_host: "forum-psql"
   forum_db_port: "5432"
 
   django_settings_module: "forum.settings"
@@ -22,6 +22,6 @@ data:
 
   forum_password_reset_link: "http://link/"
 
-  forum_mongo_host: "megaforum-mongo-1"
+  forum_mongo_host: "forum-mongo"
   forum_mongo_port: "27017"
   forum_mongo_db_name: "forum_db"
