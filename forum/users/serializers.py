@@ -1,13 +1,19 @@
+from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from investors.models import Investor
 from startups.models import Startup
+
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueValidator
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import CustomUser
 from users.validators import CustomUserValidator
@@ -75,6 +81,49 @@ class PasswordResetSerializer(serializers.Serializer):
         return data
 
 
+class UserLoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password']
+
+    def validate(self, data):
+        email = data.get("email")
+        password = data.get("password")
+        request = self.context.get('request')
+
+        if email and password:
+            user = authenticate(request=request, email=email, password=password)
+            if not user:
+                raise AuthenticationFailed("Unable to log in with provided credentials. Please try again)")
+        else:
+            raise AuthenticationFailed("Email and password  are required")
+
+        return data
+
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        refresh = RefreshToken(attrs['refresh'])
+
+        data = {'access': str(refresh.access_token)}
+
+        if api_settings.ROTATE_REFRESH_TOKENS:
+            if api_settings.BLACKLIST_AFTER_ROTATION:
+                try:
+                    refresh.blacklist()
+                except AttributeError:
+                    pass
+
+            refresh.set_jti()
+            refresh.set_exp()
+
+            data['refresh'] = str(refresh)
+        return data
+
+
 class NamespaceSerializer(serializers.Serializer):
     name_space_id = serializers.IntegerField(required=True)
     name_space_name = serializers.CharField(required=True)
@@ -93,5 +142,4 @@ class NamespaceSerializer(serializers.Serializer):
             get_object_or_404(Startup, user=user, startup_id=namespace_id)
         else:
             raise serializers.ValidationError("Invalid namespace.")
-
         return data

@@ -1,6 +1,8 @@
+from enum import Enum
 from datetime import datetime
 
 from mongoengine import Document, EmbeddedDocument, fields, CASCADE
+
 
 class BaseTimestampModel(Document):
     created_at = fields.DateTimeField(default=datetime.utcnow)
@@ -9,10 +11,15 @@ class BaseTimestampModel(Document):
         'abstract': True,
     }
     
+    
+class NamespaceEnum(Enum):
+    STARTUP = "startup"
+    INVESTOR = "investor"
+    
 
 class NamespaceInfo(EmbeddedDocument):
     user_id = fields.LongField(required=True)
-    namespace = fields.StringField(required=True)
+    namespace = fields.EnumField(NamespaceEnum, required=True)
     namespace_id = fields.LongField(required=True)
 
 

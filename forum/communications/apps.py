@@ -1,5 +1,4 @@
 import logging
-from os import environ
 
 from django.apps import AppConfig
 from forum.config import EnvConfig
