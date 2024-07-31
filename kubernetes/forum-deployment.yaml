@@ -8,8 +8,8 @@ spec:
     app: forum
   ports:
   - protocol: TCP
-    port: 80
-    targetPort: 80
+    port: 8000
+    targetPort: 8000
 
 ---
 
@@ -34,7 +34,7 @@ spec:
         - name:  forum
           image: luckymode/mega-forum:latest
           ports:
-            - containerPort: 8080
+            - containerPort: 8000
           env:
             - name: FORUM_DB_NAME
               valueFrom:

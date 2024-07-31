@@ -18,7 +18,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mongo-data
+  name: mongo-pv-claim
 spec:
   accessModes:
     - ReadWriteOnce
@@ -68,5 +68,5 @@ spec:
       volumes:
         - name: mongo-data
           persistentVolumeClaim:
-            claimName: mongo-data
+            claimName: mongo-pv-claim
       restartPolicy: Always
