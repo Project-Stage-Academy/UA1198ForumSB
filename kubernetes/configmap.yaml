@@ -4,47 +4,43 @@ metadata:
   name: forum-configmap
   namespace: default
 data:
-  forum_db_name: forum_db
-  forum_db_user: postgres
-  forum_db_password: postgres
-  forum_db_host: megaforum-db-1
+  forum_db_name: "forum_db"
+  forum_db_user: "postgres"
+  forum_db_password: "postgres"
+  forum_db_host: "megaforum-db-1"
 
-  forum_db_port: 5432
-  secret_key: asdlakdlakld
+  forum_db_port: "5432"
+  secret_key: "asdlakdlakld"
 
-  django_settings_module: forum.settings
+  django_settings_module: "forum.settings"
 
-  forum_email_host: dummy-smpt-server
-  forum_email_port: 8025
-  forum_email_user: 
-  forum_email_user_password: 
+  forum_email_host: "dummy-smpt-server"
+  forum_email_port: "8025"
+  forum_email_user: "email@gmail.com"
+  forum_email_user_password: "password"
 
-  forum_redis_host: forum-redis
-  forum_redis_port: 6379
+  forum_redis_host: "forum-redis"
+  forum_redis_port: "6379"
 
-  forum_celery_broker_url: redis://forum-redis:6379/0
+  forum_celery_broker_url: "redis://forum-redis:6379/0"
 
-  token_refresh_rate: 1000/hour
+  token_refresh_rate: "1000/hour"
 
-  forum_password_reset_link: http://link/
+  forum_password_reset_link: "http://link/"
 
-  pgadmin_default_email: admin@gmail.com
-  pgadmin_default_password: admin
+  pgadmin_default_email: "admin@gmail.com"
+  pgadmin_default_password: "admin"
 
-  web_port: 8080
-  pgadmin_port: 8081
-  redis_port: 6379
+  forum_host: "localhost"
+  forum_port: "8080"
+  forum_user_email: "admin@gmail.com"
+  forum_user_password: "admin"
 
-  forum_host: localhost
-  forum_port: 8080
-  forum_user_email: admin@gmail.com
-  forum_user_password: admin
+  mongo_initdb_root_username: "admin"
+  mongo_initdb_root_password: "admin"
 
-  mongo_initdb_root_username: admin
-  mongo_initdb_root_password: admin
-
-  forum_mongo_host: megaforum-mongo-1
-  forum_mongo_port: 27017
-  forum_mongo_db_name: forum_db
-  forum_mongo_user_name: admin
-  forum_mongo_user_password: admin
+  forum_mongo_host: "megaforum-mongo-1"
+  forum_mongo_port: "27017"
+  forum_mongo_db_name: "forum_db"
+  forum_mongo_user_name: "admin"
+  forum_mongo_user_password: "admin"
