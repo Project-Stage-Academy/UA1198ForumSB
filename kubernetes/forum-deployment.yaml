@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name:  forum
-        image:  nginx:latest
+        image:  luckymode/mega-forum:latest
         ports:
         - containerPort:  80
           name:  forum
