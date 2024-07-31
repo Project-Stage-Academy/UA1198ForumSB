@@ -10,12 +10,14 @@ def get_notifications(access_token):
         headers={"Authorization": f"Bearer {access_token}"},
         cookies={"access_token": access_token}
     )
-    if response.status_code == 200:
-        logger.info("Notifications:")
-        logger.info(json.dumps(response.json(), indent=4))
-        return response.json()
-    else:
+    if response.status_code != 200:
         logger.error(f"Failed to get notifications: {response.status_code}")
+        logger.error(response.text)
+        exit(1)
+
+    logger.info("Notifications:")
+    logger.info(json.dumps(response.json(), indent=4))
+    return response.json()
 
 
 def mark_notification_as_read(access_token, notification_id):
@@ -24,11 +26,13 @@ def mark_notification_as_read(access_token, notification_id):
         headers={"Authorization": f"Bearer {access_token}"},
         cookies={"access_token": access_token}
     )
-    if response.status_code == 200:
-        logger.info("Notification marked as read:")
-        logger.info(json.dumps(response.json(), indent=4))
-    else:
+    if response.status_code != 200:
         logger.error(f"Failed to mark notification as read: {response.status_code}")
+        logger.error(response.text)
+        exit(1)
+
+    logger.info("Notification marked as read:")
+    logger.info(json.dumps(response.json(), indent=4))
 
 
 if __name__ == "__main__":
@@ -37,6 +41,6 @@ if __name__ == "__main__":
     notifications = get_notifications(access_token)
 
     if notifications:
-        first_notification_id = notifications[0]["id"]
+        first_notification_id = notifications[0]["notification_id"]
         
         mark_notification_as_read(access_token, first_notification_id)
