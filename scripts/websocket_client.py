@@ -1,5 +1,6 @@
 #! /bin/env python
 
+import json
 import time
 from os import environ
 from typing import Any
@@ -58,7 +59,18 @@ def listen_for_notification(ws_client: WebSocket, timeout: float = 0.5):
 
     message_num = 1
     while True:
-        logger.info(f"Notification: [{message_num}] {ws_client.recv()}")
+        data = json.loads(ws_client.recv())
+        logger.info(f"Notification: [{message_num}] {data}")
+
+        ws_client.send(
+            json.dumps(
+                {
+                    "type": "notification_ack",
+                    "notification_id": data["notification_id"]
+                }
+            )
+        )
+
         message_num += 1
         time.sleep(timeout)
 

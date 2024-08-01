@@ -1,3 +1,5 @@
+from forum import settings
+
 from startups.models import Startup
 
 from forum.tasks import send_email_task
@@ -23,6 +25,6 @@ def notify_investors_via_email(project, changes):
     send_email_task.delay(
         subject=f"Update on Project: {project.title}",
         body=email_body,
-        sender="from@example.com",
+        sender=settings.EMAIL_HOST_USER,
         receivers=recipients,
     )

@@ -33,6 +33,14 @@ services:
     depends_on:
       - db
 
+  mongo:
+    image: mongo:4.4.6
+    volumes:
+      - mongodbdata:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+
   redis:
     container_name: forum-redis
     image: redis:alpine
@@ -64,3 +72,4 @@ services:
 
 volumes:
   postgres_data:
+  mongodbdata:

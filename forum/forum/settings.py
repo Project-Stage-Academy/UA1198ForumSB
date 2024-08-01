@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'simple_history',
     'django_celery_results',
     'communications',
+    'notifications',
     'investors',
     'projects',
     'startups',
@@ -231,10 +232,37 @@ EMAIL_HOST = environ.get('FORUM_EMAIL_HOST', 'localhost')
 EMAIL_PORT = environ.get('FORUM_EMAIL_PORT', '8025')
 EMAIL_HOST_USER = environ.get('FORUM_EMAIL_USER', '')
 EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')
-EMAIL_USE_TLS = environ.get('EMAIL_USE_TLS')
+EMAIL_USE_TLS = environ.get('FORUM_EMAIL_USE_TLS')
 
 
 # Celery configuration
 
 CELERY_BROKER_URL = environ.get('FORUM_CELERY_BROKER_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = 'django-db'
+
+
+# Logging configuration
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "colored_default": {
+            "format": "[%(asctime)s] | %(name)s (%(process)d) | %(levelname)s: %(message)s (%(pathname)s:%(lineno)d)",
+            "class": "forum.logging.ColoredFormatter",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": environ.get("FORUM_LOGGING_LEVEL", "INFO"),
+            "class": "logging.StreamHandler",
+            "formatter": "colored_default",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "propagate": True,
+        },
+    },
+}
