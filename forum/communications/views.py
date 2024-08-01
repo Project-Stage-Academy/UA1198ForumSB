@@ -6,8 +6,9 @@ from .serializers import RoomSerializer, ChatMessageSerializer
 
 
 class CreateConversationView(APIView):
-    def post(request):
+    def post(self, request):
         serializer = RoomSerializer(data=request.data)
+        print(request.data)
         if serializer.is_valid():
             new_room = Room(**serializer.data)
             new_room.save()
@@ -16,12 +17,12 @@ class CreateConversationView(APIView):
 
 
 class ConversationsListView(APIView):
-    def get(request):
+    def get(self, request):
         pass
 
 
 class SendMessageView(APIView):
-    def post(request):
+    def post(self, request):
         serializer = ChatMessageSerializer(data=request.data)
         if serializer.is_valid():
             new_message = Message(**serializer.data)
@@ -32,7 +33,7 @@ class SendMessageView(APIView):
 
 
 class MessagesListView(APIView):
-    def get(request, conversation_id):
+    def get(self, request, conversation_id):
         messages = Message.objects.filter(room__id = conversation_id)
         serializer = ChatMessageSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

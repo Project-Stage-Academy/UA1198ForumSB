@@ -12,8 +12,6 @@ class RoomSerializer(serializers.Serializer):
     participants_id = serializers.ListField(
         child=serializers.IntegerField(required=True)
     )
-    created_at = serializers.DateTimeField()
-    updated_at = serializers.DateTimeField()
 
     def validate(self, data):
         participants_id = data.get("participants_id")
