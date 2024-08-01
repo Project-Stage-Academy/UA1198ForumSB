@@ -19,8 +19,8 @@ class NotificationSerializer(serializers.Serializer):
     url = serializers.SerializerMethodField()
 
     def get_url(self, obj):
-        namespace = obj.initiator.namespace
-        user_id = obj.initiator.user_id
-        namespace_id = obj.initiator.namespace_id
-
-        return URLGenerator.generate_url(namespace, user_id, namespace_id)
+        return URLGenerator.generate_url(
+            namespace=obj.initiator.namespace,
+            user_id=obj.initiator.user_id,
+            namespace_id=obj.initiator.namespace_id
+        )

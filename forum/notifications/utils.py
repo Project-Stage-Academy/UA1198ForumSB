@@ -15,14 +15,16 @@ logger = logging.getLogger("django")
 
 class URLGenerator:
     @staticmethod
-    def generate_url(namespace: str, user_id: int, namespace_id: int) -> str|None:
+    def generate_url(namespace: str, **kwargs) -> str | None:
         try:
             namespace_value = NamespaceEnum(namespace).name.lower()
             pattern = URL_PATTERNS.get(namespace_value)
             if pattern:
-                return pattern.format(user_id=user_id, namespace_id=namespace_id)
+                return pattern.format(**kwargs)
         except ValueError:
-            logger.error(f"Passed invalid NamespaceEnum: {namespace}")
+            logger.error(f"Invalid namespace: {namespace}")
+        except KeyError as e:
+            logger.error(f"Missing key for URL pattern: {e}")
         return None
     
     
