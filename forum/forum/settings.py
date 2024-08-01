@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'simple_history',
     'django_celery_results',
     'communications',
+    'notifications',
     'investors',
     'projects',
     'startups',
@@ -231,7 +232,7 @@ EMAIL_HOST = environ.get('FORUM_EMAIL_HOST', 'localhost')
 EMAIL_PORT = environ.get('FORUM_EMAIL_PORT', '8025')
 EMAIL_HOST_USER = environ.get('FORUM_EMAIL_USER', '')
 EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')
-EMAIL_USE_TLS = environ.get('EMAIL_USE_TLS')
+EMAIL_USE_TLS = environ.get('FORUM_EMAIL_USE_TLS')
 
 
 # Celery configuration

@@ -108,13 +108,18 @@ class NotificationConsumer(BaseCommunicationConsumer):
             await client_error_builder.send(self.room_group_name)
             return
 
-        Notification.objects(pk=notification_id).update(
+        notification = Notification.objects(pk=notification_id)
+        notification_obj = notification.first()
+        notification.update(
             __raw__={
                 "$pull": {
                     "receivers": {"user_id": self.user_id}
                 }
             }
         )
+        
+        if not notification_obj.reload().receivers:
+            notification_obj.delete()
 
     async def notify_user(self, event: dict):
         auto_serializer = AutoSerializer(event, self.room_group_name)
