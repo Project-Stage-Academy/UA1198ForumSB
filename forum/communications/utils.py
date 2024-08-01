@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any
 
 from asgiref.sync import async_to_sync
@@ -221,3 +222,41 @@ class InvestorNotificationManager(NotificationManager):
 
     def get_namespace_id(self) -> int:
         return self.namespace.investor_id
+
+
+class ChatNotificationManager(NotificationManager):
+    def __init__(self, namespace_obj: Investor | Startup, room) -> None:
+        super().__init__(namespace_obj)
+        self.room = room
+
+    @abstractmethod
+    def get_receiver_user_id_by_namespace_id(self, receiver_id):
+        ...
+
+    def _create_receivers_namespaces(self) -> list[NamespaceInfo]:
+        receivers: list[NamespaceInfo] = []
+
+        receiver_ids = deepcopy(self.room.participants_id)
+        receiver_ids.remove(self.get_namespace_id())
+
+        for receiver_id in receiver_ids:
+            receivers.append(
+                NamespaceInfo(
+                    user_id=self.get_receiver_user_id_by_namespace_id(receiver_id),
+                    namespace=self.NAMESPACE_RECEIVERS_NAME,
+                    namespace_id=receiver_id
+                )
+            )
+        return receivers
+
+
+class InvestorChatNotificationManager(ChatNotificationManager, InvestorNotificationManager):
+
+    def get_receiver_user_id_by_namespace_id(self, receiver_id):
+        return Startup.objects.get(startup_id=receiver_id).user.user_id
+
+
+class StartupChatNotificationManager(ChatNotificationManager, StartupNotificationManager):
+
+    def get_receiver_user_id_by_namespace_id(self, receiver_id):
+        return Investor.objects.get(investor_id=receiver_id).user.user_id
