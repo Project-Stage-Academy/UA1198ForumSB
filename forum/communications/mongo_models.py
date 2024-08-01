@@ -31,7 +31,7 @@ class Notification(BaseTimestampModel):
 
 class Room(BaseTimestampModel):
     name = fields.StringField(max_length=128, unique=True, required=True)
-    participants_id = fields.ListField(fields.IntField(), required=True)
+    participants = fields.EmbeddedDocumentListField(NamespaceInfo, required=True)
 
 
 class Message(BaseTimestampModel):

@@ -4,22 +4,40 @@ from rest_framework import serializers
 from users.models import CustomUser
 from investors.models import Investor
 from startups.models import Startup
-from .mongo_models import Room
+from .mongo_models import Room, NamespaceInfo
+
+
+class NamespaceInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NamespaceInfo
+        fields = '__all__'
 
 
 class RoomSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=128, required=True)
-    participants_id = serializers.ListField(
-        child=serializers.IntegerField(required=True)
+    participants = serializers.ListField(
+        child=serializers.JSONField()
     )
 
     def validate(self, data):
-        participants_id = data.get("participants_id")
+        participants = data.get("participants")
 
-        for id in participants_id:
-            get_object_or_404(CustomUser, user_id=id)
+        if len(participants) != 2:
+            raise serializers.ValidationError
+
+        for participant in participants:
+            if not NamespaceInfoSerializer(data=participant).is_valid():
+                raise serializers.ValidationError
     
         return data
+    
+    def create(self, validated_data):
+        room_name = ''
+        participants = validated_data.get("participants")
+
+        for participant in participants:
+            room_name += f'{participant.get('namespace')}_{participant.get('namespace_id')}'
+
+        return Room(name=room_name, **validated_data)
 
 
 class ChatMessageSerializer(serializers.Serializer):
