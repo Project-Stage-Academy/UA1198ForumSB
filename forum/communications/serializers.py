@@ -1,22 +1,23 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from users.models import CustomUser
 from investors.models import Investor
 from startups.models import Startup
-from .mongo_models import Room, NamespaceInfo
+from .mongo_models import Room
 
 
-class NamespaceInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NamespaceInfo
-        fields = '__all__'
+class NamespaceInfoSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(required=True)
+    namespace = serializers.ChoiceField(choices=[
+        ("startup","startup"),
+        ("investor","investor")
+    ], required=True)
+    namespace_id = serializers.CharField(required=True)
 
 
 class RoomSerializer(serializers.Serializer):
-    participants = serializers.ListField(
-        child=serializers.JSONField()
-    )
+    name = serializers.CharField(required=True)
+    participants = serializers.ListField()
 
     def validate(self, data):
         participants = data.get("participants")
@@ -29,15 +30,6 @@ class RoomSerializer(serializers.Serializer):
                 raise serializers.ValidationError
     
         return data
-    
-    def create(self, validated_data):
-        room_name = ''
-        participants = validated_data.get("participants")
-
-        for participant in participants:
-            room_name += f'{participant.get('namespace')}_{participant.get('namespace_id')}'
-
-        return Room(name=room_name, **validated_data)
 
 
 class ChatMessageSerializer(serializers.Serializer):
