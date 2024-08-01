@@ -33,6 +33,7 @@ spec:
       containers:
         - name:  forum
           image: luckymode/mega-forum:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:
