@@ -8,7 +8,6 @@ from .serializers import RoomSerializer, ChatMessageSerializer
 class CreateConversationView(APIView):
     def post(self, request):
         serializer = RoomSerializer(data=request.data)
-        print(request.data)
         if serializer.is_valid():
             new_room = Room(**serializer.data)
             new_room.save()
