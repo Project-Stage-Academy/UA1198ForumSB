@@ -54,7 +54,6 @@ class SavedStartupsByInvestorTestCase(UserSetupMixin):
         self.client.post(reverse('users:namespace_selection'), data=post_body)
 
     def test_get_list_of_saved_startups_by_investor(self):
-
         startup1 = {
             "startup_id": self.startup1.startup_id,
             "size": None,
@@ -89,7 +88,6 @@ class SavedStartupsByInvestorTestCase(UserSetupMixin):
             ({'filter': json.dumps({"name": "name1"})}, [startup1]),
             ({'order_by': '-name'}, [startup3, startup1]),
         ]:
-
             response = self.client.get(
                 reverse(
                     'users:saved_startups',
@@ -123,6 +121,42 @@ class SavedStartupsByInvestorTestCase(UserSetupMixin):
             response.json(),
             {'error': 'Invalid filter parameter'},
             "Filter is valid"
+        )
+
+    def test_get_list_of_startups_as_wrong_investor(self):
+        response = self.client.get(
+            reverse(
+                'users:saved_startups',
+                kwargs={'user_id': self.test_user.user_id, 'investor_id': self.investor2.investor_id}
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, "Status code is different from 403")
+        self.assertEqual(
+            response.json(),
+            {'detail': 'You do not have permission to perform this action.'},
+            "Wrong investor can get list of startups"
+        )
+
+    def test_get_list_of_startups_as_startup(self):
+        post_body = {
+            'name_space_id': self.startup1.startup_id,
+            'name_space_name': 'startup'
+        }
+        self.client.post(reverse('users:namespace_selection'), data=post_body)
+
+        response = self.client.get(
+            reverse(
+                'users:saved_startups',
+                kwargs={'user_id': self.test_user.user_id, 'investor_id': self.investor1.investor_id}
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, "Status code is different from 403")
+        self.assertEqual(
+            response.json(),
+            {'detail': 'You do not have permission to perform this action.'},
+            "Wrong investor can get list of startups"
         )
 
 
@@ -171,4 +205,25 @@ class UnsaveStartupByInvestorTestCase(UserSetupMixin):
             response.json(),
             {'error': 'Subscription is not found'},
             "Response body does not match the expected one"
+        )
+
+    def test_unsave_startup_as_startup(self):
+        post_body = {
+            'name_space_id': self.startup1.startup_id,
+            'name_space_name': 'startup'
+        }
+        self.client.post(reverse('users:namespace_selection'), data=post_body)
+
+        response = self.client.delete(
+            reverse(
+                'unsave_startup',
+                kwargs={'startup_id': self.startup1.startup_id}
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, "Status code is different from 403")
+        self.assertEqual(
+            response.json(),
+            {'detail': 'You do not have permission to perform this action.'},
+            "Wrong investor can get list of startups"
         )
