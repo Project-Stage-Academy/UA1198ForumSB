@@ -35,6 +35,8 @@ services:
 
   mongo:
     image: mongo:4.4.6
+    volumes:
+      - mongodbdata:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
@@ -70,3 +72,4 @@ services:
 
 volumes:
   postgres_data:
+  mongodbdata:
