@@ -8,7 +8,7 @@ from .mongo_models import Room
 
 
 class RoomSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=128, unique=True, required=True)
+    name = serializers.CharField(max_length=128, required=True)
     participants_id = serializers.ListField(
         child=serializers.IntegerField(required=True)
     )
