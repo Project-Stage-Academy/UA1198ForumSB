@@ -15,6 +15,11 @@ class CreateConversationView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class ConversationsListView(APIView):
+    def get(request):
+        pass
+
+
 class SendMessageView(APIView):
     def post(request):
         serializer = ChatMessageSerializer(data=request.data)
