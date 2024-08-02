@@ -8,7 +8,7 @@ from .utils import generate_room_name
 
 class CreateConversationView(APIView):
     # TODO add permissions that allow only invetors initiate chat
-    # TODO add permissions that allow to investor initiate chat only for itself
+    # TODO add permissions that allow to investor initiate chat only for himself
 
     def post(self, request):
         serializer = RoomSerializer(data=request.data)
@@ -26,8 +26,8 @@ class ConversationsListView(APIView):
 
 
 class SendMessageView(APIView):
-    # TODO add permissions that allow to investor/startup create message only for its room
-    
+    # TODO add permissions that allow to investor/startup create message only for his room
+
     def post(self, request):
         serializer = ChatMessageSerializer(data=request.data)
         if serializer.is_valid():
@@ -39,6 +39,8 @@ class SendMessageView(APIView):
 
 
 class MessagesListView(APIView):
+    # TODO add permissions that allow to investor/startup view messages only for his room
+
     def get(self, request, conversation_id):
         messages = Message.objects.filter(room = conversation_id)
         serializer = ChatMessageSerializer(messages, many=True)
