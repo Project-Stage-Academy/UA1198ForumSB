@@ -27,6 +27,7 @@ class ConversationsListView(APIView):
 
 class SendMessageView(APIView):
     # TODO add permissions that allow to investor/startup create message only for its room
+    
     def post(self, request):
         serializer = ChatMessageSerializer(data=request.data)
         if serializer.is_valid():
