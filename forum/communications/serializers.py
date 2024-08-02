@@ -16,18 +16,17 @@ class NamespaceInfoSerializer(serializers.Serializer):
 
 
 class RoomSerializer(serializers.Serializer):
-    name = serializers.CharField(required=True)
     participants = serializers.ListField()
 
     def validate(self, data):
         participants = data.get("participants")
 
         if len(participants) != 2:
-            raise serializers.ValidationError
+            raise serializers.ValidationError("Only two participants in one room.")
 
         for participant in participants:
             if not NamespaceInfoSerializer(data=participant).is_valid():
-                raise serializers.ValidationError
+                raise serializers.ValidationError("Invalid participant.")
     
         return data
 

@@ -3,16 +3,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from .mongo_models import Room, Message
 from .serializers import RoomSerializer, ChatMessageSerializer
+from .utils import generate_room_name
 
 
 class CreateConversationView(APIView):
     def post(self, request):
         serializer = RoomSerializer(data=request.data)
         if serializer.is_valid():
-            new_room = Room(**serializer.data)
+            room_name = generate_room_name(serializer.data["participants"])
+            new_room = Room(name=room_name, **serializer.data)
             new_room.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ConversationsListView(APIView):
