@@ -27,7 +27,26 @@ class RoomSerializer(serializers.Serializer):
         for participant in participants:
             if not NamespaceInfoSerializer(data=participant).is_valid():
                 raise serializers.ValidationError("Invalid participant.")
-    
+            
+            user_id = participant.get("user_id")
+            namespace = participant.get("namespace")
+            namespace_id = participant.get("namespace_id")
+            
+            if namespace == "startup":
+                namespace_obj = Startup.objects.filter(
+                    user__user_id=user_id,
+                    startup_id=namespace_id
+                ).first()
+            
+            elif namespace == "investor":
+                namespace_obj = Investor.objects.filter(
+                    user__user_id=user_id,
+                    investor_id=namespace_id
+                ).first()
+            
+            if not namespace_obj:
+                raise serializers.ValidationError("Incorrect participants data.")
+
         return data
 
 
