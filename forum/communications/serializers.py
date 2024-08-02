@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .mongo_models import Room
 from .helpers import is_namespace_info_correct
+from bson.objectid import ObjectId
 
 
 class NamespaceInfoSerializer(serializers.Serializer):
@@ -44,7 +45,7 @@ class ChatMessageSerializer(serializers.Serializer):
     content = serializers.CharField(required=True)
 
     def validate(self, data):
-        room_id = data.get("room")
+        room_id = ObjectId(data.get("room"))
         author = data.get("author")
 
         room = Room.objects.filter(id=room_id).first()

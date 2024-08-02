@@ -4,6 +4,7 @@ from rest_framework import status
 from .mongo_models import Room, Message
 from .serializers import RoomSerializer, ChatMessageSerializer
 from .helpers import generate_room_name
+from bson.objectid import ObjectId
 
 
 class CreateConversationView(APIView):
@@ -42,6 +43,7 @@ class MessagesListView(APIView):
     # TODO add permissions that allow to investor/startup view messages only for his room
 
     def get(self, request, conversation_id):
+        conversation_id = ObjectId(conversation_id)
         messages = Message.objects.filter(room = conversation_id)
         serializer = ChatMessageSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
