@@ -47,7 +47,7 @@ class ChatMessageSerializer(serializers.Serializer):
         room_id = data.get("room")
         author = data.get("author")
 
-        room = Room.objects.filter(_id=room_id).first()
+        room = Room.objects.filter(id=room_id).first()
         if not room:
             raise serializers.ValidationError("Room does not exist.")
 
