@@ -4,6 +4,7 @@ from rest_framework import serializers
 from investors.models import Investor
 from startups.models import Startup
 from .mongo_models import Room
+from .utils import is_namespace_info_correct
 
 
 class NamespaceInfoSerializer(serializers.Serializer):
@@ -28,21 +29,7 @@ class RoomSerializer(serializers.Serializer):
             if not NamespaceInfoSerializer(data=participant).is_valid():
                 raise serializers.ValidationError("Invalid participant.")
             
-            user_id = participant.get("user_id")
-            namespace = participant.get("namespace")
-            namespace_id = participant.get("namespace_id")
-            
-            if namespace == "startup":
-                namespace_obj = Startup.objects.filter(
-                    user__user_id=user_id,
-                    startup_id=namespace_id
-                ).first()
-            
-            elif namespace == "investor":
-                namespace_obj = Investor.objects.filter(
-                    user__user_id=user_id,
-                    investor_id=namespace_id
-                ).first()
+            namespace_obj = is_namespace_info_correct(participant)
             
             if not namespace_obj:
                 raise serializers.ValidationError("Incorrect participants data.")
@@ -57,24 +44,24 @@ class RoomSerializer(serializers.Serializer):
 
 class ChatMessageSerializer(serializers.Serializer):
     room = serializers.CharField(required=True)
-    namespace_id = serializers.IntegerField(required=True)
-    namespace_name = serializers.CharField(required=True)
+    author = serializers.JSONField(required=True)
     content = serializers.CharField(required=True)
-    timestamp = serializers.DateTimeField()
 
     def validate(self, data):
-        room_id = str(data.get("room").id)
-        namespace_id = data.get("namespace_id")
-        namespace_name = data.get("namespace_name")
-        
-        get_object_or_404(Room, id=room_id)
+        room_id = data.get("room")
+        author = data.get("author")
 
-        if namespace_name == "startup":
-            get_object_or_404(Startup, startup_id=namespace_id)
-        elif namespace_name == "investor":
-            get_object_or_404(Investor, startup_id=namespace_id)
-        else:
-            raise serializers.ValidationError("Invalid namespace")
+        room = Room.objects.filter(_id=room_id).first()
+        if not room:
+            raise serializers.ValidationError("Room does not exist.")
+
+        if not NamespaceInfoSerializer(data=author).is_valid():
+            raise serializers.ValidationError("Invalid author.")
+        
+        author_is_correct = is_namespace_info_correct(author)
+        
+        if not author_is_correct:
+            raise serializers.ValidationError("Incorrect author data.")
         
         return data
 

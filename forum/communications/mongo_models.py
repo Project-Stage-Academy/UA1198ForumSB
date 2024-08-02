@@ -36,6 +36,5 @@ class Room(BaseTimestampModel):
 
 class Message(BaseTimestampModel):
     room = fields.ReferenceField(Room, reverse_delete_rule=CASCADE, required=True)
-    namespace_id = fields.IntField(required=True)
-    namespace_name = fields.StringField(required=True)
+    author = fields.EmbeddedDocumentField(NamespaceInfo, required=True)
     content = fields.StringField(required=True)
