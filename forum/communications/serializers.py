@@ -1,10 +1,6 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-
-from investors.models import Investor
-from startups.models import Startup
 from .mongo_models import Room
-from .utils import is_namespace_info_correct
+from .helpers import is_namespace_info_correct
 
 
 class NamespaceInfoSerializer(serializers.Serializer):

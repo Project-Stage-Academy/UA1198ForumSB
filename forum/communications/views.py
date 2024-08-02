@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .mongo_models import Room, Message
 from .serializers import RoomSerializer, ChatMessageSerializer
-from .utils import generate_room_name
+from .helpers import generate_room_name
 
 
 class CreateConversationView(APIView):
