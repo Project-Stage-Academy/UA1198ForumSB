@@ -48,6 +48,5 @@ class MessagesListView(APIView):
             conversation_id = ObjectId(conversation_id)
         except InvalidId:
             return Response("Invalid room id", status=status.HTTP_400_BAD_REQUEST)
-        messages = Message.objects.filter(room = conversation_id)
-        serializer = ChatMessageSerializer(messages, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        messages = Message.objects.filter(room = conversation_id).to_json()
+        return Response(messages, status=status.HTTP_200_OK)
