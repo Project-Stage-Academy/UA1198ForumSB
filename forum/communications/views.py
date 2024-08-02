@@ -7,6 +7,9 @@ from .utils import generate_room_name
 
 
 class CreateConversationView(APIView):
+    # TODO add permissions that allow only invetors initiate chat
+    # TODO add permissions that allow to invetor initiate chat only for itself
+
     def post(self, request):
         serializer = RoomSerializer(data=request.data)
         if serializer.is_valid():
