@@ -46,6 +46,11 @@ class RoomSerializer(serializers.Serializer):
             
             if not namespace_obj:
                 raise serializers.ValidationError("Incorrect participants data.")
+        
+        namespaces = [p.get("namespace") for p in participants]
+
+        if ("startup" not in namespaces) or ("investor" not in namespaces):
+            raise serializers.ValidationError("Room can be created only for investor and startup.")
 
         return data
 
