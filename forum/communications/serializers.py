@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .mongo_models import Room
 from .helpers import is_namespace_info_correct
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 
 
 class NamespaceInfoSerializer(serializers.Serializer):
@@ -45,8 +46,13 @@ class ChatMessageSerializer(serializers.Serializer):
     content = serializers.CharField(required=True)
 
     def validate(self, data):
-        room_id = ObjectId(data.get("room"))
+        room_id = data.get("room")
         author = data.get("author")
+
+        try:
+            room_id = ObjectId(room_id)
+        except InvalidId:
+            raise serializers.ValidationError("Invalid room id.")
 
         room = Room.objects.filter(id=room_id).first()
         if not room:
