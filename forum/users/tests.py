@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.http.cookie import SimpleCookie
-from .models import CustomUser
+from ..models import CustomUser
 from investors.models import Investor
 from startups.models import Startup
 from rest_framework_simplejwt.tokens import AccessToken
@@ -867,4 +867,3 @@ class LogoutAPITestCase(APITestCase):
     def tearDown(self):
         """ Clean up any created data. """
         self.user.delete()        
-
