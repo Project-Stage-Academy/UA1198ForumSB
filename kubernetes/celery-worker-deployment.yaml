@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name:  celery-worker
-          image: ghcr.io/project-stage-academy/mega-forum
+          image: ghcr.io/project-stage-academy/ua1198forumsb:main 
           command: ["celery"]
           args: ["-A", "forum", "worker", "-l", "INFO"]
           imagePullPolicy: Always

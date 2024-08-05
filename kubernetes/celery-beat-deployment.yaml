@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name:  celery-beat
-          image: ghcr.io/project-stage-academy/mega-forum
+          image: ghcr.io/project-stage-academy/ua1198forumsb:main 
           command: ["celery"]
           args: ["-A", "forum", "beat", "-l", "INFO"]
           imagePullPolicy: Always

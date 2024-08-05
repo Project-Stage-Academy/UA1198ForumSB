@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name:  forum
-          image: ghcr.io/project-stage-academy/mega-forum
+          image: ghcr.io/project-stage-academy/ua1198forumsb:main 
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -145,7 +145,7 @@ spec:
 
       initContainers:
         - name:  forum-migrate
-          image: ghcr.io/project-stage-academy/mega-forum
+          image: ghcr.io/project-stage-academy/ua1198forumsb:main 
           command: ["./manage.py", "migrate"]
           imagePullPolicy: Always
           env:
