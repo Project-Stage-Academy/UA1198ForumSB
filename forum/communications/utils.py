@@ -167,7 +167,7 @@ class NotificationManager(ABC):
             receivers=receivers_namespaces,
             message=message
         )
-        notification.save()
+        # notification.save()
 
         notification_builder = NotificationBuilder()
         notification_builder.build(notification)
@@ -229,34 +229,19 @@ class ChatNotificationManager(NotificationManager):
         super().__init__(namespace_obj)
         self.room = room
 
-    @abstractmethod
-    def get_receiver_user_id_by_namespace_id(self, receiver_id):
-        ...
-
     def _create_receivers_namespaces(self) -> list[NamespaceInfo]:
         receivers: list[NamespaceInfo] = []
 
-        receiver_ids = deepcopy(self.room.participants_id)
-        receiver_ids.remove(self.get_namespace_id())
+        for participant in self.room.participants:
+            if participant['namespace_id'] != self.get_namespace_id():
+                receivers.append(participant)
 
-        for receiver_id in receiver_ids:
-            receivers.append(
-                NamespaceInfo(
-                    user_id=self.get_receiver_user_id_by_namespace_id(receiver_id),
-                    namespace=self.NAMESPACE_RECEIVERS_NAME,
-                    namespace_id=receiver_id
-                )
-            )
         return receivers
 
 
 class InvestorChatNotificationManager(ChatNotificationManager, InvestorNotificationManager):
-
-    def get_receiver_user_id_by_namespace_id(self, receiver_id):
-        return Startup.objects.get(startup_id=receiver_id).user.user_id
+    pass
 
 
 class StartupChatNotificationManager(ChatNotificationManager, StartupNotificationManager):
-
-    def get_receiver_user_id_by_namespace_id(self, receiver_id):
-        return Investor.objects.get(investor_id=receiver_id).user.user_id
+    pass
