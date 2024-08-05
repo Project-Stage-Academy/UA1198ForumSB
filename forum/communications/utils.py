@@ -5,7 +5,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
 from investors.models import Investor
-from forum.celery import send_notification_email
+from forum.forum.tasks import send_email_task
 from projects.models import Project, ProjectSubscription
 from rest_framework.serializers import Serializer
 from startups.models import Startup
@@ -193,7 +193,7 @@ class StartupNotificationManager(NotificationManager):
             if NotificationPreferences.has_preferences(user_id, self.NOTIFICATION_TYPE):
                 if NotificationPreferences.is_email_enabled(user_id, self.NOTIFICATION_TYPE):
                     # !celery_task
-                    send_notification_email.delay(user_id, self.NOTIFICATION_TYPE)
+                    send_email_task.delay(subject=self.NOTIFICATION_TYPE,body=,sender=,receivers=user_id)
 
                 receivers.append(
                     NamespaceInfo(
@@ -230,7 +230,7 @@ class InvestorNotificationManager(NotificationManager):
             if NotificationPreferences.has_preferences(user_id, self.NOTIFICATION_TYPE):
                 if NotificationPreferences.is_email_enabled(user_id, self.NOTIFICATION_TYPE):
                     # !celery_task
-                    send_notification_email.delay(user_id, self.NOTIFICATION_TYPE)
+                    send_email_task.delay(subject=self.NOTIFICATION_TYPE,body=,sender=,receivers=user_id)
 
                 receivers.append(
                     NamespaceInfo(
