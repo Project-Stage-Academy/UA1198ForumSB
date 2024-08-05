@@ -5,12 +5,13 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
 from investors.models import Investor
+from forum.celery import send_notification_email
 from projects.models import Project, ProjectSubscription
 from rest_framework.serializers import Serializer
 from startups.models import Startup
 
 from .exceptions import BaseNotificationException, InvalidDataError, MessageTypeError
-from .mongo_models import NamespaceEnum, NamespaceInfo, Notification
+from .mongo_models import NamespaceEnum, NamespaceInfo, Notification, NotificationPreferences, NotificationTypeEnum
 from .serializers import (
     ChatMessageSerializer,
     WSClientMessageSerializer,
@@ -138,6 +139,7 @@ class AutoSerializer:
 class NotificationManager(ABC):
     NAMESPACE_NAME: str = None
     NAMESPACE_RECEIVERS_NAME: str = None
+    NOTIFICATION_TYPE: str = None
 
     def __init__(self, namespace_obj: Investor | Startup) -> None:
         self.namespace = namespace_obj
@@ -187,18 +189,32 @@ class StartupNotificationManager(NotificationManager):
             startup_id=self.namespace.startup_id
         )
         for i in ProjectSubscription.objects.filter(project=project):
-            receivers.append(
-                NamespaceInfo(
-                    user_id=i.investor.user.user_id,
-                    namespace=self.NAMESPACE_RECEIVERS_NAME,
-                    namespace_id=i.investor.investor_id
+            user_id = i.investor.user.user_id
+            if NotificationPreferences.has_preferences(user_id, self.NOTIFICATION_TYPE):
+                if NotificationPreferences.is_email_enabled(user_id, self.NOTIFICATION_TYPE):
+                    # !celery_task
+                    send_notification_email.delay(user_id, self.NOTIFICATION_TYPE)
+
+                receivers.append(
+                    NamespaceInfo(
+                        user_id=i.investor.user.user_id,
+                        namespace=self.NAMESPACE_RECEIVERS_NAME,
+                        namespace_id=i.investor.investor_id
+                    )
                 )
-            )
 
         return receivers
 
     def get_namespace_id(self) -> int:
         return self.namespace.startup_id
+
+
+class ProfileUpdateNotificationManager(StartupNotificationManager):
+    NOTIFICATION_TYPE = NotificationTypeEnum.PROFILE_UPDATE
+
+
+class OtherNotificationManager(StartupNotificationManager):        #template
+    NOTIFICATION_TYPE = NotificationTypeEnum.NEW_MESSAGE
 
 
 class InvestorNotificationManager(NotificationManager):
@@ -209,15 +225,24 @@ class InvestorNotificationManager(NotificationManager):
         receivers: list[NamespaceInfo] = []
 
         for i in ProjectSubscription.objects.filter(investor=self.namespace):
-            receivers.append(
-                NamespaceInfo(
-                    user_id=i.project.startup.user.user_id,
-                    namespace=self.NAMESPACE_RECEIVERS_NAME,
-                    namespace_id=i.project.startup.startup_id
+            user_id = i.project.startup.user.user_id
+
+            if NotificationPreferences.has_preferences(user_id, self.NOTIFICATION_TYPE):
+                if NotificationPreferences.is_email_enabled(user_id, self.NOTIFICATION_TYPE):
+                    # !celery_task
+                    send_notification_email.delay(user_id, self.NOTIFICATION_TYPE)
+
+                receivers.append(
+                    NamespaceInfo(
+                        user_id=i.project.startup.user.user_id,
+                        namespace=self.NAMESPACE_RECEIVERS_NAME,
+                        namespace_id=i.project.startup.startup_id
+                    )
                 )
-            )
 
         return receivers
 
     def get_namespace_id(self) -> int:
         return self.namespace.investor_id
+
+
