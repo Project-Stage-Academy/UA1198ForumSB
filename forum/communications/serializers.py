@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .mongo_models import Room
 from .helpers import is_namespace_info_correct
+from .validators import escape_xss
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
@@ -44,6 +45,9 @@ class ChatMessageSerializer(serializers.Serializer):
     room = serializers.CharField(required=True)
     author = serializers.JSONField(required=True)
     content = serializers.CharField(required=True)
+    
+    def validate_content(self, value):
+        return escape_xss(value)
 
     def validate(self, data):
         room_id = data.get("room")

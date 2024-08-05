@@ -1,16 +1,27 @@
+from bson.objectid import ObjectId
+from bson.errors import InvalidId
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
 from .mongo_models import Room, Message
 from .serializers import RoomSerializer, ChatMessageSerializer
 from .helpers import generate_room_name
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
+from .permissions import IsInvestorInitiateChat, IsParticipantOfConversation
+from users.permissions import IsNamespace
+
+
+CONVERSATION_BASE_PERMISSIONS = [
+    IsAuthenticated,
+    IsNamespace
+]
 
 
 class CreateConversationView(APIView):
-    # TODO add permissions that allow only invetors initiate chat
-    # TODO add permissions that allow to investor initiate chat only for himself
+    permission_classes = CONVERSATION_BASE_PERMISSIONS + [
+        IsInvestorInitiateChat
+    ]
 
     def post(self, request):
         serializer = RoomSerializer(data=request.data)
@@ -23,12 +34,16 @@ class CreateConversationView(APIView):
 
 
 class ConversationsListView(APIView):
+    permission_classes = CONVERSATION_BASE_PERMISSIONS
+
     def get(self, request):
         pass
 
 
 class SendMessageView(APIView):
-    # TODO add permissions that allow to investor/startup create message only for his room
+    permission_classes = CONVERSATION_BASE_PERMISSIONS + [
+        IsParticipantOfConversation
+    ]
 
     def post(self, request):
         serializer = ChatMessageSerializer(data=request.data)
@@ -41,7 +56,9 @@ class SendMessageView(APIView):
 
 
 class MessagesListView(APIView):
-    # TODO add permissions that allow to investor/startup view messages only of his room
+    permission_classes = CONVERSATION_BASE_PERMISSIONS + [
+        IsParticipantOfConversation
+    ]
 
     def get(self, request, conversation_id):
         try:
