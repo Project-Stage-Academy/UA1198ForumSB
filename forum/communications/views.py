@@ -41,7 +41,7 @@ class SendMessageView(APIView):
 
 
 class MessagesListView(APIView):
-    # TODO add permissions that allow to investor/startup view messages only for his room
+    # TODO add permissions that allow to investor/startup view messages only of his room
 
     def get(self, request, conversation_id):
         try:
