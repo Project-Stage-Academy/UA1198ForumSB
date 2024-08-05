@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: forum-psql
+  namespace: default
+spec:
+  selector:
+    app: forum-psql
+  type: ClusterIP
+  ports:
+  - name: forum-psql
+    protocol: TCP
+    port: 5432
+    targetPort: 5432
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  forum-psql
+  namespace: default
+  labels:
+    app:  forum-psql
+spec:
+  selector:
+    matchLabels:
+      app: forum-psql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app:  forum-psql
+    spec:
+      containers:
+      - name:  forum-psql
+        image:  postgres:13
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: forum-configmap
+              key: forum_db_name
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: forum-secret
+              key: forum_db_user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: forum-secret
+              key: forum_db_password
+        ports:
+        - containerPort:  5432
+          name:  forum-psql
+        volumeMounts:
+          - name: postgres-data
+            mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+      restartPolicy: Always
