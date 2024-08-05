@@ -28,3 +28,20 @@ def notify_investors_via_email(project, changes):
         sender=settings.EMAIL_HOST_USER,
         receivers=recipients,
     )
+
+def send_notification(self, project, action):
+        subject = f"Project {action.capitalize()}"
+        message = build_email_message(
+            "email/project_update_notification.txt",  
+            {
+                "project_name": project.name,
+                "action": action,
+                "startup_name": project.startup.name
+            }
+        )
+        send_email_task.delay(
+            subject=subject,
+            body=message,
+            sender="from@example.com", 
+            receivers=[project.startup.user.email], 
+        )
