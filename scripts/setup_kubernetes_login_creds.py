@@ -27,6 +27,9 @@ def run_command(command: list[str] | str) -> int:
     except FileNotFoundError:
         logger.error(f"Invalid command provided: {command}")
         sys.exit()
+    except Exception as exc:
+        logger.error(f"Unexpected error: {exc}")
+        sys.exit()
 
 
 def required_value(
