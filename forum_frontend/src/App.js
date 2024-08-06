@@ -1,9 +1,10 @@
 import './App.css';
+import StartupsList from './components/StartupsList/StartupsList';
 
 function App() {
   return (
     <div className="App">
-      <h1>Hello, it is forum frontend app!</h1>
+      <StartupsList/>
     </div>
   );
 }
