@@ -15,11 +15,9 @@ from .notifications import notify_investors_via_email, send_notification
 from .utils import get_changed_fields
 
 from users.permissions import (
-    IsAuthenticated,
     ThisUserPermission,
     IsStartupNamespaceSelected,
-    ThisStartup,
-    UpdateOwnProject)
+    ThisStartup)
 from startups.models import Startup
 
 from drf_yasg.utils import swagger_auto_schema
