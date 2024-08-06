@@ -167,7 +167,7 @@ class NotificationManager(ABC):
             receivers=receivers_namespaces,
             message=message
         )
-        # notification.save()
+        notification.save()
 
         notification_builder = NotificationBuilder()
         notification_builder.build(notification)
@@ -232,6 +232,7 @@ class ChatNotificationManager(NotificationManager):
     def _create_receivers_namespaces(self) -> list[NamespaceInfo]:
         receivers: list[NamespaceInfo] = []
 
+        # TODO: check if receiver allows notification
         for participant in self.room.participants:
             if participant['namespace_id'] != self.get_namespace_id():
                 receivers.append(participant)
