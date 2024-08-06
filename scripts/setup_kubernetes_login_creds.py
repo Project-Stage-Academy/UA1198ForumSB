@@ -14,7 +14,7 @@ DOCKER_USERNAME: str = None
 DOCKER_PASSWORD: str = None
 
 
-def _get_stdin_input(help_text: str):
+def _get_stdin_input(help_text: str) -> str:
     return input(f"[{help_text}] > ")
 
 
@@ -34,7 +34,7 @@ def required_value(
     err_message: Optional[str] = None,
     *,
     validator: Optional[Callable] = None,
-):
+) -> str:
     if not validator:
         return _get_stdin_input(help_text)
 
