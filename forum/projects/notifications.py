@@ -1,5 +1,5 @@
 from typing import Literal, TypeAlias
-from django.conf import settings
+from django.core.exceptions import ValidationError
 from forum.tasks import send_email_task
 from forum.utils import build_email_message
 from startups.models import Startup
@@ -8,9 +8,17 @@ from .models import ProjectSubscription
 from forum.logging import logger
 from forum.settings import EMAIL_HOST
 
+
 ActionTypes: TypeAlias = Literal['create', 'update', 'delete']
 
 
+def validate_project(project):
+    reqired_attributes = ['title', 'startup', 'status']
+
+    for attr in reqired_attributes:
+        if not hasattr(project, attr):
+            raise ValidationError(f"Project must have an attribute '{attr}'")
+            
 def notify_investors_via_email(project, changes):
     """
     Function notify all subscripted investors about project changes
@@ -39,6 +47,17 @@ def send_notification(project, action: ActionTypes) -> bool | None:
     """
     Function send notification for user profile about project status/changes
     """
+
+    if action not in {'created', 'updated', 'deleted'}:
+        logger.error(f"Invalid action: {action}")
+        return
+
+    try:
+        validate_project(project)
+    except ValidationError as e:
+        logger.error(f"Invalid project data: {e}")
+        return
+
     subject = f"Project {action.capitalize()}"
     message_context = {
         "project_name": project.title,
