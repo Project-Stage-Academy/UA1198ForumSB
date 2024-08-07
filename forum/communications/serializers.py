@@ -25,13 +25,11 @@ class RoomSerializer(serializers.Serializer):
             raise serializers.ValidationError("Only two participants in one room.")
 
         for participant in participants:
-            if not NamespaceInfoSerializer(data=participant).is_valid():
-                raise serializers.ValidationError("Invalid participant.")
+            serializer = NamespaceInfoSerializer(data=participant)
+            if not serializer.is_valid():
+                raise serializers.ValidationError(f"Invalid participant: {serializer.errors}")
             
-            namespace_obj = is_namespace_info_correct(participant)
-            
-            if not namespace_obj:
-                raise serializers.ValidationError("Incorrect participants data.")
+            is_namespace_info_correct(participant)
         
         namespaces = [p.get("namespace") for p in participants]
 
@@ -62,13 +60,11 @@ class ChatMessageSerializer(serializers.Serializer):
         if not room_exists:
             raise serializers.ValidationError("Room does not exist.")
 
-        if not NamespaceInfoSerializer(data=author).is_valid():
-            raise serializers.ValidationError("Invalid author.")
-        
-        author_is_correct = is_namespace_info_correct(author)
-        
-        if not author_is_correct:
-            raise serializers.ValidationError("Incorrect author data.")
+        serializer = NamespaceInfoSerializer(data=author)
+        if not serializer.is_valid():
+            raise serializers.ValidationError(f"Invalid author: {serializer.errors}")
+
+        is_namespace_info_correct(author)
         
         return data
 

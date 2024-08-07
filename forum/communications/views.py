@@ -47,7 +47,7 @@ class CreateConversationView(BaseAPIView):
             new_room.save()
             logger.info(f"Conversation created: {new_room.name}")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return self.handle_exception(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ConversationsListView(BaseAPIView):
@@ -70,7 +70,7 @@ class SendMessageView(BaseAPIView):
             logger.info(f"Message sent: {new_message.id}")
             # TODO call NotificationManager to send new_message.id
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return self.handle_exception(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MessagesListView(BaseAPIView):
