@@ -10,8 +10,8 @@ function StartupsList() {
     useEffect(() => {
         const fetchStartupsList = async () => {
             const token = await axios.post(`${API_URL}/users/token/`, {
-                email: "borys@mail.com",
-                password: "123456"
+                email: "sup@gmail.com",
+                password: "sup"
             })
             .then(resp => resp.data.access)
             .catch(err => console.log(err));
