@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .mongo_models import Room
+from .mongo_models import NamespaceEnum, Room
 from .helpers import is_namespace_info_correct
 from .validators import escape_xss
 from bson.objectid import ObjectId
@@ -9,8 +9,8 @@ from bson.errors import InvalidId
 class NamespaceInfoSerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=True)
     namespace = serializers.ChoiceField(choices=[
-        ("startup","startup"),
-        ("investor","investor")
+        NamespaceEnum.STARTUP.value,
+        NamespaceEnum.INVESTOR.value
     ], required=True)
     namespace_id = serializers.CharField(required=True)
 
@@ -58,8 +58,8 @@ class ChatMessageSerializer(serializers.Serializer):
         except InvalidId:
             raise serializers.ValidationError("Invalid room id.")
 
-        room = Room.objects.filter(id=room_id).first()
-        if not room:
+        room_exists = Room.objects.filter(id=room_id).first()
+        if not room_exists:
             raise serializers.ValidationError("Room does not exist.")
 
         if not NamespaceInfoSerializer(data=author).is_valid():

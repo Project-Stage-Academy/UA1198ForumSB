@@ -1,5 +1,5 @@
 from rest_framework.serializers import ValidationError
-from .mongo_models import Room
+from .mongo_models import Room, NamespaceEnum
 from startups.models import Startup
 from investors.models import Investor
 
@@ -17,21 +17,21 @@ def generate_room_name(participants: list) -> str:
     return room_name
 
 
-def is_namespace_info_correct(namespace_info: dict):
+def is_namespace_info_correct(namespace_info: dict) -> bool:
     user_id = namespace_info.get("user_id")
     namespace = namespace_info.get("namespace")
     namespace_id = namespace_info.get("namespace_id")
     
-    if namespace == "startup":
+    if namespace == NamespaceEnum.STARTUP.value:
         return Startup.objects.filter(
             user__user_id=user_id,
             startup_id=namespace_id
-        ).first()
+        ).exists()
     
-    if namespace == "investor":
+    if namespace == NamespaceEnum.INVESTOR.value:
         return Investor.objects.filter(
             user__user_id=user_id,
             investor_id=namespace_id
-        ).first()
+        ).exists()
     
-    return None
+    return False
