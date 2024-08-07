@@ -1,11 +1,12 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .mongo_models import Room, Message
-from .serializers import RoomSerializer, ChatMessageSerializer
-from .helpers import generate_room_name
-from bson.objectid import ObjectId
 from bson.errors import InvalidId
+from bson.objectid import ObjectId
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .helpers import generate_room_name
+from .mongo_models import Message, Room
+from .serializers import ChatMessageSerializer, RoomSerializer
 
 
 class CreateConversationView(APIView):
@@ -16,9 +17,19 @@ class CreateConversationView(APIView):
         serializer = RoomSerializer(data=request.data)
         if serializer.is_valid():
             room_name = generate_room_name(serializer.data["participants"])
-            new_room = Room(name=room_name, **serializer.data)
-            new_room.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            room: Room | None = Room.objects(name=room_name).first()
+
+            if not room:
+                room = Room(name=room_name, **serializer.data)
+                room.save()
+
+            response_payload = serializer.data | {
+                "conversation_id": str(room.pk)
+            }
+            return Response(
+                response_payload,
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -49,5 +60,5 @@ class MessagesListView(APIView):
         except InvalidId:
             return Response("Invalid room id", status=status.HTTP_400_BAD_REQUEST)
         # TODO Add here pagination later
-        messages = Message.objects.filter(room = conversation_id).to_json()
+        messages = Message.objects.filter(room=conversation_id).to_json()
         return Response(messages, status=status.HTTP_200_OK)
