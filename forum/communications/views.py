@@ -48,5 +48,6 @@ class MessagesListView(APIView):
             conversation_id = ObjectId(conversation_id)
         except InvalidId:
             return Response("Invalid room id", status=status.HTTP_400_BAD_REQUEST)
+        # TODO Add here pagination later
         messages = Message.objects.filter(room = conversation_id).to_json()
         return Response(messages, status=status.HTTP_200_OK)
