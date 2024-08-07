@@ -12,7 +12,8 @@ from rest_framework.permissions import IsAuthenticated
 from .mongo_models import Room, Message
 from .serializers import RoomSerializer, ChatMessageSerializer
 from .helpers import generate_room_name
-from .permissions import IsInvestorInitiateChat, IsParticipantOfConversation
+from .permissions import IsAuthorOfMessage, IsInvestorInitiateChat, \
+    IsParticipantOfConversation
 from users.permissions import IsNamespace
 from forum.logging import logger 
 
@@ -58,7 +59,8 @@ class ConversationsListView(BaseAPIView):
 
 class SendMessageView(BaseAPIView):
     permission_classes = CONVERSATION_BASE_PERMISSIONS + [
-        IsParticipantOfConversation
+        IsParticipantOfConversation,
+        IsAuthorOfMessage
     ]
 
     @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))

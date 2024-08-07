@@ -25,8 +25,8 @@ class IsParticipantOfConversation(BasePermission):
             return False
 
         return any(participant.user_id == user_id for participant in conversation.participants)
-    
-    
+
+
 class IsInvestorInitiateChat(BasePermission):
     """
         Custom permission to allow only investors to initiate a chat
@@ -46,3 +46,19 @@ class IsInvestorInitiateChat(BasePermission):
         return participant_namespace == "investor" and \
             participant_namespace == namespace and \
             participant_id == user_id
+
+
+class IsAuthorOfMessage(BasePermission):
+    """
+        Custom permission to allow the authenticated user to send a message only 
+        from their own account
+    """
+    def has_permission(self, request, view):
+        payload = get_token_payload_from_cookies(request)
+        user_id = payload.get("user_id")
+        author = request.data.get("author")
+        
+        if not author:
+            return False
+
+        return author.get("user_id") == user_id
