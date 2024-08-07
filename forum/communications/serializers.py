@@ -54,8 +54,8 @@ class ChatMessageSerializer(serializers.Serializer):
         except InvalidId:
             raise serializers.ValidationError("Invalid room id.")
 
-        room = Room.objects.filter(id=room_id).first()
-        if not room:
+        room_exists = Room.objects.filter(id=room_id).exists()
+        if not room_exists:
             raise serializers.ValidationError("Room does not exist.")
 
         if not NamespaceInfoSerializer(data=author).is_valid():
