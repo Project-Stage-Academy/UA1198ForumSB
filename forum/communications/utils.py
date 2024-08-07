@@ -5,10 +5,12 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
 from investors.models import Investor
-from forum.forum.tasks import send_email_task
+from forum.tasks import send_email_task
+from forum.utils import build_email_message
 from projects.models import Project, ProjectSubscription
 from rest_framework.serializers import Serializer
 from startups.models import Startup
+from forum.forum.settings import EMAIL_HOST_USER
 
 from .exceptions import BaseNotificationException, InvalidDataError, MessageTypeError
 from .mongo_models import NamespaceEnum, NamespaceInfo, Notification, NotificationPreferences, NotificationTypeEnum
@@ -19,6 +21,7 @@ from .serializers import (
     WSNotificationSerializer,
     WSServerMessageSerializer,
 )
+from ..users.models import CustomUser
 
 
 class BaseWSMessageBuilder(ABC):
@@ -190,10 +193,22 @@ class StartupNotificationManager(NotificationManager):
         )
         for i in ProjectSubscription.objects.filter(project=project):
             user_id = i.investor.user.user_id
+            user: CustomUser = get_object_or_404(CustomUser, user_id=user_id)
+
             if NotificationPreferences.has_preferences(user_id, self.NOTIFICATION_TYPE):
                 if NotificationPreferences.is_email_enabled(user_id, self.NOTIFICATION_TYPE):
-                    # !celery_task
-                    send_email_task.delay(subject=self.NOTIFICATION_TYPE,body=,sender=,receivers=user_id)
+                    email_context = {
+                        'first_name': user.first_name,
+                        'notification_type': self.NOTIFICATION_TYPE.value
+                    }
+                    email_body = build_email_message("email/email_notification.txt",
+                                                     email_context)
+                    send_email_task.delay(
+                        subject="Email Notification",
+                        body=email_body,
+                        sender=EMAIL_HOST_USER,
+                        receivers=user.email
+                    )
 
                 receivers.append(
                     NamespaceInfo(
@@ -213,7 +228,7 @@ class ProfileUpdateNotificationManager(StartupNotificationManager):
     NOTIFICATION_TYPE = NotificationTypeEnum.PROFILE_UPDATE
 
 
-class OtherNotificationManager(StartupNotificationManager):        #template
+class OtherNotificationManager(StartupNotificationManager):  #template
     NOTIFICATION_TYPE = NotificationTypeEnum.NEW_MESSAGE
 
 
@@ -226,11 +241,22 @@ class InvestorNotificationManager(NotificationManager):
 
         for i in ProjectSubscription.objects.filter(investor=self.namespace):
             user_id = i.project.startup.user.user_id
+            user: CustomUser = get_object_or_404(CustomUser, user_id=user_id)
 
             if NotificationPreferences.has_preferences(user_id, self.NOTIFICATION_TYPE):
                 if NotificationPreferences.is_email_enabled(user_id, self.NOTIFICATION_TYPE):
-                    # !celery_task
-                    send_email_task.delay(subject=self.NOTIFICATION_TYPE,body=,sender=,receivers=user_id)
+                    email_context = {
+                        'first_name': user.first_name,
+                        'notification_type': self.NOTIFICATION_TYPE.value
+                    }
+                    email_body = build_email_message("email/email_notification.txt",
+                                                     email_context)
+                    send_email_task.delay(
+                        subject="Email Notification",
+                        body=email_body,
+                        sender=EMAIL_HOST_USER,
+                        receivers=user.email
+                    )
 
                 receivers.append(
                     NamespaceInfo(
