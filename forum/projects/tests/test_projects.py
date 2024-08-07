@@ -7,7 +7,7 @@ from unittest.mock import patch
 from forum.tests_setup import UserSetupMixin
 from projects.models import Project, ProjectStatus
 from startups.models import Startup, StartupSize
-from ..serializers import ProjectSerializer
+from projects.serializers import ProjectSerializer
 
 
 class UserStartupProjectViewTests(UserSetupMixin):
@@ -71,6 +71,7 @@ class UserStartupProjectViewTests(UserSetupMixin):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
+    @patch('projects.views.send_notification')
     @patch('users.permissions.get_token_payload_from_cookies')
     def test_create_project(self, mock_get_token_payload, mock_send_notification):
         mock_get_token_payload.return_value = {
@@ -81,13 +82,27 @@ class UserStartupProjectViewTests(UserSetupMixin):
 
         response = self.client.post(self.url2, data=json.dumps(self.valid_payload), content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    
+        mock_send_notification.assert_called_once()
+        
+    @patch('projects.views.send_notification')
+    @patch('projects.views.notify_investors_via_email')
     @patch('users.permissions.get_token_payload_from_cookies')
-    def test_update_project(self, mock_get_token_payload):
+    def test_update_project(self, mock_get_token_payload, mock_send_notification, mock_notify_investors_via_email):
         mock_get_token_payload.return_value = {
             'user_id': self.test_user.user_id,
             'name_space_id': self.startup.startup_id,
             'name_space_name': 'startup'
+        }
+
+        changes = {
+            'title': {
+                'old': 'Test Project',
+                'new': 'New Project Title'
+            },
+            'description': {
+                'old': '',
+                'new': 'New Description'
+            }
         }
 
         response = self.client.patch(self.url, data=json.dumps(self.valid_update_payload), content_type='application/json')
@@ -95,9 +110,12 @@ class UserStartupProjectViewTests(UserSetupMixin):
         project = Project.objects.get(pk=self.project.pk)
         self.assertEqual(project.title, self.valid_update_payload['title'])
         self.assertEqual(project.description, self.valid_update_payload['description'])
+        mock_send_notification.assert_called_once()
+        mock_notify_investors_via_email.assert_called_once()
     
+    @patch('projects.views.send_notification')
     @patch('users.permissions.get_token_payload_from_cookies')
-    def test_delete_project(self, mock_get_token_payload):
+    def test_delete_project(self, mock_get_token_payload, mock_send_notification):
         mock_get_token_payload.return_value = {
             'user_id': self.test_user.user_id,
             'name_space_id': self.startup.startup_id,
@@ -106,6 +124,7 @@ class UserStartupProjectViewTests(UserSetupMixin):
 
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        mock_send_notification.assert_called_once()
         # project = Project.objects.get(pk=self.project.pk)
         # self.assertTrue(project.is_deleted)
     
