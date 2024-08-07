@@ -46,7 +46,7 @@ class UserStartupProjectView(APIView):
         })
         if serializer.is_valid():
             project = serializer.save()
-            send_notification(project, "created")
+            send_notification(project, "create")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -60,7 +60,7 @@ class UserStartupProjectView(APIView):
             changes = get_changed_fields(old_instance, updated_project)
             if changes:
                 notify_investors_via_email(updated_project, changes)
-                send_notification(updated_project, "updated")
+                send_notification(updated_project, "update")
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -69,7 +69,7 @@ class UserStartupProjectView(APIView):
         project = get_object_or_404(Project, startup=startup)
         # project.is_deleted = True  
         # project.save()
-        send_notification(project, "deleted")
+        send_notification(project, "delete")
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ProjectHistoryViewSet(viewsets.ReadOnlyModelViewSet):
