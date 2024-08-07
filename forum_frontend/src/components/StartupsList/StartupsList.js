@@ -9,7 +9,13 @@ function StartupsList() {
 
     useEffect(() => {
         const fetchStartupsList = async () => {
-            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzIzMDQxODQyLCJpYXQiOjE3MjMwNDE1NDIsImp0aSI6IjI1ZDQ3ZmZmYTBiOTQzNTM4MDJhYWQzZGYzYmNiZTUyIiwidXNlcl9pZCI6M30.-5ZgF5G88FWnZCywo5bH3Z0PjddfKQOrKtWojGO6vsM";
+            const token = await axios.post(`${API_URL}/users/token/`, {
+                email: "borys@mail.com",
+                password: "123456"
+            })
+            .then(resp => resp.data.access)
+            .catch(err => console.log(err));
+
             try {
                 const response = await axios.get(
                     `${API_URL}/startups/`, {
