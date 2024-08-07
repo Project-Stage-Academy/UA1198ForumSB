@@ -1,9 +1,10 @@
 import './App.css';
 import StartupsList from './components/StartupsList/StartupsList';
+import 'bootstrap/dist/css/bootstrap.css';
 
 function App() {
   return (
-    <div className="App">
+    <div className="App container">
       <StartupsList/>
     </div>
   );

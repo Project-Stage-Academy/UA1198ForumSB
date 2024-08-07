@@ -1,11 +1,13 @@
 import React from 'react'
+import './StartupItem.css'
 
 function StartupItem(props) {
     const {startup} = props;
 
     return (
         <li className='startup-item'>
-            {startup.name}
+            <span className='startup-name'>{startup.name}</span>
+            <button className='btn btn-primary'>Contact</button>
         </li>
     );
 }
