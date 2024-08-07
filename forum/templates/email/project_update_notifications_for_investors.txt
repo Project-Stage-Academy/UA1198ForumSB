@@ -9,7 +9,7 @@ Here are the updated details of the project:
 {% endif %}
 {% if changes.updated_fields.status %}
 - Status: {{ project_status }}
-
+{% endif %}
 If you have any questions or need further information, please feel free to contact us.
 
 Best regards,
