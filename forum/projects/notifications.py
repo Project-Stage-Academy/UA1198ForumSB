@@ -47,8 +47,8 @@ def send_notification(project, action: ActionTypes) -> bool | None:
     """
     Function send notification for user profile about project status/changes
     """
-
-    if action not in {'created', 'updated', 'deleted'}:
+    print(f"send_notification called with project: {project} and action: {action}")
+    if action not in {'create', 'update', 'delete'}:
         logger.error(f"Invalid action: {action}")
         return
 
@@ -57,6 +57,7 @@ def send_notification(project, action: ActionTypes) -> bool | None:
     except ValidationError as e:
         logger.error(f"Invalid project data: {e}")
         return
+    print("Validation passed")
 
     subject = f"Project {action.capitalize()}"
     message_context = {
@@ -65,20 +66,24 @@ def send_notification(project, action: ActionTypes) -> bool | None:
         "startup_name": project.startup.name
     }
     try:
+        print("Building email message")
         message = build_email_message(
             "email/project_notifications_for_startup.txt",
             message_context
         )
+        print("Email message built successfully")
     except Exception as ex:
         logger.error(f"Failed to build email message: {ex}")
         return    
     
     try:
+        print("Sending email task")
         send_email_task.delay(
             subject=subject,
             body=message,
             sender=EMAIL_HOST,
             receivers=[project.startup.user.email],  
         )
+        print("Email task sent successfully")
     except Exception as ex:
         logger.error(f"Failed to send email: {ex}")
