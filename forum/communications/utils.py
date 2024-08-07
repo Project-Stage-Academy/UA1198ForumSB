@@ -6,11 +6,11 @@ from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
 from investors.models import Investor
 from projects.models import Project, ProjectSubscription
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import Serializer, ValidationError
 from startups.models import Startup
 
 from .exceptions import BaseNotificationException, InvalidDataError, MessageTypeError
-from .mongo_models import NamespaceEnum, NamespaceInfo, Notification
+from .mongo_models import NamespaceEnum, NamespaceInfo, Notification, Room
 from .serializers import (
     ChatMessageSerializer,
     WSClientMessageSerializer,
