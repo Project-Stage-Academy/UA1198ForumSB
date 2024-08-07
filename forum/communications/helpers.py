@@ -10,7 +10,7 @@ def generate_room_name(participants: list) -> str:
     for participant in participants:
         room_name += f"{participant['namespace']}_{participant['namespace_id']}"
 
-    room_exists = Room.objects.filter(name=room_name).exists()
+    room_exists = Room.objects.filter(name=room_name).first()
     if room_exists:
         raise ValidationError("Such room already exists.")
     
