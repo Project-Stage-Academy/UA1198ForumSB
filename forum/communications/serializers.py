@@ -8,8 +8,8 @@ from bson.errors import InvalidId
 class NamespaceInfoSerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=True)
     namespace = serializers.ChoiceField(choices=[
-        (NamespaceEnum.STARTUP.name, NamespaceEnum.STARTUP.value),
-        (NamespaceEnum.INVESTOR.name, NamespaceEnum.INVESTOR.value)
+        NamespaceEnum.STARTUP.value,
+        NamespaceEnum.INVESTOR.value
     ], required=True)
     namespace_id = serializers.CharField(required=True)
 
