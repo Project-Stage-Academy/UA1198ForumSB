@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .mongo_models import Room
+from .mongo_models import NamespaceEnum, Room
 from .helpers import is_namespace_info_correct
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
@@ -8,8 +8,8 @@ from bson.errors import InvalidId
 class NamespaceInfoSerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=True)
     namespace = serializers.ChoiceField(choices=[
-        ("startup","startup"),
-        ("investor","investor")
+        (NamespaceEnum.STARTUP.name, NamespaceEnum.STARTUP.value),
+        (NamespaceEnum.INVESTOR.name, NamespaceEnum.INVESTOR.value)
     ], required=True)
     namespace_id = serializers.CharField(required=True)
 

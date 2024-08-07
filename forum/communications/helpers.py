@@ -22,13 +22,13 @@ def is_namespace_info_correct(namespace_info: dict):
     namespace = namespace_info.get("namespace")
     namespace_id = namespace_info.get("namespace_id")
     
-    if namespace == NamespaceEnum.STARTUP.name:
+    if namespace == NamespaceEnum.STARTUP.value:
         return Startup.objects.filter(
             user__user_id=user_id,
             startup_id=namespace_id
         ).first()
     
-    if namespace == NamespaceEnum.INVESTOR.name:
+    if namespace == NamespaceEnum.INVESTOR.value:
         return Investor.objects.filter(
             user__user_id=user_id,
             investor_id=namespace_id
