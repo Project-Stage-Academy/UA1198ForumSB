@@ -1,0 +1,8 @@
+.App h1{
+    text-align: center;
+}
+
+.App .no-data {
+    display: block;
+    text-align: center;
+}
