@@ -6,11 +6,13 @@ from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
 from investors.models import Investor
 from projects.models import Project, ProjectSubscription
-from rest_framework.serializers import Serializer, ValidationError
+from rest_framework.serializers import Serializer
 from startups.models import Startup
 
+from forum.logging import logger
+
 from .exceptions import BaseNotificationException, InvalidDataError, MessageTypeError
-from .mongo_models import NamespaceEnum, NamespaceInfo, Notification, Room
+from .mongo_models import NamespaceEnum, NamespaceInfo, Notification
 from .serializers import (
     ChatMessageSerializer,
     WSClientMessageSerializer,
@@ -160,6 +162,16 @@ class NotificationManager(ABC):
     def push_notification(self, message: str):
         initiator_namespace = self._create_initiator_namespace()
         receivers_namespaces = self._create_receivers_namespaces()
+
+        if not receivers_namespaces:
+            logger.error(
+                f"""
+                    Error building notification due to empty receivers list
+                    Notification: {message}
+
+                """
+            )
+            return
 
         notification = Notification(
             initiator=initiator_namespace,
