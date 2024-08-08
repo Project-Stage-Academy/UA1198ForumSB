@@ -1,5 +1,6 @@
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
 import './SendMessageForm.css'
 
 function SendMessageForm(props) {
@@ -11,7 +12,10 @@ function SendMessageForm(props) {
                 <Modal.Title>Modal heading</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                Woohoo, you are reading this text in a modal!
+                <div className='chat'>
+                    Chat
+                </div>
+                <Form.Control as="textarea" placeholder='Type Message' rows={3}/>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="primary">
