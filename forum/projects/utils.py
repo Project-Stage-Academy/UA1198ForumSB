@@ -2,13 +2,16 @@ from projects.models import Project
 from django.core.exceptions import ValidationError
 
 
+def check_instance(instance):
+    if not isinstance(instance, Project):
+        raise ValidationError("Object must be an instance of Project")
+
 def get_changed_fields(old_instance, new_instance):
     """
     Function compare project data and return changed
     """
-
-    if not (isinstance(old_instance, Project) and isinstance(old_instance, Project)):
-        raise ValidationError("Object must be an instance of Project")
+    check_instance(old_instance)
+    check_instance(new_instance)
 
     changes = {}
     for field in old_instance._meta.fields:
