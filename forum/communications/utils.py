@@ -245,7 +245,10 @@ class ChatNotificationManager(NotificationManager):
 
         # TODO: check if receiver allows notification
         for participant in self.room.participants:
-            if participant['namespace_id'] != self.get_namespace_id():
+            if (
+                participant['namespace_id'] != self.get_namespace_id()
+                or participant['namespace'].value != self.NAMESPACE_NAME.value
+            ):
                 receivers.append(participant)
 
         return receivers
