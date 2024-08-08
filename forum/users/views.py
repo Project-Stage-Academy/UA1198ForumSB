@@ -295,22 +295,23 @@ class SendEmailConfirmationView(APIView):
 
 class UserLoginView(APIView):
     serializer_class = UserLoginSerializer
+    permission_classes = [AllowAny,]
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
         user_data = serializer.validated_data
-        login(request, user_data)
-        refresh = RefreshToken.for_user(user_data)
+        user = CustomUser.objects.get(email=user_data["email"])
+        refresh = RefreshToken.for_user(user)
         data = {
-            "email": user_data.email,
+            "email": user.email,
             "access": str(refresh.access_token),
             "refresh": str(refresh),
             }
 
         response = Response(data, status=status.HTTP_200_OK)
-        response.set_cookie('access_token', str(refresh.access_token), httponly=True, secure=True)
+        response.set_cookie('access_token', str(refresh.access_token), httponly=False, secure=False)
         response.set_cookie('refresh_token', str(refresh), httponly=True, secure=True)
         return response
 
