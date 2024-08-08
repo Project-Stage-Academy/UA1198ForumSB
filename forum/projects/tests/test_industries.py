@@ -26,6 +26,7 @@ class IndustryModelTestCase(UserSetupMixin):
             status.HTTP_200_OK,
             "Status code is different from 200"
         )
+        print(response.json())
         self.assertEqual(
             len(response.json()),
             self.CREATE_INDUSTRY_COUNT,
