@@ -5,11 +5,14 @@ from investors.models import Investor
 
 
 def generate_room_name(participants: list) -> str:
-    room_name = ''
-
-    for participant in participants:
-        room_name += f"{participant['namespace']}_{participant['namespace_id']}"
-
+    if not participants:
+        raise ValidationError("Participants list cannot be empty.")
+    
+    room_name = ''.join([
+        f"{participant['namespace']}_{participant['namespace_id']}"
+        for participant in participants
+    ])
+    
     room_exists = Room.objects.filter(name=room_name).first()
     if room_exists:
         raise ValidationError("Such room already exists.")
@@ -23,15 +26,18 @@ def is_namespace_info_correct(namespace_info: dict) -> bool:
     namespace_id = namespace_info.get("namespace_id")
     
     if namespace == NamespaceEnum.STARTUP.value:
-        return Startup.objects.filter(
+        if not Startup.objects.filter(
             user__user_id=user_id,
             startup_id=namespace_id
-        ).exists()
-    
-    if namespace == NamespaceEnum.INVESTOR.value:
-        return Investor.objects.filter(
+        ).exists():
+            raise ValidationError("Startup does not exist.")
+    elif namespace == NamespaceEnum.INVESTOR.value:
+        if not Investor.objects.filter(
             user__user_id=user_id,
             investor_id=namespace_id
-        ).exists()
+        ).exists():
+            raise ValidationError("Investor does not exist.")
+    else:
+        raise ValidationError("Invalid namespace.") 
     
-    return False
+    return True
