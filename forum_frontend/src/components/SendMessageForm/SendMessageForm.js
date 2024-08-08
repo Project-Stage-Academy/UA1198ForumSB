@@ -4,12 +4,20 @@ import Form from 'react-bootstrap/Form';
 import './SendMessageForm.css'
 
 function SendMessageForm(props) {
-    const {show, handleClose} = props;
+    const {show, handleClose, startup_name} = props;
 
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
-                <Modal.Title>Modal heading</Modal.Title>
+                <Modal.Title>
+                    <div className='fs-5'>
+                        Chat with
+                        <span className='text-secondary fst-italic fs-4'>
+                            {` ${startup_name} `}
+                        </span>
+                        startup
+                    </div>
+                </Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <div className='chat'>

@@ -19,6 +19,7 @@ function StartupItem(props) {
             <SendMessageForm 
                 show={showForm}
                 handleClose={handleClose}
+                startup_name={startup.name}
             />
         </li>
     );
