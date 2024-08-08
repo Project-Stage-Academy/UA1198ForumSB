@@ -52,19 +52,28 @@ class SendMessageView(APIView):
             new_message.save()
             if new_message.author.namespace == NamespaceEnum.STARTUP:
                 startup = get_object_or_404(
-                    Startup, user_id=new_message.author.user_id, startup_id=new_message.author.namespace_id
+                    Startup,
+                    user_id=new_message.author.user_id,
+                    startup_id=new_message.author.namespace_id
                 )
                 manager = StartupChatNotificationManager(startup, new_message.room)
             elif new_message.author.namespace == NamespaceEnum.INVESTOR:
                 investor = get_object_or_404(
-                    Investor, user_id=new_message.author.user_id, investor_id=new_message.author.namespace_id
+                    Investor,
+                    user_id=new_message.author.user_id,
+                    investor_id=new_message.author.namespace_id
                 )
                 manager = InvestorChatNotificationManager(investor, new_message.room)
+
             notification_message = (
                 f'Message: {new_message.id} was sent by {new_message.author.namespace} '
                 f'with id {new_message.author.namespace_id}'
             )
-            manager.push_notification(notification_message)
+            manager.push_notification(
+                notification_message,
+                message_id=str(new_message.pk)
+            )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
