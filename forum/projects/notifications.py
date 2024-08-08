@@ -7,6 +7,7 @@ from investors.models import Investor
 from .models import ProjectSubscription
 from forum.logging import logger
 from forum.settings import EMAIL_HOST
+from projects.utils import check_instance
 
 
 ActionTypes: TypeAlias = Literal['create', 'update', 'delete']
@@ -23,6 +24,7 @@ def notify_investors_via_email(project, changes):
     """
     Function notify all subscripted investors about project changes
     """
+    check_instance(project)
     investors = Investor.objects.filter(
         investor_id__in=ProjectSubscription.objects.filter(
             project_id=project.pk
@@ -47,6 +49,7 @@ def send_notification(project, action: ActionTypes) -> bool | None:
     """
     Function send notification for user profile about project status/changes
     """
+    check_instance(project)
     print(f"send_notification called with project: {project} and action: {action}")
     if action not in {'create', 'update', 'delete'}:
         logger.error(f"Invalid action: {action}")
