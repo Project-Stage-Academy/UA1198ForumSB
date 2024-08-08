@@ -35,7 +35,7 @@ function StartupsList() {
     }, []);
 
     return (<>
-        <h1>Startups</h1>
+        <h1 className='mt-2 mb-3'>Startups</h1>
         <div>
             {startupsList.length ? <ul className='startups-list'>
                 {startupsList.map(startup => {
