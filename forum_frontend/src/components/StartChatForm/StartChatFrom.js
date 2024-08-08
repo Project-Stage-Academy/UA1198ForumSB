@@ -5,13 +5,16 @@ import './StartChatForm.css'
 import axios from 'axios';
 import {API_URL} from "../../index";
 import { useState } from 'react';
+import Spinner from 'react-bootstrap/Spinner';
 
 function StartChatForm(props) {
     const {show, handleClose, startup} = props;
     const [message, setMessage] = useState("");
-    const [statusCode, setStatusCode] = useState(0);
+    const [messageSent, setMessageSent] = useState(true);
+    const [statusCode, setStatusCode] = useState(null);
 
     const createChatAndSendFirstMessage = async (message) => {
+        setMessageSent(false);
         const token = await axios.post(`${API_URL}/users/token/`, {
             email: "borys@mail.com",
             password: "123456"
@@ -57,6 +60,8 @@ function StartChatForm(props) {
         .then(resp => resp.status)
         .catch(err => console.log(err));
 
+        if(status === 201) setMessageSent(true); 
+
         setStatusCode(Number(status));
     }
 
@@ -82,9 +87,12 @@ function StartChatForm(props) {
                 />
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="primary" onClick={() => createChatAndSendFirstMessage(message)}>
-                    Send
-                </Button>
+                {messageSent ?
+                    <Button variant="primary" onClick={() => createChatAndSendFirstMessage(message)}>
+                        Send
+                    </Button>
+                    : <Spinner animation="border" variant="primary" size="sm"/>
+                }
                 <Button variant="danger" onClick={handleClose}>
                     Close
                 </Button>
