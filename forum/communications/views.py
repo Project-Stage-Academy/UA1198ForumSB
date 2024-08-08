@@ -22,7 +22,10 @@ class CreateConversationView(APIView):
             room_name = generate_room_name(serializer.data["participants"])
             new_room = Room(name=room_name, **serializer.data)
             new_room.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                {**serializer.data, "id": str(new_room.id)},
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -19,7 +19,7 @@ function StartupItem(props) {
             <StartChatForm 
                 show={showForm}
                 handleClose={handleClose}
-                startup_name={startup.name}
+                startup={startup}
             />
         </li>
     );
