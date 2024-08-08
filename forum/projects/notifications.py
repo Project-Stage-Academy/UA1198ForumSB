@@ -13,16 +13,30 @@ from projects.utils import check_instance
 ActionTypes: TypeAlias = Literal['create', 'update', 'delete']
 
 
-def validate_project(project):
+def validate_project(project) -> None:
+    """Check if a project has the required attributes.
+
+    Args:
+        project (Project): The project instance to validate.
+
+    Raises:
+        ValidationError: If any of the required attributes ('title', 'startup', 'status') are missing.
+    """
     reqired_attributes = ['title', 'startup', 'status']
 
     for attr in reqired_attributes:
         if not hasattr(project, attr):
             raise ValidationError(f"Project must have an attribute '{attr}'")
             
-def notify_investors_via_email(project, changes):
-    """
-    Function notify all subscripted investors about project changes
+def notify_investors_via_email(project, changes) -> None:
+    """Notify all subscribed investors about project changes via email.
+
+    Args: 
+        project (Project): The project instance for which the notification is being sent.
+        changes (dict): A dictionary containing the changes made to the project.
+
+    Raises:
+        ValidationError: If the project instance is invalid.
     """
     check_instance(project)
     investors = Investor.objects.filter(
@@ -46,11 +60,16 @@ def notify_investors_via_email(project, changes):
     )
 
 def send_notification(project, action: ActionTypes) -> bool | None:
-    """
-    Function send notification for user profile about project status/changes
+    """Send a notification to the user profile about project status or changes.
+
+    Args:
+        project (Project): The project instance for which the notification is being sent.
+        action (ActionTypes): The action performed on the project. Must be one of 'create', 'update', or 'delete'.
+
+    Returns:
+        bool | None: Returns `None` if the validation or email sending fails, otherwise `True`.
     """
     check_instance(project)
-    print(f"send_notification called with project: {project} and action: {action}")
     if action not in {'create', 'update', 'delete'}:
         logger.error(f"Invalid action: {action}")
         return
@@ -58,9 +77,7 @@ def send_notification(project, action: ActionTypes) -> bool | None:
     try:
         validate_project(project)
     except ValidationError as e:
-        logger.error(f"Invalid project data: {e}")
         return
-    print("Validation passed")
 
     subject = f"Project {action.capitalize()}"
     message_context = {
@@ -69,24 +86,20 @@ def send_notification(project, action: ActionTypes) -> bool | None:
         "startup_name": project.startup.name
     }
     try:
-        print("Building email message")
         message = build_email_message(
             "email/project_notifications_for_startup.txt",
             message_context
         )
-        print("Email message built successfully")
     except Exception as ex:
         logger.error(f"Failed to build email message: {ex}")
         return    
     
     try:
-        print("Sending email task")
         send_email_task.delay(
             subject=subject,
             body=message,
             sender=EMAIL_HOST,
             receivers=[project.startup.user.email],  
         )
-        print("Email task sent successfully")
     except Exception as ex:
         logger.error(f"Failed to send email: {ex}")
