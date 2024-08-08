@@ -8,6 +8,7 @@ from forum.tests_setup import UserSetupMixin
 from projects.models import Project, ProjectStatus
 from startups.models import Startup, StartupSize
 from projects.serializers import ProjectSerializer
+from users.models import CustomUser
 
 
 class UserStartupProjectViewTests(UserSetupMixin):
@@ -44,7 +45,7 @@ class UserStartupProjectViewTests(UserSetupMixin):
         )
         
         self.url = reverse('users:user_startup_project', args=[self.test_user.user_id, self.startup.startup_id])
-        self.url2 = reverse('users:user_startup_project', args=[self.test_user.user_id, self.startup2.startup_id])
+        self.patch_url = reverse('users:user_startup_project', args=[self.test_user.user_id, self.startup2.startup_id])
         self.valid_payload = {
             'startup': self.startup2.startup_id,
             'status': self.project_status.status_id,
@@ -80,7 +81,7 @@ class UserStartupProjectViewTests(UserSetupMixin):
             'name_space_name': 'startup'
         }
 
-        response = self.client.post(self.url2, data=json.dumps(self.valid_payload), content_type='application/json')
+        response = self.client.post(self.patch_url, data=json.dumps(self.valid_payload), content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         mock_send_notification.assert_called_once()
         
@@ -92,17 +93,6 @@ class UserStartupProjectViewTests(UserSetupMixin):
             'user_id': self.test_user.user_id,
             'name_space_id': self.startup.startup_id,
             'name_space_name': 'startup'
-        }
-
-        changes = {
-            'title': {
-                'old': 'Test Project',
-                'new': 'New Project Title'
-            },
-            'description': {
-                'old': '',
-                'new': 'New Description'
-            }
         }
 
         response = self.client.patch(self.url, data=json.dumps(self.valid_update_payload), content_type='application/json')
@@ -127,4 +117,67 @@ class UserStartupProjectViewTests(UserSetupMixin):
         mock_send_notification.assert_called_once()
         # project = Project.objects.get(pk=self.project.pk)
         # self.assertTrue(project.is_deleted)
+
+    @patch('users.permissions.get_token_payload_from_cookies')
+    def test_create_project_with_invalid_payload(self, mock_get_token_payload):
+        mock_get_token_payload.return_value = {
+            'user_id': self.test_user.user_id,
+            'name_space_id': self.startup.startup_id,
+            'name_space_name': 'startup'
+        }
+
+        invalid_payload = {
+            "title": "",  
+            "description": "New project description",
+            "budget": "not_a_number"  
+        }
+        response = self.client.post(self.url, data=invalid_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch('users.permissions.get_token_payload_from_cookies')
+    def test_unauthorized_access(self, mock_get_token_payload):
+        
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @patch('users.permissions.get_token_payload_from_cookies')
+    def test_access_non_existent_project(self, mock_get_token_payload):
+        mock_get_token_payload.return_value = {
+            'user_id': self.test_user.user_id,
+            'name_space_id': self.startup.startup_id,
+            'name_space_name': 'startup'
+        }
+
+        non_existent_url = reverse('users:user_startup_project', args=[self.test_user.user_id, 999])
+        response = self.client.get(non_existent_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @patch('users.permissions.get_token_payload_from_cookies')
+    def test_delete_non_existent_project(self, mock_get_token_payload):
+        mock_get_token_payload.return_value = {
+            'user_id': self.test_user.user_id,
+            'name_space_id': self.startup.startup_id,
+            'name_space_name': 'startup'
+        }
+
+        non_existent_url = reverse('users:user_startup_project', args=[self.test_user.user_id, 999])
+        response = self.client.delete(non_existent_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @patch('users.permissions.get_token_payload_from_cookies')
+    def test_update_project_with_invalid_data(self, mock_get_token_payload):
+        mock_get_token_payload.return_value = {
+            'user_id': self.test_user.user_id,
+            'name_space_id': self.startup.startup_id,
+            'name_space_name': 'startup'
+        }
+
+        invalid_update_payload = {
+            "title": "",  
+            "description": "Updated description",
+            "budget": "not_a_number"  
+        }
+        response = self.client.patch(self.url, data=invalid_update_payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
