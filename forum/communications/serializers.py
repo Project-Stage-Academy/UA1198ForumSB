@@ -1,8 +1,9 @@
-from rest_framework import serializers
-from .mongo_models import NamespaceEnum, Room
-from .helpers import is_namespace_info_correct
-from bson.objectid import ObjectId
 from bson.errors import InvalidId
+from bson.objectid import ObjectId
+from rest_framework import serializers
+
+from .helpers import is_namespace_info_correct
+from .mongo_models import NamespaceEnum, Room
 
 
 class NamespaceInfoSerializer(serializers.Serializer):
@@ -26,12 +27,12 @@ class RoomSerializer(serializers.Serializer):
         for participant in participants:
             if not NamespaceInfoSerializer(data=participant).is_valid():
                 raise serializers.ValidationError("Invalid participant.")
-            
+
             namespace_obj = is_namespace_info_correct(participant)
-            
+
             if not namespace_obj:
                 raise serializers.ValidationError("Incorrect participants data.")
-        
+
         namespaces = [p.get("namespace") for p in participants]
 
         if ("startup" not in namespaces) or ("investor" not in namespaces):
@@ -60,13 +61,14 @@ class ChatMessageSerializer(serializers.Serializer):
 
         if not NamespaceInfoSerializer(data=author).is_valid():
             raise serializers.ValidationError("Invalid author.")
-        
+
         author_is_correct = is_namespace_info_correct(author)
-        
+
         if not author_is_correct:
             raise serializers.ValidationError("Incorrect author data.")
-        
+
         return data
+
 
 class BaseWSMessageSerializer(serializers.Serializer):
     type = serializers.CharField(required=True)
@@ -88,6 +90,10 @@ class WSBaseNotificationSerializer(BaseWSMessageSerializer):
 class WSNotificationSerializer(WSBaseNotificationSerializer):
     initiator = serializers.DictField(required=True)
     created_at = serializers.CharField(required=True)
+
+
+class WSChatMessageSerializer(WSNotificationSerializer):
+    message_id = serializers.CharField(required=True)
 
 
 class WSNotificationAckSerializer(serializers.Serializer):
