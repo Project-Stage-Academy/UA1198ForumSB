@@ -1,5 +1,6 @@
 from rest_framework.test import APITestCase
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from django.http.cookie import SimpleCookie
 
 from users.models import CustomUser
 
@@ -18,6 +19,11 @@ class UserSetupMixin(APITestCase):
         )
 
         token = AccessToken.for_user(self.test_user)
+        refresh_token = RefreshToken.for_user(self.test_user)
+        self.client.cookies = SimpleCookie({
+            'refresh_token': refresh_token,
+            'access_token': token
+        })
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
     def tearDown(self) -> None:

@@ -78,6 +78,6 @@ class ThisUserPermission(permissions.BasePermission):
         if user_id_from_request_data:
             return (
                 (current_user_id == user_id_from_url) and 
-                (current_user_id == user_id_from_request_data)
+                (current_user_id == int(user_id_from_request_data))
             )
         return current_user_id == user_id_from_url

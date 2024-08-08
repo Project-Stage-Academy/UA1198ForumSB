@@ -5,8 +5,8 @@ from .views import StartupSizeViewSet, StartupViewSet
 from investors.views import InvestorSaveStartupView, UnsaveStartupView
 
 router = DefaultRouter()
-router.register('', StartupViewSet, basename='startup')
 router.register('startup_sizes', StartupSizeViewSet, 'startup_sizes')
+router.register('', StartupViewSet, basename='startup')
 
 
 urlpatterns = [
