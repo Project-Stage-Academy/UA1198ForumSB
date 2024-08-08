@@ -1,0 +1,30 @@
+Hello {{ owner.first_name }},
+
+This is a notification regarding your project "{{ project_title }}" under the startup "{{ startup_name }}".
+
+{% if action == 'create' %}
+Your project has been successfully created!
+
+Here are the details of the new project:
+- Title: {{ project_title }}
+- Description: {{ project_description }}
+
+{% elif action == 'update' %}
+Your project has been successfully updated.
+
+Here are the updated details of the project:
+- Title: {{ project_title }}
+- Description: {{ project_description }}
+- Status: {{ project_status }}
+
+{% elif action == 'delete' %}
+Your project has been marked for deletion.
+
+Please note that this is an informational message only and no actual deletion has taken place.
+
+{% endif %}
+
+If you have any questions or need further information, please feel free to contact us.
+
+Best regards,
+Your Team

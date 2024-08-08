@@ -3,6 +3,7 @@ from rest_framework.throttling import ScopedRateThrottle
 
 from investors.views import UserInvestorsView, UserInvestorView, InvestorSavedStartupsView
 from startups.views import UserStartupsView, UserStartupView
+from projects.views import UserStartupProjectView
 
 from users import views
 
@@ -20,6 +21,7 @@ urlpatterns = [
     ),
     path('<int:user_id>/startups/', UserStartupsView.as_view(), name='user_startups'),
     path('<int:user_id>/startups/<int:startup_id>/', UserStartupView.as_view(), name='user_startup'),
+    path('<int:user_id>/startups/<int:startup_id>/project/', UserStartupProjectView.as_view(), name='user_startup_project'),
     path(
         'token/',
         views.TokenObtainPairView.as_view(throttle_classes=[ScopedRateThrottle]),
