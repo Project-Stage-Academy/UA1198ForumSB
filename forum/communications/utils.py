@@ -221,3 +221,27 @@ class InvestorNotificationManager(NotificationManager):
 
     def get_namespace_id(self) -> int:
         return self.namespace.investor_id
+
+
+class ChatNotificationManager(NotificationManager):
+    def __init__(self, namespace_obj: Investor | Startup, room) -> None:
+        super().__init__(namespace_obj)
+        self.room = room
+
+    def _create_receivers_namespaces(self) -> list[NamespaceInfo]:
+        receivers: list[NamespaceInfo] = []
+
+        # TODO: check if receiver allows notification
+        for participant in self.room.participants:
+            if participant['namespace_id'] != self.get_namespace_id():
+                receivers.append(participant)
+
+        return receivers
+
+
+class InvestorChatNotificationManager(ChatNotificationManager, InvestorNotificationManager):
+    pass
+
+
+class StartupChatNotificationManager(ChatNotificationManager, StartupNotificationManager):
+    pass

@@ -1,9 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .mongo_models import Room, Message
+from django.shortcuts import get_object_or_404
+from .mongo_models import Room, Message, NamespaceEnum
 from .serializers import RoomSerializer, ChatMessageSerializer
 from .helpers import generate_room_name
+from .utils import InvestorChatNotificationManager, StartupChatNotificationManager
+from startups.models import Startup
+from investors.models import Investor
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
@@ -35,7 +39,21 @@ class SendMessageView(APIView):
         if serializer.is_valid():
             new_message = Message(**serializer.data)
             new_message.save()
-            # TODO call NotificationManager to send new_message.id
+            if new_message.author.namespace == NamespaceEnum.STARTUP:
+                startup = get_object_or_404(
+                    Startup, user_id=new_message.author.user_id, startup_id=new_message.author.namespace_id
+                )
+                manager = StartupChatNotificationManager(startup, new_message.room)
+            elif new_message.author.namespace == NamespaceEnum.INVESTOR:
+                investor = get_object_or_404(
+                    Investor, user_id=new_message.author.user_id, investor_id=new_message.author.namespace_id
+                )
+                manager = InvestorChatNotificationManager(investor, new_message.room)
+            notification_message = (
+                f'Message: {new_message.id} was sent by {new_message.author.namespace} '
+                f'with id {new_message.author.namespace_id}'
+            )
+            manager.push_notification(notification_message)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
