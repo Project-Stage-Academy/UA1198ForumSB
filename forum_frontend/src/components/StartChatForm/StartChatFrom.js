@@ -2,10 +2,10 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import './StartChatForm.css'
-import axios from 'axios';
-import {API_URL} from "../../index";
+import { API_URL } from '../../index';
 import { useState } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
+import APIService from '../APIService/APIService';
 
 function StartChatForm(props) {
     const {show, handleClose, startup} = props;
@@ -26,43 +26,39 @@ function StartChatForm(props) {
         const investor_namespace = "investor";
         const investor_id = 1;
 
-        const new_room = await axios.post(`${API_URL}/communications/conversations/create`, {
-            participants: [{
-                user_id: investor_user_id,
-                namespace: investor_namespace,
-                namespace_id: investor_id
-            },{
-                user_id: startup.user,
-                namespace: "startup",
-                namespace_id: startup.startup_id
-            }]
-        }, {
-            headers:{
-                "Authorization": `Bearer ${token}`
-            }
-        })
-        .then(resp => resp.data)
-        .catch(err => console.log(err));
+        try {
+            const new_room = await APIService.fetchWithAuth(`${API_URL}/communications/conversations/create`, {
+                method: 'POST',
+                data: {
+                    participants: [{
+                        user_id: investor_user_id,
+                        namespace: investor_namespace,
+                        namespace_id: investor_id
+                    }, {
+                        user_id: startup.user,
+                        namespace: "startup",
+                        namespace_id: startup.startup_id
+                    }]
+                }
+            });
 
-        const status = await axios.post(`${API_URL}/communications/messages/send`, {
-            room: new_room.id,
-            author: {
-                user_id: investor_user_id,
-                namespace: investor_namespace,
-                namespace_id: investor_id
-            },
-            content: message
-        }, {
-            headers:{
-                "Authorization": `Bearer ${token}`
-            }
-        })
-        .then(resp => resp.status)
-        .catch(err => console.log(err));
+            const response = await APIService.fetchWithAuth(`${API_URL}/communications/messages/send`, {
+                method: 'POST',
+                data: {
+                    room: new_room.data.id,
+                    author: {
+                        user_id: investor_user_id,
+                        namespace: investor_namespace,
+                        namespace_id: investor_id
+                    },
+                    content: message
+                }
+            });
 
-        if(status === 201) setMessageSent(true); 
-
-        setStatusCode(Number(status));
+            setStatusCode(response.status);
+        } catch (err) {
+            console.error("Error creating chat or sending message:", err);
+        }
     }
 
     return (

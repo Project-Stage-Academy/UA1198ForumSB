@@ -1,38 +1,26 @@
-import React, { useEffect, useState } from 'react'
-import axios from "axios";
-import {API_URL} from "../../index";
+import React, { useEffect, useState } from 'react';
+import APIService from '../APIService/APIService';
 import StartupItem from '../StartupItem/StartupItem';
-import './StartupList.css'
+import { API_URL } from '../../index';
+import { useNavigate } from 'react-router-dom';
+import './StartupList.css';
 
 function StartupsList() {
     const [startupsList, setStartupsList] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchStartupsList = async () => {
-            const token = await axios.post(`${API_URL}/users/token/`, {
-                email: "borys@mail.com",
-                password: "123456"
-            })
-            .then(resp => resp.data.access)
-            .catch(err => console.log(err));
-
             try {
-                const response = await axios.get(
-                    `${API_URL}/startups/`, {
-                    headers:{
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
-                const startups = await response.data;
-                setStartupsList(startups);
+                const response = await APIService.fetchWithAuth(`${API_URL}/startups/`,
+                    {}, navigate);
+                setStartupsList(response.data);
+            } catch (err) {
+                console.log("Error fetching startups", err);
             }
-            catch (err){
-                console.log(err);
-            }
-        }
+        };
         fetchStartupsList();
-    }, []);
+    }, [navigate]);
 
     return (<>
         <h1 className='mt-2 mb-3'>Startups</h1>
@@ -47,4 +35,4 @@ function StartupsList() {
     </>);
 }
 
-export default StartupsList
+export default StartupsList;
