@@ -11,7 +11,7 @@ function SendMessageForm(props) {
             <Modal.Header closeButton>
                 <Modal.Title>
                     <div className='fs-5'>
-                        Chat with
+                        Start chat with
                         <span className='text-secondary fst-italic fs-4'>
                             {` ${startup_name} `}
                         </span>
@@ -20,9 +20,6 @@ function SendMessageForm(props) {
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <div className='chat'>
-                    Chat
-                </div>
                 <Form.Control as="textarea" placeholder='Type Message' rows={3}/>
             </Modal.Body>
             <Modal.Footer>

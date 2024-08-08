@@ -2,7 +2,7 @@
     justify-content: space-between !important;
 }
 
-.chat {
+/* .chat {
     width: 100%;
     max-height: 300px;
     margin-bottom: 16px;
@@ -16,4 +16,4 @@
     background-clip: padding-box;
     border: var(--bs-border-width) solid var(--bs-border-color);
     border-radius: var(--bs-border-radius);
-}
+} */
