@@ -57,6 +57,8 @@ class UserStartupProjectViewTests(UserSetupMixin):
             'title': 'New Project Title',
             'description': 'New Description'
         }
+
+        self.history_url = reverse('projects:project-history-list', kwargs={'project_id': self.project.pk})
    
     @patch('users.permissions.get_token_payload_from_cookies')
     def test_get_project(self, mock_get_token_payload):
@@ -102,21 +104,6 @@ class UserStartupProjectViewTests(UserSetupMixin):
         self.assertEqual(project.description, self.valid_update_payload['description'])
         mock_send_notification.assert_called_once()
         mock_notify_investors_via_email.assert_called_once()
-    
-    @patch('projects.views.send_notification')
-    @patch('users.permissions.get_token_payload_from_cookies')
-    def test_delete_project(self, mock_get_token_payload, mock_send_notification):
-        mock_get_token_payload.return_value = {
-            'user_id': self.test_user.user_id,
-            'name_space_id': self.startup.startup_id,
-            'name_space_name': 'startup'
-        }
-
-        response = self.client.delete(self.url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        mock_send_notification.assert_called_once()
-        # project = Project.objects.get(pk=self.project.pk)
-        # self.assertTrue(project.is_deleted)
 
     @patch('users.permissions.get_token_payload_from_cookies')
     def test_create_project_with_invalid_payload(self, mock_get_token_payload):
@@ -181,3 +168,28 @@ class UserStartupProjectViewTests(UserSetupMixin):
         response = self.client.patch(self.url, data=invalid_update_payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
+    def test_retrieve_project_history_authorized(self):
+        """Test that an authenticated user can retrieve the project history."""
+        response = self.client.get(self.history_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), self.project.history.count())
+
+    def test_retrieve_project_history_unauthorized(self):
+        """Test that an unauthenticated user cannot retrieve the project history."""
+        self.client.logout()
+        response = self.client.get(self.history_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_project_history_non_existent_project(self):
+        """Test that retrieving history for a non-existent project returns 404."""
+        invalid_url = reverse('project-history-list', kwargs={'project_id': 999})
+        response = self.client.get(invalid_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_retrieve_empty_project_history(self):
+        """Test that a project with no historical records returns an empty list."""
+        # Assuming a new project has no history
+        Project.history.all().delete()  # Clear all history records
+        response = self.client.get(self.history_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])

@@ -64,14 +64,6 @@ class UserStartupProjectView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, user_id, startup_id):
-        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
-        project = get_object_or_404(Project, startup=startup)
-        # project.is_deleted = True  
-        # project.save()
-        send_notification(project, "delete")
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
 class ProjectHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Viewset for taking historical records from Project instances.
