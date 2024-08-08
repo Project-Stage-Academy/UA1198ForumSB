@@ -47,10 +47,11 @@ function StartChatForm(props) {
                     content: message
                 }
             });
-
             setStatusCode(response.status);
+
         } catch (err) {
             console.error("Error creating chat or sending message:", err);
+            setStatusCode(-1);
         } finally {
             setMessageSent(true)
         }
@@ -70,8 +71,11 @@ function StartChatForm(props) {
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {statusCode === 201 ? 
-                    <div className='success-msg'>Message has been sent.</div>
+                {statusCode === 201 ?
+                    <div className='alert alert-success'>Message has been sent.</div>
+                    : null}
+                {(statusCode !== 201 & statusCode) ?
+                    <div className='alert alert-danger'>Error while creating chat or sending message.</div>
                     : null}
                 <Form.Control as="textarea" placeholder='Type Message' rows={3} 
                     onChange={e => setMessage(e.target.value)}
