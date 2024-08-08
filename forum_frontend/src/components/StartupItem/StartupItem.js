@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react';
 import './StartupItem.css'
-import SendMessageForm from '../SendMessageForm/SendMessageForm';
+import StartChatForm from '../StartChatForm/StartChatFrom';
 
 function StartupItem(props) {
     const {startup} = props;
@@ -16,7 +16,7 @@ function StartupItem(props) {
             <button className='btn btn-primary' onClick={handleShow}>
                 Contact
             </button>
-            <SendMessageForm 
+            <StartChatForm 
                 show={showForm}
                 handleClose={handleClose}
                 startup_name={startup.name}
