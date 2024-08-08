@@ -23,7 +23,7 @@ function StartChatForm(props) {
         const investor_namespace = "investor";
         const investor_id = 1;
 
-        const new_room = axios.post(`${API_URL}/communications/conversations/create`, {
+        const new_room = await axios.post(`${API_URL}/communications/conversations/create`, {
             participants: [{
                 user_id: investor_user_id,
                 namespace: investor_namespace,
@@ -41,7 +41,7 @@ function StartChatForm(props) {
         .then(resp => resp.data)
         .catch(err => console.log(err));
 
-        const status = axios.post(`${API_URL}/communications/messages/send`, {
+        const status = await axios.post(`${API_URL}/communications/messages/send`, {
             room: new_room.id,
             author: {
                 user_id: investor_user_id,
