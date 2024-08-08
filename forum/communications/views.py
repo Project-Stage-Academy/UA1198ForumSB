@@ -1,3 +1,4 @@
+import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,6 +11,7 @@ from startups.models import Startup
 from investors.models import Investor
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
+from users.permissions import get_token_payload_from_cookies
 
 
 class CreateConversationView(APIView):
@@ -31,7 +33,30 @@ class CreateConversationView(APIView):
 
 class ConversationsListView(APIView):
     def get(self, request):
-        pass
+        token_payload = get_token_payload_from_cookies(request)
+        namespace = token_payload.get("name_space_name")
+        namespace_id = token_payload.get("name_space_id")
+
+        all_rooms = Room.objects.all()
+        namespace_rooms = [room.to_json() for room in all_rooms if self.is_room_of_namespace(
+            room, namespace, namespace_id
+        )]
+        json_data = json.dumps(namespace_rooms)
+
+        return Response(data=json_data, status=status.HTTP_200_OK)
+    
+    @staticmethod
+    def is_room_of_namespace(
+        room: Room,
+        namespace: str,
+        namespace_id: int
+    ) -> bool:
+        return any([
+            (namespace == participant["namespace"].value and 
+                namespace_id == participant["namespace_id"])
+            for participant in room.participants]
+        )
+
 
 
 class SendMessageView(APIView):
