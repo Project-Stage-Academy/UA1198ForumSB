@@ -1,6 +1,7 @@
 from os import environ
 
 import jwt
+from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import get_object_or_404
@@ -48,6 +49,32 @@ from .throttling import PasswordResetThrottle
 
 class TokenObtainPairView(BaseTokenObtainPairView):
     throttle_scope = 'token_obtain'
+    
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        user = authenticate(request, 
+                            email=request.data.get('email'),
+                            password=request.data.get('password'))
+        if user:
+            login(request, user)
+        access_token = response.data.get('access')
+        refresh_token = response.data.get('refresh')
+
+        if access_token:
+            response.set_cookie(
+                'access_token',
+                access_token,
+                httponly=True,
+                secure=True
+            )
+        if refresh_token:
+            response.set_cookie(
+                'refresh_token',
+                refresh_token,
+                httponly=True,
+                secure=True
+            )
+        return response
 
 
 class TokenRefreshView(BaseTokenRefreshView):
@@ -110,15 +137,13 @@ class NamespaceSelectionView(APIView):
                 'refresh_token',
                 new_refresh_token,
                 httponly=True,
-                secure=True,
-                samesite='Strict',
+                secure=True
             )
             response.set_cookie(
                 'access_token',
                 new_refresh_token.access_token,
                 httponly=True,
-                secure=True,
-                samesite='Strict',
+                secure=True
             )
             return response
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
