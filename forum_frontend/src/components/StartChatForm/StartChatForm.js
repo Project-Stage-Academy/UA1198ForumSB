@@ -14,6 +14,7 @@ function StartChatForm(props) {
     const [statusCode, setStatusCode] = useState(null);
 
     const createChatAndSendFirstMessage = async (message) => {
+        setMessageSent(false);
         const investor_user_id = 3;
         const investor_namespace = "investor";
         const investor_id = 1;
@@ -50,6 +51,8 @@ function StartChatForm(props) {
             setStatusCode(response.status);
         } catch (err) {
             console.error("Error creating chat or sending message:", err);
+        } finally {
+            setMessageSent(true)
         }
     }
 

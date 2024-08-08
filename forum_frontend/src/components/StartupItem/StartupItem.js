@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react';
 import './StartupItem.css'
-import StartChatForm from '../StartChatForm/StartChatFrom';
+import StartChatForm from '../StartChatForm/StartChatForm';
 
 function StartupItem(props) {
     const {startup} = props;
