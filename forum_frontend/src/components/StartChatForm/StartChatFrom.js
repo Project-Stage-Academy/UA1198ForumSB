@@ -14,14 +14,6 @@ function StartChatForm(props) {
     const [statusCode, setStatusCode] = useState(null);
 
     const createChatAndSendFirstMessage = async (message) => {
-        setMessageSent(false);
-        const token = await axios.post(`${API_URL}/users/token/`, {
-            email: "borys@mail.com",
-            password: "123456"
-        })
-        .then(resp => resp.data.access)
-        .catch(err => console.log(err));
-
         const investor_user_id = 3;
         const investor_namespace = "investor";
         const investor_id = 1;
