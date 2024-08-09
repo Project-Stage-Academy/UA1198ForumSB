@@ -67,8 +67,8 @@ class TokenObtainPairView(BaseTokenObtainPairView):
             response.set_cookie(
                 'access_token',
                 access_token,
-                httponly=True,
-                secure=True
+                httponly=False,
+                secure=False
             )
         if refresh_token:
             response.set_cookie(
@@ -97,7 +97,7 @@ class TokenRefreshView(BaseTokenRefreshView):
             return JsonResponse({'detail': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
         response = Response(serializer.validated_data, status=status.HTTP_200_OK)
-        response.set_cookie('access_token', serializer.validated_data['access'], httponly=True, secure=True)
+        response.set_cookie('access_token', serializer.validated_data['access'], httponly=False, secure=False)
         if 'refresh' in serializer.validated_data:
             response.set_cookie('refresh_token', serializer.validated_data['refresh'], httponly=True, secure=True)
         return response

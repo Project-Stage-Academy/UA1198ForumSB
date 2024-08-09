@@ -30,7 +30,7 @@ export default class APIService {
 
     static async login(email, password) {
         try {
-            const response = await axios.post(`${API_URL}/users/token/`, 
+            const response = await axios.post(`${API_URL}/users/login/`, 
                 { email, password }, { withCredentials: true });
             return response.data;
         } catch (err) {
