@@ -14,6 +14,7 @@ function StartupsList() {
             try {
                 const response = await APIService.fetchWithAuth(`${API_URL}/startups/`,
                     {}, navigate);
+                if (!response) return;
                 setStartupsList(response.data);
             } catch (err) {
                 console.log("Error fetching startups", err);

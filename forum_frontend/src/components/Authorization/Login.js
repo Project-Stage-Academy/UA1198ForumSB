@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import APIService from '../APIService/APIService';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '../../forms/Input';
@@ -8,6 +8,16 @@ function Login() {
     const [error, setError] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+
+    useEffect(() => {
+        const checkAuthentication = async () => {
+            const token = APIService.GetAccessToken();
+            if (token && !APIService.IsTokenExpired(token)) {
+                navigate('/');
+            }
+        };
+        checkAuthentication();
+    }, [navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
