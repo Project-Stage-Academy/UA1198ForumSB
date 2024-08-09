@@ -4,6 +4,7 @@ import StartupItem from '../StartupItem/StartupItem';
 import { API_URL } from '../../index';
 import { useNavigate } from 'react-router-dom';
 import './StartupList.css';
+import NoDataInfo from '../NoDataInfo/NoDataInfo';
 
 function StartupsList() {
     const [startupsList, setStartupsList] = useState([]);
@@ -31,7 +32,7 @@ function StartupsList() {
                         return <StartupItem startup={startup} key={startup.startup_id}/>;
                     }
                 )}
-            </ul> : <span className='no-data'>There are no startups yet...</span>}
+            </ul> : <NoDataInfo dataName="startups" />}
         </div>
     </>);
 }
