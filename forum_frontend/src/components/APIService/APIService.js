@@ -24,11 +24,11 @@ export default class APIService {
         return token && !this.IsTokenExpired(token);
     }
 
-    static GetUserIdFromToken() {
-        if (this.IsAuthenticated()) {
-            const token = this.GetAccessToken();
+    static GetDecodedToken() {
+        const token = this.GetAccessToken();
+        if (token) {
             const decodedToken = jwtDecode(token);
-            return decodedToken.user_id;
+            return decodedToken;
         }
         return null;
     }
