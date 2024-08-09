@@ -2,6 +2,7 @@ from rest_framework import permissions
 from rest_framework_simplejwt.tokens import AccessToken, TokenError
 from rest_framework.exceptions import PermissionDenied
 
+from communications.mongo_models import NamespaceEnum
 
 SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
 
@@ -47,7 +48,7 @@ class IsNamespace(permissions.BasePermission):
     def has_permission(self, request, view):
         payload = get_token_payload_from_cookies(request)
         namespace = payload.get('name_space_name')
-        if namespace not in ['startup', 'investor']:
+        if namespace not in [NamespaceEnum.STARTUP.value, NamespaceEnum.INVESTOR.value]:
             raise PermissionDenied({"error": "Invalid namespace."})
         return True
     
