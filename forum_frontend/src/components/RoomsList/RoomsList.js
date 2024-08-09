@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import { API_URL } from '../../index.js';
+import RoomItem from '../RoomItem/RoomItem.js';
 
 function RoomsList() {
     const [roomsList, setRoomsList] = useState([]);
@@ -29,7 +30,7 @@ function RoomsList() {
     return (
         <div>
             <ul>
-                {roomsList.map(room => <li key={room.id}>{room.name}</li>)}
+                {roomsList.map(room => <RoomItem key={room.id} room={room}/>)}
             </ul>
         </div>
     );
