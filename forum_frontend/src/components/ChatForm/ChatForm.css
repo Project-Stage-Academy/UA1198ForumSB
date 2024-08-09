@@ -1,5 +1,7 @@
 .messages-list {
     width: 100%;
+    max-height: 200px;
+    overflow: auto;
     padding: 0.375rem 0.75rem;
     margin-bottom: 16px;
     font-size: 1rem;
