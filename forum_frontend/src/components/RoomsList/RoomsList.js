@@ -3,6 +3,7 @@ import { API_URL } from '../../index.js';
 import RoomItem from '../RoomItem/RoomItem.js';
 import APIService from '../APIService/APIService.js';
 import { useNavigate } from 'react-router-dom';
+import NoDataInfo from '../NoDataInfo/NoDataInfo.js';
 
 function RoomsList() {
     const [roomsList, setRoomsList] = useState([]);
@@ -24,9 +25,12 @@ function RoomsList() {
     }, [navigate]);
     return (
         <div>
-            <ul>
-                {roomsList.map(room => <RoomItem key={room.id} room={room}/>)}
-            </ul>
+            {roomsList.length ? 
+                <ul>
+                    {roomsList.map(room => <RoomItem key={room.id} room={room}/>)}
+                </ul>:
+                <NoDataInfo dataName="chats" />
+            }
         </div>
     );
 }
