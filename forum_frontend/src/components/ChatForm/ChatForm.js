@@ -31,6 +31,20 @@ function ChatForm(props) {
         }
     }, [navigate, room_id]);
 
+    const addLastMessageToList = useCallback(async (message_id) => {
+        try {
+            const res = await APIService.fetchWithAuth(
+                `${API_URL}/communications/messages/${message_id}`,
+                {}, navigate
+            );
+            const last_message = JSON.parse(res.data);
+            setMessagesList([...messagesList, last_message]); 
+        }
+        catch (err) {
+            console.log("Error while getting last message", err);
+        }
+    }, [navigate, messagesList])
+
     const sendMessage = async (message) => {
         setMessageSent(false);
         const investor_user_id = 3;
@@ -50,7 +64,6 @@ function ChatForm(props) {
                     content: message
                 }
             });
-
             setStatusCode(res.status);
 
         } catch (err) {
@@ -70,11 +83,13 @@ function ChatForm(props) {
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             console.log(data);
-            // retreive last message
-            // use MessageDetailView
+            const new_message_id = null; //from received data
+            addLastMessageToList(new_message_id);
         };
-        return 
-    }, [getMessagesList]);
+        return () => {
+            chatSocket.close();
+        }
+    }, [getMessagesList, addLastMessageToList]);
 
     return (
         <Modal show={show} onHide={handleClose}>
