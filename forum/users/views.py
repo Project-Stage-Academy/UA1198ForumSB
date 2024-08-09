@@ -145,8 +145,8 @@ class NamespaceSelectionView(APIView):
             response.set_cookie(
                 'access_token',
                 new_refresh_token.access_token,
-                httponly=True,
-                secure=True
+                httponly=False,
+                secure=False
             )
             return response
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
