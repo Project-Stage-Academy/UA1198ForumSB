@@ -50,7 +50,7 @@ class ThisNamespace(permissions.BasePermission):
     NAMESPACE = None
 
     def has_permission(self, request, view):
-        if request.method in ["PUT", "PATCH"]:
+        if request.method in ["PUT", "PATCH", "POST"]:
             payload = get_token_payload_from_cookies(request)
             namespace_id = payload.get('name_space_id')
             view_namespace_id = view.kwargs.get(f'{self.NAMESPACE}_id')
