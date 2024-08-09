@@ -23,6 +23,7 @@ function Login() {
         e.preventDefault();
         try {
             await APIService.login(email, password);
+            // TODO nvigate to select namespace afetr login
             navigate('/startups');
         } catch (err) {
             const errorMessage = err?.detail || "An error occurred during login.";
