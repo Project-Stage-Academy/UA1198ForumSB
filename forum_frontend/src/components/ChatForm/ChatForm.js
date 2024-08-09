@@ -31,26 +31,33 @@ function ChatForm(props) {
         }
     }, [navigate, room_id]);
 
+    const addLastMessageToList = useCallback(async (message_id) => {
+        try {
+            const res = await APIService.fetchWithAuth(
+                `${API_URL}/communications/messages/${message_id}`,
+                {}, navigate
+            );
+            const last_message = JSON.parse(res.data);
+            setMessagesList([...messagesList, last_message]); 
+        }
+        catch (err) {
+            console.log("Error while getting last message", err);
+        }
+    }, [navigate, messagesList])
+
     const sendMessage = async (message) => {
         setMessageSent(false);
-        const investor_user_id = 3;
-        const investor_namespace = "investor";
-        const investor_id = 1;
+        const namespaceInfo = APIService.getNamespaceInfoFromToken();
 
         try {
             const res = await APIService.fetchWithAuth(`${API_URL}/communications/messages/send`, {
                 method: 'POST',
                 data: {
                     room: room_id,
-                    author: {
-                        user_id: investor_user_id,
-                        namespace: investor_namespace,
-                        namespace_id: investor_id
-                    },
+                    author: namespaceInfo,
                     content: message
                 }
             });
-
             setStatusCode(res.status);
 
         } catch (err) {
@@ -64,6 +71,18 @@ function ChatForm(props) {
 
     useEffect(() => {
         getMessagesList();
+        const chatSocket = new WebSocket(
+            'ws://ws/notifications/'
+        );
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log(data);
+            // const new_message_id = null; //from received data
+            // addLastMessageToList(new_message_id);
+        };
+        return () => {
+            chatSocket.close();
+        }
     }, [getMessagesList]);
 
     return (

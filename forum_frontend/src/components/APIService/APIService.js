@@ -75,4 +75,15 @@ export default class APIService {
             throw err.response.data;
         }
     }
+
+    static getNamespaceInfoFromToken(){
+        const accessToken = Cookies.get('access_token');
+        const decodedToken = jwtDecode(accessToken);
+
+        const user_id = decodedToken.user_id;
+        const namespace = decodedToken.name_space_name;
+        const namespace_id = decodedToken.name_space_id;
+        
+        return {user_id, namespace, namespace_id};
+    }
 }

@@ -58,7 +58,6 @@ class ConversationsListView(APIView):
         )
 
 
-
 class SendMessageView(APIView):
     # TODO add permissions that allow to investor/startup create message only for his room
 
@@ -97,3 +96,16 @@ class MessagesListView(APIView):
         # TODO Add here pagination later
         messages = Message.objects.filter(room = conversation_id).to_json()
         return Response(messages, status=status.HTTP_200_OK)
+
+
+class MessageDetailView(APIView):
+    def get(self, request, message_id):
+        try:
+            message_id = ObjectId(message_id)
+        except InvalidId:
+            return Response("Invalid message id", status=status.HTTP_400_BAD_REQUEST)
+        message = Message.objects.filter(id=message_id).first()
+        if not message:
+            return Response("Message doesn't exist.", status=status.HTTP_404_NOT_FOUND)
+        return Response(message.to_json(), status=status.HTTP_200_OK)
+    
