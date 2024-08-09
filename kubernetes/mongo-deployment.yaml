@@ -31,10 +31,10 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  forum-mongo
+  name: forum-mongo
   namespace: default
   labels:
-    app:  forum-mongo
+    app: forum-mongo
 spec:
   selector:
     matchLabels:
@@ -43,25 +43,25 @@ spec:
   template:
     metadata:
       labels:
-        app:  forum-mongo
+        app: forum-mongo
     spec:
       containers:
-      - name:  forum-mongo
-        image:  mongo:4.4.24
+      - name: forum-mongo
+        image: mongo:4.4.24
         env:
         - name: MONGO_INITDB_ROOT_USERNAME
           valueFrom:
             secretKeyRef:
               name: forum-secret
-              key: mongo_initdb_root_username
+              key: MONGO_INITDB_ROOT_USERNAME
         - name: MONGO_INITDB_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: forum-secret
-              key: mongo_initdb_root_password
+              key: MONGO_INITDB_ROOT_PASSWORD
         ports:
-        - containerPort:  27017
-          name:  forum-mongo
+        - containerPort: 27017
+          name: forum-mongo
         volumeMounts:
           - name: mongo-data
             mountPath: /data/db
