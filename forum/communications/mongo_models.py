@@ -32,7 +32,6 @@ class Notification(BaseTimestampModel):
 class Room(BaseTimestampModel):
     name = fields.StringField(max_length=128, unique=True, required=True)
     participants = fields.EmbeddedDocumentListField(NamespaceInfo, required=True, max_length=2)
-    
 
 class Message(BaseTimestampModel):
     room = fields.ReferenceField(Room, reverse_delete_rule=CASCADE, required=True)

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .mongo_models import NamespaceEnum, Room
 from .helpers import is_namespace_info_correct
+from .validators import escape_xss
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 
@@ -24,13 +25,11 @@ class RoomSerializer(serializers.Serializer):
             raise serializers.ValidationError("Only two participants in one room.")
 
         for participant in participants:
-            if not NamespaceInfoSerializer(data=participant).is_valid():
-                raise serializers.ValidationError("Invalid participant.")
+            serializer = NamespaceInfoSerializer(data=participant)
+            if not serializer.is_valid():
+                raise serializers.ValidationError(f"Invalid participant: {serializer.errors}")
             
-            namespace_obj = is_namespace_info_correct(participant)
-            
-            if not namespace_obj:
-                raise serializers.ValidationError("Incorrect participants data.")
+            is_namespace_info_correct(participant)
         
         namespaces = [p.get("namespace") for p in participants]
 
@@ -44,6 +43,9 @@ class ChatMessageSerializer(serializers.Serializer):
     room = serializers.CharField(required=True)
     author = serializers.JSONField(required=True)
     content = serializers.CharField(required=True)
+    
+    def validate_content(self, value):
+        return escape_xss(value)
 
     def validate(self, data):
         room_id = data.get("room")
@@ -58,13 +60,11 @@ class ChatMessageSerializer(serializers.Serializer):
         if not room_exists:
             raise serializers.ValidationError("Room does not exist.")
 
-        if not NamespaceInfoSerializer(data=author).is_valid():
-            raise serializers.ValidationError("Invalid author.")
-        
-        author_is_correct = is_namespace_info_correct(author)
-        
-        if not author_is_correct:
-            raise serializers.ValidationError("Incorrect author data.")
+        serializer = NamespaceInfoSerializer(data=author)
+        if not serializer.is_valid():
+            raise serializers.ValidationError(f"Invalid author: {serializer.errors}")
+
+        is_namespace_info_correct(author)
         
         return data
 
