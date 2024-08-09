@@ -47,20 +47,14 @@ function ChatForm(props) {
 
     const sendMessage = async (message) => {
         setMessageSent(false);
-        const investor_user_id = 3;
-        const investor_namespace = "investor";
-        const investor_id = 1;
+        const namespaceInfo = APIService.getNamespaceInfoFromToken();
 
         try {
             const res = await APIService.fetchWithAuth(`${API_URL}/communications/messages/send`, {
                 method: 'POST',
                 data: {
                     room: room_id,
-                    author: {
-                        user_id: investor_user_id,
-                        namespace: investor_namespace,
-                        namespace_id: investor_id
-                    },
+                    author: namespaceInfo,
                     content: message
                 }
             });
@@ -83,13 +77,13 @@ function ChatForm(props) {
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             console.log(data);
-            const new_message_id = null; //from received data
-            addLastMessageToList(new_message_id);
+            // const new_message_id = null; //from received data
+            // addLastMessageToList(new_message_id);
         };
         return () => {
             chatSocket.close();
         }
-    }, [getMessagesList, addLastMessageToList]);
+    }, [getMessagesList]);
 
     return (
         <Modal show={show} onHide={handleClose}>

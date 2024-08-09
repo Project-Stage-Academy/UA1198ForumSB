@@ -15,35 +15,25 @@ function StartChatForm(props) {
 
     const createChatAndSendFirstMessage = async (message) => {
         setMessageSent(false);
-        const investor_user_id = 3;
-        const investor_namespace = "investor";
-        const investor_id = 1;
+        const namespaceInfo = APIService.getNamespaceInfoFromToken();
+        const startupInfo = {
+            user_id: startup.user,
+            namespace: "startup",
+            namespace_id: startup.startup_id
+        };
 
         try {
             const new_room = await APIService.fetchWithAuth(`${API_URL}/communications/conversations/create`, {
                 method: 'POST',
                 data: {
-                    participants: [{
-                        user_id: investor_user_id,
-                        namespace: investor_namespace,
-                        namespace_id: investor_id
-                    }, {
-                        user_id: startup.user,
-                        namespace: "startup",
-                        namespace_id: startup.startup_id
-                    }]
+                    participants: [namespaceInfo, startupInfo]
                 }
             });
-
             const response = await APIService.fetchWithAuth(`${API_URL}/communications/messages/send`, {
                 method: 'POST',
                 data: {
                     room: new_room.data.id,
-                    author: {
-                        user_id: investor_user_id,
-                        namespace: investor_namespace,
-                        namespace_id: investor_id
-                    },
+                    author: namespaceInfo,
                     content: message
                 }
             });
