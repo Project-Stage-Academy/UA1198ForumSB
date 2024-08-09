@@ -26,7 +26,7 @@ class UserInvestorsView(APIView):
     permission_classes = INVESTOR_BASE_PERMISSIONS
 
     def get(self, request, user_id):
-        investors = get_list_or_404(Investor, user=user_id)
+        investors = Investor.objects.filter(user=user_id)
         serializer = InvestorSerializer(investors, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
