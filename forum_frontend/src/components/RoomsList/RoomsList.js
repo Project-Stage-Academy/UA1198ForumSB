@@ -4,6 +4,7 @@ import RoomItem from '../RoomItem/RoomItem.js';
 import APIService from '../APIService/APIService.js';
 import { useNavigate } from 'react-router-dom';
 import NoDataInfo from '../NoDataInfo/NoDataInfo.js';
+import "./RoomsList.css"
 
 function RoomsList() {
     const [roomsList, setRoomsList] = useState([]);
@@ -27,7 +28,7 @@ function RoomsList() {
     return (
         <div>
             {roomsList.length ? 
-                <ul>
+                <ul className='rooms-list'>
                     {roomsList.map(room => <RoomItem key={room._id["$oid"]} room={room}/>)}
                 </ul>:
                 <NoDataInfo dataName="chats" />
