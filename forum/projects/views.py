@@ -5,12 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from users.permissions import (
-    get_token_payload_from_cookies,
-    IsInvestorNamespaceSelected,
-    ThisInvestor,
-    ThisUserPermission
-)
+from users.permissions import get_token_payload_from_cookies
+from investors.permissions import InvestorPermission
 from rest_framework import status
 
 from .models import Project, Industry
@@ -77,7 +73,7 @@ class IndustryViewSet(GenericViewSet, ListModelMixin):
 
 
 class ProjectSubscriptionView(APIView):
-    permission_classes = [IsAuthenticated, ThisUserPermission, IsInvestorNamespaceSelected, ThisInvestor]
+    permission_classes = [IsAuthenticated, InvestorPermission]
 
     def post(self, request, project_id):
         payload = get_token_payload_from_cookies(request)
@@ -85,7 +81,7 @@ class ProjectSubscriptionView(APIView):
         investor_subscribe_project_data = {
             "investor": investor_id,
             "project": project_id,
-            **request.data
+            "part": request.data.get("part")
         }
         serializer = ProjectSubscriptionSerializer(data=investor_subscribe_project_data)
 
