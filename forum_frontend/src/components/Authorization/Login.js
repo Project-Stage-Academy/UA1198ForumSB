@@ -10,7 +10,7 @@ function Login() {
     const [password, setPassword] = useState("");
 
     useEffect(() => {
-        if (APIService.IsAuthenticated()) {
+        if (APIService.checkTokenValid()) {
             navigate('/');
         }
     }, [navigate]);

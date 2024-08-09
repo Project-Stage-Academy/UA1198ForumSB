@@ -4,11 +4,7 @@ import { jwtDecode} from 'jwt-decode';
 import Cookies from 'js-cookie';
 
 export default class APIService {    
-    static GetAccessToken() {
-        return Cookies.get('access_token');
-    }
-
-    static IsTokenExpired(token) {
+    static checkTokenExpired(token) {
         try {
             const decodedToken = jwtDecode(token);
             const currentTime = Date.now() / 1000;
@@ -19,21 +15,37 @@ export default class APIService {
         }
     }
 
-    static IsAuthenticated() {
-        const token = this.GetAccessToken();
-        return token && !this.IsTokenExpired(token);
+    static checkTokenValid() {
+        const token = Cookies.get('access_token');
+        return token && !this.checkTokenExpired(token);
     }
 
-    static GetDecodedToken() {
-        const token = this.GetAccessToken();
-        if (token) {
+    static getDecodedToken() {
+        const token = Cookies.get('access_token');
+        if (!token) return null;
+        try {
             const decodedToken = jwtDecode(token);
             return decodedToken;
+        } catch (e) {
+            console.log("Failed to decode token", e);
+            return null;
         }
-        return null;
     }
 
-    static async RefreshToken(navigate) {
+    static getNamespaceInfoFromToken() {
+        const decodedToken = this.getDecodedToken();
+        const user_id = decodedToken.user_id;
+        const namespace = decodedToken.name_space_name;
+        const namespace_id = decodedToken.name_space_id;
+
+        if (!user_id || !namespace || !namespace_id || namespace !== "investor") {
+            return null;
+        }
+
+        return { user_id, namespace, namespace_id };
+    }
+
+    static async refreshToken(navigate) {
         const response = await axios.post(`${API_URL}/users/token/refresh/`, {}, {
             withCredentials: true
         }).catch((err) => {
@@ -44,13 +56,13 @@ export default class APIService {
     }
 
     static async fetchWithAuth(url, options = {}, navigate) {
-        let token = this.GetAccessToken();
+        let token = Cookies.get('access_token');
 
         if (!token) {
             navigate('/login');
             return;
-        } else if (this.IsTokenExpired(token)) {
-            token = await this.RefreshToken(navigate);
+        } else if (this.checkTokenExpired(token)) {
+            token = await this.refreshToken(navigate);
             if (!token) {
                 navigate('/login');
                 return;
@@ -74,16 +86,5 @@ export default class APIService {
         } catch (err) {
             throw err.response.data;
         }
-    }
-
-    static getNamespaceInfoFromToken(){
-        const accessToken = Cookies.get('access_token');
-        const decodedToken = jwtDecode(accessToken);
-
-        const user_id = decodedToken.user_id;
-        const namespace = decodedToken.name_space_name;
-        const namespace_id = decodedToken.name_space_id;
-        
-        return {user_id, namespace, namespace_id};
     }
 }

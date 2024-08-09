@@ -14,7 +14,7 @@ function UserNamespacesList() {
     useEffect(() => {
         const fetchNamespaces = async () => {
             try {
-                const token = APIService.GetDecodedToken();
+                const token = APIService.getDecodedToken();
                 if (token) {
                     setSelectedNamespace(token.name_space_id);
                     const user_id = token.user_id;
