@@ -14,7 +14,8 @@ function RoomsList() {
             try {
                 const resp = await APIService.fetchWithAuth(`${API_URL}/communications/conversations`,
                     {}, navigate);
-                setRoomsList(JSON.parse(resp.data));
+                setRoomsList(JSON.parse(resp.data).map(room => JSON.parse(room)));
+                // console.log(JSON.parse(resp.data).map(room => JSON.parse(room)));
             }
             catch (err) {
                 console.log("getRoomsList error:", err)
@@ -27,7 +28,7 @@ function RoomsList() {
         <div>
             {roomsList.length ? 
                 <ul>
-                    {roomsList.map(room => <RoomItem key={room.id} room={room}/>)}
+                    {roomsList.map(room => <RoomItem key={room._id["$oid"]} room={room}/>)}
                 </ul>:
                 <NoDataInfo dataName="chats" />
             }
