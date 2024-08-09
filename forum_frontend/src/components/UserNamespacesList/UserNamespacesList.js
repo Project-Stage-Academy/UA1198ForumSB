@@ -47,7 +47,8 @@ function UserNamespacesList() {
             }, navigate);
             setSelectedNamespace(name_space_id);
         } catch (err) {
-            setError("Failed to select namespace.");
+            console.error("Error selecting namespace", err);
+            setError("Failed to select cabinet.");
         }
     };
 
