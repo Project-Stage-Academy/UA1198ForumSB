@@ -19,6 +19,20 @@ export default class APIService {
         }
     }
 
+    static IsAuthenticated() {
+        const token = this.GetAccessToken();
+        return token && !this.IsTokenExpired(token);
+    }
+
+    static GetUserIdFromToken() {
+        if (this.IsAuthenticated()) {
+            const token = this.GetAccessToken();
+            const decodedToken = jwtDecode(token);
+            return decodedToken.user_id;
+        }
+        return null;
+    }
+
     static async RefreshToken(navigate) {
         const response = await axios.post(`${API_URL}/users/token/refresh/`, {}, {
             withCredentials: true

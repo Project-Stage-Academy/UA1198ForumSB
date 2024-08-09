@@ -10,21 +10,16 @@ function Login() {
     const [password, setPassword] = useState("");
 
     useEffect(() => {
-        const checkAuthentication = async () => {
-            const token = APIService.GetAccessToken();
-            if (token && !APIService.IsTokenExpired(token)) {
-                navigate('/');
-            }
-        };
-        checkAuthentication();
+        if (APIService.IsAuthenticated()) {
+            navigate('/');
+        }
     }, [navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
             await APIService.login(email, password);
-            // TODO nvigate to select namespace afetr login
-            navigate('/startups');
+            navigate('/my-cabinets');
         } catch (err) {
             const errorMessage = err?.detail || "An error occurred during login.";
             setError(errorMessage);
