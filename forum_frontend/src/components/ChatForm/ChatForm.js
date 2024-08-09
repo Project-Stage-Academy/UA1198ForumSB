@@ -64,6 +64,16 @@ function ChatForm(props) {
 
     useEffect(() => {
         getMessagesList();
+        const chatSocket = new WebSocket(
+            'ws://ws/notifications/'
+        );
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log(data);
+            // retreive last message
+            // use MessageDetailView
+        };
+        return 
     }, [getMessagesList]);
 
     return (
