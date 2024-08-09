@@ -72,7 +72,7 @@ function ChatForm(props) {
     useEffect(() => {
         getMessagesList();
         const chatSocket = new WebSocket(
-            'ws://ws/notifications/'
+            'ws://localhost:8000/ws/notifications/'
         );
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
