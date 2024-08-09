@@ -32,7 +32,7 @@ function UserNamespacesList() {
                 }
             } catch (err) {
                 console.error("Error fetching namespaces", err);
-                setError("Failed to load namespaces.");
+                setError("Failed to load cabinets.");
             }
         };
 
