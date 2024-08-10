@@ -16,6 +16,13 @@ function StartChatForm(props) {
     const createChatAndSendFirstMessage = async (message) => {
         setMessageSent(false);
         const namespaceInfo = APIService.getNamespaceInfoFromToken();
+        
+        if (!namespaceInfo) {
+            setStatusCode(403);
+            setMessageSent(true);
+            return;
+        }
+
         const startupInfo = {
             user_id: startup.user,
             namespace: "startup",
@@ -64,7 +71,10 @@ function StartChatForm(props) {
                 {statusCode === 201 ?
                     <div className='alert alert-success'>Message has been sent.</div>
                     : null}
-                {(statusCode !== 201 & statusCode) ?
+                {statusCode === 403 ?
+                    <div className='alert alert-danger'>You must be an investor to send a message.</div>
+                    : null}
+                {(statusCode !== 201 && statusCode !== 403 && statusCode) ?
                     <div className='alert alert-danger'>Error while creating chat or sending message.</div>
                     : null}
                 <Form.Control as="textarea" placeholder='Type Message' rows={3} 

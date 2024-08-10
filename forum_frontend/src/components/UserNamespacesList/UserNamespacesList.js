@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../../index';
-import { jwtDecode } from 'jwt-decode';
 import APIService from '../APIService/APIService';
 import Button from 'react-bootstrap/Button';
 
@@ -13,51 +12,31 @@ function UserNamespacesList() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const checkAndFetchNamespaces = async () => {
-            const accessToken = APIService.GetAccessToken();
-
-            if (!accessToken) {
-                navigate('/login');
-                return;
-            }
-
-            if (APIService.IsTokenExpired(accessToken)) {
-                const refreshedToken = await APIService.RefreshToken(navigate);
-                if (!refreshedToken) {
-                    navigate('/login');
-                    return;
-                }
-            }
-
-            const decodedToken = jwtDecode(accessToken);
-            if (decodedToken) {
-                setSelectedNamespace(decodedToken.name_space_id);
-            }
-
-            fetchNamespaces();
-        };
-
         const fetchNamespaces = async () => {
             try {
-                const user_id = APIService.GetUserIdFromToken();
-                if (user_id) {
+                const token = APIService.getDecodedToken();
+                if (token) {
+                    setSelectedNamespace(token.name_space_id);
+                    const user_id = token.user_id;
                     const investorResponse = await APIService.fetchWithAuth(
                         `${API_URL}/users/${user_id}/investors/`, {}, navigate);
                     if (!investorResponse) return;
                     setInvestors(investorResponse.data);
-    
+
                     const startupResponse = await APIService.fetchWithAuth(
                         `${API_URL}/users/${user_id}/startups/`, {}, navigate);
                     if (!startupResponse) return;
                     setStartups(startupResponse.data);
+                } else {
+                    navigate('/login');
                 }
             } catch (err) {
-                const errorMessage = err?.detail || "Failed to load cabinets.";
-                setError(errorMessage);
+                console.error("Error fetching namespaces", err);
+                setError("Failed to load cabinets.");
             }
         };
 
-        checkAndFetchNamespaces();
+        fetchNamespaces();
     }, [navigate]);
 
     const selectNamespace = async (name_space_id, name_space_name) => {
@@ -68,7 +47,8 @@ function UserNamespacesList() {
             }, navigate);
             setSelectedNamespace(name_space_id);
         } catch (err) {
-            setError("Failed to select namespace.");
+            console.error("Error selecting namespace", err);
+            setError("Failed to select cabinet.");
         }
     };
 
