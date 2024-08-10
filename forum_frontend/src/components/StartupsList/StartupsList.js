@@ -8,6 +8,7 @@ import NoDataInfo from '../NoDataInfo/NoDataInfo';
 
 function StartupsList() {
     const [startupsList, setStartupsList] = useState([]);
+    const [roomsList, setRoomsList] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -21,7 +22,19 @@ function StartupsList() {
                 console.log("Error fetching startups", err);
             }
         };
+        const getRoomsList = async () => {
+            try {
+                const resp = await APIService.fetchWithAuth(`${API_URL}/communications/conversations`,
+                    {}, navigate);
+                setRoomsList(JSON.parse(resp.data).map(room => JSON.parse(room)));
+                // console.log(JSON.parse(resp.data).map(room => JSON.parse(room)));
+            }
+            catch (err) {
+                console.log("getRoomsList error:", err)
+            }
+        }
         fetchStartupsList();
+        getRoomsList();
     }, [navigate]);
 
     return (<>
@@ -31,7 +44,8 @@ function StartupsList() {
                 {startupsList.map(startup => {
                     return <StartupItem 
                         key={startup.startup_id}
-                        startup={startup} 
+                        startup={startup}
+                        roomsList={roomsList}
                     />;}
                 )}
             </ul> : <NoDataInfo dataName="startups" />}

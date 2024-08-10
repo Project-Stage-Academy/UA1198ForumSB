@@ -8,7 +8,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import APIService from '../APIService/APIService';
 
 function StartChatForm(props) {
-    const {show, handleClose, startup} = props;
+    const {show, handleClose, startup, setIsContacted} = props;
     const [message, setMessage] = useState("");
     const [messageSent, setMessageSent] = useState(true);
     const [statusCode, setStatusCode] = useState(null);
@@ -45,6 +45,9 @@ function StartChatForm(props) {
                 }
             });
             setStatusCode(response.status);
+            if (response.status === 201) {
+                setIsContacted(true);
+            }
         } catch (err) {
             console.error("Error creating chat or sending message:", err);
             setStatusCode(-1);
@@ -82,7 +85,9 @@ function StartChatForm(props) {
             </Modal.Body>
             <Modal.Footer>
                 {messageSent ?
-                    <Button variant="primary" onClick={() => createChatAndSendFirstMessage(message)}>
+                    <Button variant="primary"
+                        onClick={() => createChatAndSendFirstMessage(message)}
+                    >
                         Send
                     </Button>
                     : <Spinner animation="border" variant="primary" size="sm"/>
