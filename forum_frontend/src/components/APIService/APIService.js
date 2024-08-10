@@ -3,7 +3,11 @@ import { API_URL } from "../../index";
 import { jwtDecode} from 'jwt-decode';
 import Cookies from 'js-cookie';
 
-export default class APIService {    
+export default class APIService {
+    static getAccessToken(){
+        return Cookies.get('access_token');
+    }
+
     static checkTokenExpired(token) {
         try {
             const decodedToken = jwtDecode(token);
