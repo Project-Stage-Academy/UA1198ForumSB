@@ -2,6 +2,7 @@ from rest_framework import permissions
 from rest_framework_simplejwt.tokens import AccessToken, TokenError
 from rest_framework.exceptions import PermissionDenied
 
+from communications.mongo_models import NamespaceEnum
 
 SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
 
@@ -43,6 +44,15 @@ class IsInvestorNamespaceSelected(BaseNamespaceSelectedPermission):
     NAMESPACE = 'investor'
     
     
+class IsNamespace(permissions.BasePermission):
+    def has_permission(self, request, view):
+        payload = get_token_payload_from_cookies(request)
+        namespace = payload.get('name_space_name')
+        if namespace not in [NamespaceEnum.STARTUP.value, NamespaceEnum.INVESTOR.value]:
+            raise PermissionDenied({"error": "Invalid namespace."})
+        return True
+    
+    
 class ThisNamespace(permissions.BasePermission):
     """
         Check if namespace_id of selected namespace matches to namespace_id in request url
@@ -78,6 +88,6 @@ class ThisUserPermission(permissions.BasePermission):
         if user_id_from_request_data:
             return (
                 (current_user_id == user_id_from_url) and 
-                (current_user_id == user_id_from_request_data)
+                (current_user_id == int(user_id_from_request_data))
             )
         return current_user_id == user_id_from_url

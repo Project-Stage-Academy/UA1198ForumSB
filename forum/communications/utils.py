@@ -8,12 +8,13 @@ from investors.models import Investor
 from forum.tasks import send_email_task
 from forum.utils import build_email_message
 from projects.models import Project, ProjectSubscription
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import Serializer, ValidationError
 from startups.models import Startup
 from forum.forum.settings import EMAIL_HOST_USER
 
 from .exceptions import BaseNotificationException, InvalidDataError, MessageTypeError
-from .mongo_models import NamespaceEnum, NamespaceInfo, Notification, NotificationPreferences, NotificationTypeEnum
+from .mongo_models import NamespaceEnum, NamespaceInfo, Notification, NotificationPreferences, NotificationTypeEnum, Room
+
 from .serializers import (
     ChatMessageSerializer,
     WSClientMessageSerializer,
@@ -272,3 +273,25 @@ class InvestorNotificationManager(NotificationManager):
         return self.namespace.investor_id
 
 
+class ChatNotificationManager(NotificationManager):
+    def __init__(self, namespace_obj: Investor | Startup, room) -> None:
+        super().__init__(namespace_obj)
+        self.room = room
+
+    def _create_receivers_namespaces(self) -> list[NamespaceInfo]:
+        receivers: list[NamespaceInfo] = []
+
+        # TODO: check if receiver allows notification
+        for participant in self.room.participants:
+            if participant['namespace_id'] != self.get_namespace_id():
+                receivers.append(participant)
+
+        return receivers
+
+
+class InvestorChatNotificationManager(ChatNotificationManager, InvestorNotificationManager):
+    pass
+
+
+class StartupChatNotificationManager(ChatNotificationManager, StartupNotificationManager):
+    pass

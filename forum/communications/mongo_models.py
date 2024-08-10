@@ -76,7 +76,7 @@ class NotificationPreferences(UserBaseModel):
 
 class Room(BaseTimestampModel):
     name = fields.StringField(max_length=128, unique=True, required=True)
-    participants_id = fields.ListField(fields.IntField(), required=True)
+    participants = fields.EmbeddedDocumentListField(NamespaceInfo, required=True, max_length=2)
 
 
 class Message(BaseTimestampModel):
@@ -84,3 +84,4 @@ class Message(BaseTimestampModel):
     namespace_id = fields.IntField(required=True)
     namespace_name = fields.StringField(required=True)
     content = fields.StringField(required=True)
+    author = fields.EmbeddedDocumentField(NamespaceInfo, required=True)
