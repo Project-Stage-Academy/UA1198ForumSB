@@ -29,8 +29,10 @@ function StartupsList() {
         <div>
             {startupsList.length ? <ul className='startups-list'>
                 {startupsList.map(startup => {
-                        return <StartupItem startup={startup} key={startup.startup_id}/>;
-                    }
+                    return <StartupItem 
+                        key={startup.startup_id}
+                        startup={startup} 
+                    />;}
                 )}
             </ul> : <NoDataInfo dataName="startups" />}
         </div>
