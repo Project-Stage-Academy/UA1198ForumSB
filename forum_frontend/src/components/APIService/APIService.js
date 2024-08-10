@@ -42,7 +42,7 @@ export default class APIService {
         const namespace = decodedToken.name_space_name;
         const namespace_id = decodedToken.name_space_id;
 
-        if (!user_id || !namespace || !namespace_id || namespace !== "investor") {
+        if (!user_id || !namespace || !namespace_id) {
             return null;
         }
 
