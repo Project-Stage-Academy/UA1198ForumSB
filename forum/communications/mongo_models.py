@@ -27,6 +27,9 @@ class NotificationTypeEnum(Enum):
 
 class UserBaseModel(Document):
     user_id = fields.LongField(required=True)
+    meta = {
+        'allow_inheritance': True,
+    }
 
 
 class NamespaceInfo(EmbeddedDocument):
@@ -47,8 +50,7 @@ class NotificationTypes(EmbeddedDocument):
 
 
 class NotificationPreferences(UserBaseModel):
-    notification_types = fields.EmbeddedDocumentListField(
-        fields.StringField(choices=[nt.value for nt in NotificationTypes]))
+    notification_types = fields.EmbeddedDocumentListField(NotificationTypes)
     ws_enabled = fields.BooleanField(default=True)
     email_enabled = fields.BooleanField(default=True)
 

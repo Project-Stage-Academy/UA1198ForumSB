@@ -5,12 +5,13 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
 from investors.models import Investor
+from forum.settings import EMAIL_HOST_USER
 from forum.tasks import send_email_task
 from forum.utils import build_email_message
 from projects.models import Project, ProjectSubscription
 from rest_framework.serializers import Serializer, ValidationError
 from startups.models import Startup
-from forum.forum.settings import EMAIL_HOST_USER
+
 
 from .exceptions import BaseNotificationException, InvalidDataError, MessageTypeError
 from .mongo_models import NamespaceEnum, NamespaceInfo, Notification, NotificationPreferences, NotificationTypeEnum, Room
@@ -22,7 +23,7 @@ from .serializers import (
     WSNotificationSerializer,
     WSServerMessageSerializer,
 )
-from ..users.models import CustomUser
+from users.models import CustomUser
 
 
 class BaseWSMessageBuilder(ABC):
