@@ -7,19 +7,19 @@ spec:
   selector:
     app: forum
   ports:
-  - protocol: TCP
-    port: 8000
-    targetPort: 8000
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
 
 ---
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  forum
+  name: forum
   namespace: default
   labels:
-    app:  forum
+    app: forum
 spec:
   selector:
     matchLabels:
@@ -28,11 +28,13 @@ spec:
   template:
     metadata:
       labels:
-        app:  forum
+        app: forum
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
-        - name:  forum
-          image: ghcr.io/project-stage-academy/ua1198forumsb:main 
+        - name: forum
+          image: ghcr.io/project-stage-academy/ua1198forumsb:main
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -46,12 +48,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_db_user
+                  key: FORUM_DB_USER
             - name: FORUM_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_db_password
+                  key: FORUM_DB_PASSWORD
             - name: FORUM_DB_HOST
               valueFrom:
                 configMapKeyRef:
@@ -66,7 +68,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: secret_key
+                  key: SECRET_KEY
             - name: DJANGO_SETTINGS_MODULE
               valueFrom:
                 configMapKeyRef:
@@ -86,12 +88,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_email_user
+                  key: FORUM_EMAIL_USER
             - name: FORUM_EMAIL_USER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_email_user_password
+                  key: FORUM_EMAIL_USER_PASSWORD
             - name: FORUM_REDIS_HOST
               valueFrom:
                 configMapKeyRef:
@@ -136,16 +138,19 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_mongo_user_name
+                  key: FORUM_MONGO_USER_NAME
             - name: FORUM_MONGO_USER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_mongo_user_password
-
+                  key: FORUM_MONGO_USER_PASSWORD
+      volumes:
+        - name: config-volume
+          configMap:
+            name: forum-configmap
       initContainers:
-        - name:  forum-migrate
-          image: ghcr.io/project-stage-academy/ua1198forumsb:main 
+        - name: forum-migrate
+          image: ghcr.io/project-stage-academy/ua1198forumsb:main
           command: ["./manage.py", "migrate"]
           imagePullPolicy: Always
           env:
@@ -158,12 +163,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_db_user
+                  key: FORUM_DB_USER
             - name: FORUM_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_db_password
+                  key: FORUM_DB_PASSWORD
             - name: FORUM_DB_HOST
               valueFrom:
                 configMapKeyRef:
@@ -178,7 +183,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: secret_key
+                  key: SECRET_KEY
             - name: DJANGO_SETTINGS_MODULE
               valueFrom:
                 configMapKeyRef:
@@ -198,12 +203,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_email_user
+                  key: FORUM_EMAIL_USER
             - name: FORUM_EMAIL_USER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_email_user_password
+                  key: FORUM_EMAIL_USER_PASSWORD
             - name: FORUM_REDIS_HOST
               valueFrom:
                 configMapKeyRef:
@@ -248,13 +253,9 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_mongo_user_name
+                  key: FORUM_MONGO_USER_NAME
             - name: FORUM_MONGO_USER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_mongo_user_password
-      volumes:
-        - name: config-volume
-          configMap:
-            name: forum-configmap
+                  key: FORUM_MONGO_USER_PASSWORD
