@@ -1,29 +1,58 @@
 import json
+from bson.objectid import ObjectId
+from bson.errors import InvalidId
+from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from django.shortcuts import get_object_or_404
+from django_ratelimit.decorators import ratelimit
+from django_ratelimit.exceptions import Ratelimited
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
+
 from .mongo_models import Room, Message, NamespaceEnum
 from .serializers import RoomSerializer, ChatMessageSerializer
 from .helpers import generate_room_name
+from .permissions import IsAuthorOfMessage, IsInvestorInitiateChat, \
+    IsParticipantOfConversation
 from .utils import InvestorChatNotificationManager, StartupChatNotificationManager
+from users.permissions import IsNamespace, get_token_payload_from_cookies
 from startups.models import Startup
 from investors.models import Investor
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
-from users.permissions import get_token_payload_from_cookies
+
+from forum.logging import logger
 
 
-class CreateConversationView(APIView):
-    # TODO add permissions that allow only invetors initiate chat
-    # TODO add permissions that allow to investor initiate chat only for himself
+CONVERSATION_BASE_PERMISSIONS = [
+    IsAuthenticated,
+    IsNamespace
+]
 
+
+class BaseAPIView(APIView):
+    permission_classes = CONVERSATION_BASE_PERMISSIONS
+
+    def handle_exception(self, exc):
+        if isinstance(exc, Ratelimited):
+            return JsonResponse({"detail": "Too many requests"},
+                                status=status.HTTP_429_TOO_MANY_REQUESTS)
+        return super().handle_exception(exc)
+
+
+class CreateConversationView(BaseAPIView):
+    permission_classes = CONVERSATION_BASE_PERMISSIONS + [
+        IsInvestorInitiateChat
+    ]
+
+    @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def post(self, request):
         serializer = RoomSerializer(data=request.data)
         if serializer.is_valid():
             room_name = generate_room_name(serializer.data["participants"])
             new_room = Room(name=room_name, **serializer.data)
             new_room.save()
+            logger.info(f"Conversation created: {new_room.id}")
             return Response(
                 {**serializer.data, "id": str(new_room.id)},
                 status=status.HTTP_201_CREATED
@@ -31,7 +60,8 @@ class CreateConversationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ConversationsListView(APIView):
+class ConversationsListView(BaseAPIView):
+    @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def get(self, request):
         token_payload = get_token_payload_from_cookies(request)
         namespace = token_payload.get("name_space_name")
@@ -58,14 +88,21 @@ class ConversationsListView(APIView):
         )
 
 
-class SendMessageView(APIView):
-    # TODO add permissions that allow to investor/startup create message only for his room
+class SendMessageView(BaseAPIView):
+    permission_classes = CONVERSATION_BASE_PERMISSIONS + [
+        IsParticipantOfConversation,
+        IsAuthorOfMessage
+    ]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def post(self, request):
         serializer = ChatMessageSerializer(data=request.data)
         if serializer.is_valid():
             new_message = Message(**serializer.data)
             new_message.save()
+
+            logger.info(f"Message sent: {new_message.id}")
+            # TODO call NotificationManager to send new_message.id
             if new_message.author.namespace == NamespaceEnum.STARTUP:
                 startup = get_object_or_404(
                     Startup, user_id=new_message.author.user_id, startup_id=new_message.author.namespace_id
@@ -85,9 +122,12 @@ class SendMessageView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MessagesListView(APIView):
-    # TODO add permissions that allow to investor/startup view messages only of his room
+class MessagesListView(BaseAPIView):
+    permission_classes = CONVERSATION_BASE_PERMISSIONS + [
+        IsParticipantOfConversation
+    ]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def get(self, request, conversation_id):
         try:
             conversation_id = ObjectId(conversation_id)
@@ -95,6 +135,7 @@ class MessagesListView(APIView):
             return Response("Invalid room id", status=status.HTTP_400_BAD_REQUEST)
         # TODO Add here pagination later
         messages = Message.objects.filter(room = conversation_id).to_json()
+        logger.info(f"Messages retrieved for conversation: {conversation_id}")
         return Response(messages, status=status.HTTP_200_OK)
 
 

@@ -31,10 +31,10 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  forum-psql
+  name: forum-psql
   namespace: default
   labels:
-    app:  forum-psql
+    app: forum-psql
 spec:
   selector:
     matchLabels:
@@ -43,11 +43,11 @@ spec:
   template:
     metadata:
       labels:
-        app:  forum-psql
+        app: forum-psql
     spec:
       containers:
-      - name:  forum-psql
-        image:  postgres:13
+      - name: forum-psql
+        image: postgres:13
         env:
         - name: POSTGRES_DB
           valueFrom:
@@ -58,15 +58,15 @@ spec:
           valueFrom:
             secretKeyRef:
               name: forum-secret
-              key: forum_db_user
+              key: FORUM_DB_USER
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: forum-secret
-              key: forum_db_password
+              key: FORUM_DB_PASSWORD
         ports:
-        - containerPort:  5432
-          name:  forum-psql
+        - containerPort: 5432
+          name: forum-psql
         volumeMounts:
           - name: postgres-data
             mountPath: /var/lib/postgresql/data

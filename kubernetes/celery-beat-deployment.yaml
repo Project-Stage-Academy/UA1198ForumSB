@@ -30,6 +30,8 @@ spec:
       labels:
         app:  celery-beat
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name:  celery-beat
           image: ghcr.io/project-stage-academy/ua1198forumsb:main 
@@ -48,12 +50,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_db_user
+                  key: FORUM_DB_USER
             - name: FORUM_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_db_password
+                  key: FORUM_DB_PASSWORD
             - name: FORUM_DB_HOST
               valueFrom:
                 configMapKeyRef:
@@ -68,7 +70,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: secret_key
+                  key: SECRET_KEY
             - name: DJANGO_SETTINGS_MODULE
               valueFrom:
                 configMapKeyRef:
@@ -88,12 +90,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_email_user
+                  key: FORUM_EMAIL_USER
             - name: FORUM_EMAIL_USER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_email_user_password
+                  key: FORUM_EMAIL_USER_PASSWORD
             - name: FORUM_REDIS_HOST
               valueFrom:
                 configMapKeyRef:
@@ -138,12 +140,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_mongo_user_name
+                  key: FORUM_MONGO_USER_NAME
             - name: FORUM_MONGO_USER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: forum-secret
-                  key: forum_mongo_user_password
+                  key: FORUM_MONGO_USER_PASSWORD
       volumes:
         - name: config-volume
           configMap:

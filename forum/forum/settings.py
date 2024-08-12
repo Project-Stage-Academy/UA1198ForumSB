@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from datetime import timedelta
 from os import environ
 from pathlib import Path
+import logging
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from dotenv import load_dotenv
 
@@ -279,3 +284,22 @@ LOGGING = {
         },
     },
 }
+
+
+# Sentry configuration
+
+TOKEN_SENTRY = environ.get('FORUM_TOKEN_SENTRY', '')
+if TOKEN_SENTRY:
+    sentry_sdk.init(
+        dsn=TOKEN_SENTRY,
+        integrations=[
+            DjangoIntegration(),
+            LoggingIntegration(
+                level=logging.INFO,
+                event_level=logging.INFO
+            ),
+        ],
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+        send_default_pii=True
+    )
