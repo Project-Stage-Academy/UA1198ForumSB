@@ -32,6 +32,9 @@ jobs:
           poetry install
 
       - name: Run tests
-        run: |
-            cd forum/ 
-            poetry run python -c "import os; os.environ['DJANGO_SETTINGS_MODULE'] = 'forum.settings'; os.environ['SECRET_KEY'] = '${{ secrets.SECRET_KEY }}'; from django.core.management import execute_from_command_line; execute_from_command_line(['manage.py', 'test'])"
+        env:
+          DJANGO_SETTINGS_MODULE: forum.settings
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          run: |
+            cd forum/
+            poetry run python manage.py test
