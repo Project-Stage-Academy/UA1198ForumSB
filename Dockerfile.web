@@ -10,7 +10,7 @@ FROM nginx
 #RUN npm install && npm run build
 #
 #FROM nginx:latest
-#
 #COPY --from=build-base /app/dist /usr/share/nginx/html
-#COPY ./etc/nginx.conf /etc/nginx/conf.d/default.conf
-#
+COPY ./etc/nginx.conf /etc/nginx/nginx.conf
+COPY ./etc/ws_settings.conf /etc/nginx/ws_settings.conf
+COPY ./etc/cors_headers.conf /etc/nginx/cors_headers.conf
