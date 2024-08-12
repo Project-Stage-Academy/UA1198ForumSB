@@ -1,16 +1,44 @@
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
+from django_ratelimit.exceptions import Ratelimited
 from investors.models import Investor
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from startups.models import Startup
+from users.permissions import IsNamespace
+
+from forum.logging import logger
 
 from .helpers import generate_room_name
 from .mongo_models import Message, NamespaceEnum, Room
+from .permissions import (
+    IsAuthorOfMessage,
+    IsInvestorInitiateChat,
+    IsParticipantOfConversation,
+)
 from .serializers import ChatMessageSerializer, RoomSerializer
 from .utils import InvestorChatNotificationManager, StartupChatNotificationManager
+
+CONVERSATION_BASE_PERMISSIONS = [
+    IsAuthenticated,
+    IsNamespace
+]
+
+
+class BaseAPIView(APIView):
+    permission_classes = CONVERSATION_BASE_PERMISSIONS
+
+    def handle_exception(self, exc):
+        if isinstance(exc, Ratelimited):
+            return JsonResponse({"detail": "Too many requests"},
+                                status=status.HTTP_429_TOO_MANY_REQUESTS)
+        return super().handle_exception(exc)
 
 
 class CreateConversationView(BaseAPIView):
@@ -23,9 +51,19 @@ class CreateConversationView(BaseAPIView):
         serializer = RoomSerializer(data=request.data)
         if serializer.is_valid():
             room_name = generate_room_name(serializer.data["participants"])
-            new_room = Room(name=room_name, **serializer.data)
-            new_room.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            room: Room | None = Room.objects(name=room_name).first()
+
+            if not room:
+                room = Room(name=room_name, **serializer.data)
+                room.save()
+
+            response_payload = serializer.data | {
+                "conversation_id": str(room.pk)
+            }
+            return Response(
+                response_payload,
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -89,6 +127,7 @@ class MessagesListView(BaseAPIView):
             conversation_id = ObjectId(conversation_id)
         except InvalidId:
             return Response("Invalid room id", status=status.HTTP_400_BAD_REQUEST)
-        # TODO Add here pagination later
-        messages = Message.objects.filter(room = conversation_id).to_json()
+        # TODO Add here pagination later        
+        messages = Message.objects.filter(room=conversation_id).to_json()
+        logger.info(f"Messages retrieved for conversation: {conversation_id}")
         return Response(messages, status=status.HTTP_200_OK)
