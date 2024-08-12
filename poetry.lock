@@ -557,6 +557,7 @@ files = [
 asgiref = ">=3.6"
 django = ">=3.2"
 
+[[package]]
 name = "django-ratelimit"
 version = "4.1.0"
 description = "Cache-based rate-limiting for Django."
@@ -1710,4 +1711,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "7a6f0890b514840451ce8a2a502a66cd65b30fa33cace559eefb571b94a11de0"
+content-hash = "0b54eb0076349a8888d4aa003215fcbb67a3ab0073935146c0ca35119a587175"

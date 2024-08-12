@@ -23,7 +23,6 @@ function ChatForm(props) {
             const resp = await APIService.fetchWithAuth(
                 `${API_URL}/communications/conversations/${room_id}/messages`,
                 {}, navigate);
-            // console.log(JSON.parse(resp.data));
             setMessagesList(JSON.parse(resp.data));
         }
         catch (err) {
@@ -38,12 +37,12 @@ function ChatForm(props) {
                 {}, navigate
             );
             const last_message = JSON.parse(res.data);
-            setMessagesList([...messagesList, last_message]); 
+            setMessagesList(messagesList => [...messagesList, last_message]); 
         }
         catch (err) {
             console.log("Error while getting last message", err);
         }
-    }, [navigate, messagesList])
+    }, [navigate])
 
     const sendMessage = async (message) => {
         setMessageSent(false);
@@ -66,7 +65,6 @@ function ChatForm(props) {
         } finally {
             setMessageSent(true);
         }
-        getMessagesList();
     }
 
     useEffect(() => {
@@ -74,16 +72,20 @@ function ChatForm(props) {
         const chatSocket = new WebSocket(
             `ws://localhost:8000/ws/notifications/${APIService.getAccessToken()}`, 
         );
-        chatSocket.onmessage = function(e) {
+        chatSocket.onopen = () => {
+            console.log("WS connection has been opend!");
+        }
+        chatSocket.onmessage = (e) => {
             const data = JSON.parse(e.data);
-            console.log(data);
-            // const new_message_id = null; //from received data
-            // addLastMessageToList(new_message_id);
+            const msg = data.message;
+            const new_message_id = msg.split("Message: ")[1].split(" ")[0]
+            addLastMessageToList(new_message_id);
         };
         return () => {
+            console.log("removed ChatForm");
             chatSocket.close();
         }
-    }, [getMessagesList]);
+    }, [getMessagesList, addLastMessageToList]);
 
     return (
         <Modal show={show} onHide={handleClose}>
