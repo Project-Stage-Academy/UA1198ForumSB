@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 from rest_framework.reverse import reverse
 from rest_framework import status
@@ -87,7 +88,6 @@ class BaseUserStartupsTestCase(UserSetupMixin):
             email="other_test@gmail.com",
             password="other_test_password"
         )
-
 
 class UserStartupsTestCase(BaseUserStartupsTestCase):
 
@@ -219,7 +219,6 @@ class UserStartupsTestCase(BaseUserStartupsTestCase):
             "Response body does not match the expected one"
         )
 
-
 class UserStartupTestCase(BaseUserStartupsTestCase):
 
     def test_get_startup(self):
@@ -336,7 +335,13 @@ class UserStartupTestCase(BaseUserStartupsTestCase):
                     "Response body does not match the expected one"
                 )
 
-    def test_delete_startup(self):
+    @patch('users.permissions.get_token_payload_from_cookies')
+    def test_delete_startup(self, mock_get_token_payload):
+        mock_get_token_payload.return_value = {
+            'user_id': self.test_user.user_id,
+            'name_space_id': self.startup3.startup_id,
+            'name_space_name': 'startup'
+        }
         response = self.client.delete(
             reverse(
                 'users:user_startup',
@@ -371,3 +376,27 @@ class UserStartupTestCase(BaseUserStartupsTestCase):
                     {'detail': 'No Startup matches the given query.'},
                     "Response body does not match the expected one"
                 )
+
+    @patch('users.permissions.get_token_payload_from_cookies')
+    def test_get_deleted_startup(self, mock_get_token_payload):
+        mock_get_token_payload.return_value = {
+            'user_id': self.test_user.user_id,
+            'name_space_id': self.startup3.startup_id,
+            'name_space_name': 'startup'
+        }
+        
+        response_startup = self.client.get(
+            reverse(
+                'users:user_startup', 
+                kwargs={'user_id': self.test_user.user_id, 'startup_id': self.startup3.startup_id}
+            )
+        )
+        response_project = self.client.get(
+            reverse(
+                'users:user_startup_project', args=[self.test_user.user_id, self.startup3.startup_id]
+            )
+        )
+
+        self.assertEqual(response_startup.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response_project.status_code, status.HTTP_404_NOT_FOUND)
+        
