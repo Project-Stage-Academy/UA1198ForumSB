@@ -28,15 +28,18 @@ def is_namespace_info_correct(namespace_info: dict) -> bool:
     namespace_id = namespace_info.get("namespace_id")
 
     if namespace == NamespaceEnum.STARTUP.value:
-        return Startup.objects.filter(
+        if not Startup.objects.filter(
             user__user_id=user_id,
             startup_id=namespace_id
-        ).exists()
-
-    if namespace == NamespaceEnum.INVESTOR.value:
-        return Investor.objects.filter(
+        ).exists():
+            raise ValidationError("Startup does not exist.")
+    elif namespace == NamespaceEnum.INVESTOR.value:
+        if not Investor.objects.filter(
             user__user_id=user_id,
             investor_id=namespace_id
-        ).exists()
-
-    return False
+        ).exists():
+            raise ValidationError("Investor does not exist.")
+    else:
+        raise ValidationError("Invalid namespace.") 
+    
+    return True

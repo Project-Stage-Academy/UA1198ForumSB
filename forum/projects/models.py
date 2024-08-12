@@ -41,6 +41,10 @@ class Project(models.Model):
     def __str__(self) -> str:
         return f"{self.project_id} {self.title}"
 
+    @property
+    def total_funding(self):
+        return self.project_subscriptions.aggregate(total_funding=models.Sum("part"))["total_funding"] or 0
+
 
 class ProjectSubscription(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="project_subscriptions")

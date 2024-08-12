@@ -1,0 +1,10 @@
+Dear {{first_name}},
+
+We are reaching out to inform you about the following notification: {{notification_type}}
+
+Please log in to your account to view details.
+
+If you have any questions or need further assistance, please contact our support team.
+
+Thank you,
+    MegaForum inc.
