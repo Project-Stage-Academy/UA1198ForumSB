@@ -14,8 +14,8 @@ env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: forum-api
-
+  IMAGE_NAME: project-stage-academy/forum-api
+  TAG: latest
 
 jobs:
   build:
