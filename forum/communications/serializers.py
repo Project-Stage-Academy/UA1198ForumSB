@@ -51,6 +51,6 @@ class NotificationPreferencesSerializer(DocumentSerializer):
         email_enabled = data.get('email_enabled')
 
         if not (ws_enabled or email_enabled):
-            raise serializers.ValidationError("At least one notification method (websocket or email) must be enabled.")
+            raise serializers.ValidationError("At least one notification method must be enabled.")
 
         return data
