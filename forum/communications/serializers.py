@@ -1,9 +1,10 @@
-from rest_framework import serializers
-from .mongo_models import NamespaceEnum, Room
-from .helpers import is_namespace_info_correct
-from .validators import escape_xss
-from bson.objectid import ObjectId
 from bson.errors import InvalidId
+from bson.objectid import ObjectId
+from rest_framework import serializers
+
+from .helpers import is_namespace_info_correct
+from .mongo_models import NamespaceEnum, Room
+from .validators import escape_xss
 
 
 class NamespaceInfoSerializer(serializers.Serializer):
@@ -68,6 +69,7 @@ class ChatMessageSerializer(serializers.Serializer):
         
         return data
 
+
 class BaseWSMessageSerializer(serializers.Serializer):
     type = serializers.CharField(required=True)
     message = serializers.CharField(required=True)
@@ -88,6 +90,10 @@ class WSBaseNotificationSerializer(BaseWSMessageSerializer):
 class WSNotificationSerializer(WSBaseNotificationSerializer):
     initiator = serializers.DictField(required=True)
     created_at = serializers.CharField(required=True)
+
+
+class WSChatMessageSerializer(WSNotificationSerializer):
+    message_id = serializers.CharField(required=True)
 
 
 class WSNotificationAckSerializer(serializers.Serializer):
