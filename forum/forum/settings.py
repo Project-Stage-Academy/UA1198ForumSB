@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from datetime import timedelta
-from os import environ
+from os import environ,getenv
 from pathlib import Path
 import logging
 
@@ -21,7 +21,15 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 
 from dotenv import load_dotenv
 
-load_dotenv()
+
+# Load environment variables from .env file
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# Now you can access the variables normally
+SECRET_KEY = getenv('SECRET_KEY')
+DJANGO_SETTINGS_MODULE = getenv('DJANGO_SETTINGS_MODULE')
+#load_dotenv()
 
 environ.setdefault('DJANGO_SETTINGS_MODULE', 'forum.settings')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -32,7 +40,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = environ.get("SECRET_KEY")
+#SECRET_KEY = environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(environ.get('DEBUG', 1)))
