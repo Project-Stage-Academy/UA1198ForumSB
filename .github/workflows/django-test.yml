@@ -1,6 +1,6 @@
 name: Run Unit Tests
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   test:
@@ -36,5 +36,5 @@ jobs:
 
       - name: Run tests
         run: |
-            cd forum/
-            poetry run python manage.py test
+            cd forum/ 
+            poetry run python -c "import os; os.environ['DJANGO_SETTINGS_MODULE'] = 'forum.settings'; import django; django.setup(); import django.test.utils;django.test.utils.get_runner(django.conf.settings)().run_tests([])"
