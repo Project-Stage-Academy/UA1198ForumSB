@@ -53,11 +53,10 @@ class UserStartupProjectView(APIView):
     def patch(self, request, user_id, startup_id):
         startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
         project = get_object_or_404(Project, startup=startup)
-        old_instance = Project.objects.get(pk=project.pk)
         serializer = ProjectSerializer(project, data=request.data, partial=True)
         if serializer.is_valid():
             updated_project = serializer.save()
-            changes = get_changed_fields(old_instance, updated_project)
+            changes = get_changed_fields(project, updated_project)
             if changes:
                 notify_investors_via_email(updated_project, changes)
                 send_notification(updated_project, "update")
