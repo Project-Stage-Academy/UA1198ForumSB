@@ -25,3 +25,6 @@ data:
   forum_mongo_host: "forum-mongo"
   forum_mongo_port: "27017"
   forum_mongo_db_name: "forum_db"
+
+  forum_api_host: "forum-internal"
+  forum_api_port: "8000"

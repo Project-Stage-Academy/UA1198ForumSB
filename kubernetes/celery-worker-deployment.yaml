@@ -34,7 +34,7 @@ spec:
         - name: regcred
       containers:
         - name:  celery-worker
-          image: ghcr.io/project-stage-academy/ua1198forumsb:main 
+          image: ghcr.io/project-stage-academy/ua1198forumsb-api:main
           command: ["celery"]
           args: ["-A", "forum", "worker", "-l", "INFO"]
           imagePullPolicy: Always

@@ -34,21 +34,21 @@ spec:
         - name: regcred
       containers:
         - name: web
-          image: nginx # TODO: change image
+          image: ghcr.io/project-stage-academy/ua1198forumsb-web:main
           imagePullPolicy: Always
           ports:
             - containerPort: 80
           env:
-            - name: WEB_API_HOST
+            - name: FORUM_API_HOST
               valueFrom:
                 configMapKeyRef:
                   name: forum-configmap
-                  key: web_api_host
-            - name: WEB_API_PORT
+                  key: forum_api_host
+            - name: FORUM_API_PORT
               valueFrom:
                 configMapKeyRef:
                   name: forum-configmap
-                  key: web_api_port
+                  key: forum_api_port
       volumes:
         - name: config-volume
           configMap:

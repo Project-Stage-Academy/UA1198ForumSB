@@ -34,7 +34,7 @@ spec:
         - name: regcred
       containers:
         - name: forum
-          image: ghcr.io/project-stage-academy/ua1198forumsb:main
+          image: ghcr.io/project-stage-academy/ua1198forumsb-api:main
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -150,7 +150,7 @@ spec:
             name: forum-configmap
       initContainers:
         - name: forum-migrate
-          image: ghcr.io/project-stage-academy/ua1198forumsb:main
+          image: ghcr.io/project-stage-academy/ua1198forumsb-api:main
           command: ["./manage.py", "migrate"]
           imagePullPolicy: Always
           env:
