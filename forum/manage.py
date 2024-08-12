@@ -5,9 +5,6 @@ import sys
 
 
 def main():
-
-    for key, value in os.environ.items():
-        print(f"{key}: {value}")
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'forum.settings')
     try:
