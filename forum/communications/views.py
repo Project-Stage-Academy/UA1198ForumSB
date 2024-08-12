@@ -1,9 +1,9 @@
 import json
-from bson.objectid import ObjectId
 from bson.errors import InvalidId
+from bson.objectid import ObjectId
 from django.http import JsonResponse
-from django.utils.decorators import method_decorator
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
 from django_ratelimit.exceptions import Ratelimited
 from rest_framework import status
@@ -23,6 +23,15 @@ from investors.models import Investor
 
 from forum.logging import logger
 
+from .helpers import generate_room_name
+from .mongo_models import Message, NamespaceEnum, Room
+from .permissions import (
+    IsAuthorOfMessage,
+    IsInvestorInitiateChat,
+    IsParticipantOfConversation,
+)
+from .serializers import ChatMessageSerializer, RoomSerializer
+from .utils import InvestorChatNotificationManager, StartupChatNotificationManager
 
 CONVERSATION_BASE_PERMISSIONS = [
     IsAuthenticated,
@@ -50,11 +59,17 @@ class CreateConversationView(BaseAPIView):
         serializer = RoomSerializer(data=request.data)
         if serializer.is_valid():
             room_name = generate_room_name(serializer.data["participants"])
-            new_room = Room(name=room_name, **serializer.data)
-            new_room.save()
-            logger.info(f"Conversation created: {new_room.id}")
+            room: Room | None = Room.objects(name=room_name).first()
+
+            if not room:
+                room = Room(name=room_name, **serializer.data)
+                room.save()
+
+            response_payload = serializer.data | {
+                "conversation_id": str(room.pk)
+            }
             return Response(
-                {**serializer.data, "id": str(new_room.id)},
+                response_payload,
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -105,19 +120,27 @@ class SendMessageView(BaseAPIView):
             # TODO call NotificationManager to send new_message.id
             if new_message.author.namespace == NamespaceEnum.STARTUP:
                 startup = get_object_or_404(
-                    Startup, user_id=new_message.author.user_id, startup_id=new_message.author.namespace_id
+                    Startup,
+                    user_id=new_message.author.user_id,
+                    startup_id=new_message.author.namespace_id
                 )
                 manager = StartupChatNotificationManager(startup, new_message.room)
             elif new_message.author.namespace == NamespaceEnum.INVESTOR:
                 investor = get_object_or_404(
-                    Investor, user_id=new_message.author.user_id, investor_id=new_message.author.namespace_id
+                    Investor,
+                    user_id=new_message.author.user_id,
+                    investor_id=new_message.author.namespace_id
                 )
                 manager = InvestorChatNotificationManager(investor, new_message.room)
+
             notification_message = (
                 f'Message: {new_message.id} was sent by {new_message.author.namespace} '
                 f'with id {new_message.author.namespace_id}'
             )
-            manager.push_notification(notification_message)
+            manager.push_notification(
+                notification_message,
+                message_id=str(new_message.pk)
+            )
             return Response(new_message.to_json(), status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
