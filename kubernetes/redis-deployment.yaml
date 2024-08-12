@@ -18,10 +18,10 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  forum-redis
+  name: forum-redis
   namespace: default
   labels:
-    app:  forum-redis
+    app: forum-redis
 spec:
   selector:
     matchLabels:
@@ -30,12 +30,12 @@ spec:
   template:
     metadata:
       labels:
-        app:  forum-redis
+        app: forum-redis
     spec:
       containers:
-      - name:  forum-redis
-        image:  redis:alpine
+      - name: forum-redis
+        image: redis:alpine
         ports:
-        - containerPort:  6379
-          name:  forum-redis
+        - containerPort: 6379
+          name: forum-redis
       restartPolicy: Always
