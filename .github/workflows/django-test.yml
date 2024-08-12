@@ -5,9 +5,6 @@ on: [push]
 jobs:
   test:
     runs-on: windows-latest
-    env:
-        DJANGO_SETTINGS_MODULE:  ${{ secrets.django_settings_module }}
-        SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
     steps:
       - name: Checkout code
@@ -37,4 +34,4 @@ jobs:
       - name: Run tests
         run: |
             cd forum/ 
-            poetry run python -c "import os; os.environ['DJANGO_SETTINGS_MODULE'] = 'forum.settings'; import django; django.setup(); import django.test.utils;django.test.utils.get_runner(django.conf.settings)().run_tests([])"
+            python -c "import os; os.environ['DJANGO_SETTINGS_MODULE'] = 'forum.settings'; os.environ['SECRET_KEY'] = '${{ secrets.SECRET_KEY }}'; from django.core.management import execute_from_command_line; execute_from_command_line(['manage.py', 'test'])"
