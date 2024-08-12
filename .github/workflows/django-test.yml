@@ -1,10 +1,13 @@
 name: Run Unit Tests
 
-on: [push]
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -15,7 +18,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Cache dependencies
+      - name: Cache depend encies
         uses: actions/cache@v2
         with:
           path: |
@@ -34,8 +37,5 @@ jobs:
       - name: Run tests
         run: |
             cd forum/
+            source .env.test
             poetry run python manage.py test
-      - name: Run tests
-        run: |
-          cd forum/
-          poetry run python manage.py test
