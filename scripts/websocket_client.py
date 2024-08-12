@@ -83,10 +83,7 @@ if __name__ == "__main__":
     ws_client = WebSocket()
     try:
         ws_client.connect(
-            f"ws://{FORUM_HOST}:{FORUM_PORT}/ws/notifications/",
-            header=[
-                f"Authorization: Bearer {access_token}"
-            ]
+            f"ws://{FORUM_HOST}:{FORUM_PORT}/ws/notifications/{access_token}"
         )
     except WebSocketBadStatusException as exc:
         logger.error(f"Failed to initiate websocket connection due to \n{exc}\n")
