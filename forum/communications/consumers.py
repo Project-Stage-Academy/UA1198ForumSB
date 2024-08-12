@@ -4,8 +4,15 @@ from typing import Any
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from rest_framework_simplejwt.exceptions import (
+    AuthenticationFailed,
+    InvalidToken,
+    TokenError,
+)
+from rest_framework_simplejwt.tokens import AccessToken
 from users.models import CustomUser
 
+from .channelsmiddleware import get_user
 from .mongo_models import Notification
 from .utils import AutoSerializer, ClientErrorBuilder
 
@@ -72,8 +79,24 @@ class ChatConsumer(BaseCommunicationConsumer):
 
 
 class NotificationConsumer(BaseCommunicationConsumer):
+    async def _auth_user(self) -> CustomUser:
+        try:
+            access_token = self.scope['url_route']['kwargs']['access_token']
+            jwt_payload: dict = AccessToken(access_token).payload
+
+            return await get_user(jwt_payload["user_id"])
+        except TokenError:
+            raise InvalidToken()
+        except Exception:
+            # TODO: call logging function
+            raise AuthenticationFailed()
+
     async def connect(self):
-        user: CustomUser = self.scope["user"]
+        user: CustomUser = None
+        if self.scope.get("user"):
+            user = self.scope["user"]
+        else:
+            user = await self._auth_user()
 
         self.user_id = user.user_id
         self.room_group_name = f"notifications_{user.user_id}"

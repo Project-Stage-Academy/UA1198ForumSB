@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: forum-mongo
+  namespace: default
+spec:
+  selector:
+    app: forum-mongo
+  type: ClusterIP
+  ports:
+  - name: forum-mongo
+    protocol: TCP
+    port: 27017
+    targetPort: 27017
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forum-mongo
+  namespace: default
+  labels:
+    app: forum-mongo
+spec:
+  selector:
+    matchLabels:
+      app: forum-mongo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: forum-mongo
+    spec:
+      containers:
+      - name: forum-mongo
+        image: mongo:4.4.24
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: forum-secret
+              key: MONGO_INITDB_ROOT_USERNAME
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: forum-secret
+              key: MONGO_INITDB_ROOT_PASSWORD
+        ports:
+        - containerPort: 27017
+          name: forum-mongo
+        volumeMounts:
+          - name: mongo-data
+            mountPath: /data/db
+      volumes:
+        - name: mongo-data
+          persistentVolumeClaim:
+            claimName: mongo-pv-claim
+      restartPolicy: Always

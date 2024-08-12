@@ -5,12 +5,17 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
 from investors.models import Investor
+from forum.settings import EMAIL_HOST_USER
+from forum.tasks import send_email_task
+from forum.utils import build_email_message
 from projects.models import Project, ProjectSubscription
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import Serializer, ValidationError
 from startups.models import Startup
 
+
 from .exceptions import BaseNotificationException, InvalidDataError, MessageTypeError
-from .mongo_models import NamespaceEnum, NamespaceInfo, Notification
+from .mongo_models import NamespaceEnum, NamespaceInfo, Notification, NotificationPreferences, NotificationTypeEnum, Room
+
 from .serializers import (
     ChatMessageSerializer,
     WSClientMessageSerializer,
@@ -18,6 +23,7 @@ from .serializers import (
     WSNotificationSerializer,
     WSServerMessageSerializer,
 )
+from users.models import CustomUser
 
 
 class BaseWSMessageBuilder(ABC):
@@ -138,6 +144,7 @@ class AutoSerializer:
 class NotificationManager(ABC):
     NAMESPACE_NAME: str = None
     NAMESPACE_RECEIVERS_NAME: str = None
+    NOTIFICATION_TYPE: str = None
 
     def __init__(self, namespace_obj: Investor | Startup) -> None:
         self.namespace = namespace_obj
@@ -187,18 +194,44 @@ class StartupNotificationManager(NotificationManager):
             startup_id=self.namespace.startup_id
         )
         for i in ProjectSubscription.objects.filter(project=project):
-            receivers.append(
-                NamespaceInfo(
-                    user_id=i.investor.user.user_id,
-                    namespace=self.NAMESPACE_RECEIVERS_NAME,
-                    namespace_id=i.investor.investor_id
+            user_id = i.investor.user.user_id
+            user: CustomUser = get_object_or_404(CustomUser, user_id=user_id)
+
+            if NotificationPreferences.has_preferences(user_id, self.NOTIFICATION_TYPE):
+                if NotificationPreferences.is_email_enabled(user_id, self.NOTIFICATION_TYPE):
+                    email_context = {
+                        'first_name': user.first_name,
+                        'notification_type': self.NOTIFICATION_TYPE.value
+                    }
+                    email_body = build_email_message("email/email_notification.txt",
+                                                     email_context)
+                    send_email_task.delay(
+                        subject="Email Notification",
+                        body=email_body,
+                        sender=EMAIL_HOST_USER,
+                        receivers=user.email
+                    )
+
+                receivers.append(
+                    NamespaceInfo(
+                        user_id=i.investor.user.user_id,
+                        namespace=self.NAMESPACE_RECEIVERS_NAME,
+                        namespace_id=i.investor.investor_id
+                    )
                 )
-            )
 
         return receivers
 
     def get_namespace_id(self) -> int:
         return self.namespace.startup_id
+
+
+class ProfileUpdateNotificationManager(StartupNotificationManager):
+    NOTIFICATION_TYPE = NotificationTypeEnum.PROFILE_UPDATE
+
+
+class OtherNotificationManager(StartupNotificationManager):  #template
+    NOTIFICATION_TYPE = NotificationTypeEnum.NEW_MESSAGE
 
 
 class InvestorNotificationManager(NotificationManager):
@@ -209,15 +242,57 @@ class InvestorNotificationManager(NotificationManager):
         receivers: list[NamespaceInfo] = []
 
         for i in ProjectSubscription.objects.filter(investor=self.namespace):
-            receivers.append(
-                NamespaceInfo(
-                    user_id=i.project.startup.user.user_id,
-                    namespace=self.NAMESPACE_RECEIVERS_NAME,
-                    namespace_id=i.project.startup.startup_id
+            user_id = i.project.startup.user.user_id
+            user: CustomUser = get_object_or_404(CustomUser, user_id=user_id)
+
+            if NotificationPreferences.has_preferences(user_id, self.NOTIFICATION_TYPE):
+                if NotificationPreferences.is_email_enabled(user_id, self.NOTIFICATION_TYPE):
+                    email_context = {
+                        'first_name': user.first_name,
+                        'notification_type': self.NOTIFICATION_TYPE.value
+                    }
+                    email_body = build_email_message("email/email_notification.txt",
+                                                     email_context)
+                    send_email_task.delay(
+                        subject="Email Notification",
+                        body=email_body,
+                        sender=EMAIL_HOST_USER,
+                        receivers=user.email
+                    )
+
+                receivers.append(
+                    NamespaceInfo(
+                        user_id=i.project.startup.user.user_id,
+                        namespace=self.NAMESPACE_RECEIVERS_NAME,
+                        namespace_id=i.project.startup.startup_id
+                    )
                 )
-            )
 
         return receivers
 
     def get_namespace_id(self) -> int:
         return self.namespace.investor_id
+
+
+class ChatNotificationManager(NotificationManager):
+    def __init__(self, namespace_obj: Investor | Startup, room) -> None:
+        super().__init__(namespace_obj)
+        self.room = room
+
+    def _create_receivers_namespaces(self) -> list[NamespaceInfo]:
+        receivers: list[NamespaceInfo] = []
+
+        # TODO: check if receiver allows notification
+        for participant in self.room.participants:
+            if participant['namespace_id'] != self.get_namespace_id():
+                receivers.append(participant)
+
+        return receivers
+
+
+class InvestorChatNotificationManager(ChatNotificationManager, InvestorNotificationManager):
+    pass
+
+
+class StartupChatNotificationManager(ChatNotificationManager, StartupNotificationManager):
+    pass

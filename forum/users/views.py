@@ -1,11 +1,11 @@
 from os import environ
 
 import jwt
+from django.contrib.auth import login
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
-from django.shortcuts import get_object_or_404
-from django.contrib.auth import login
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -28,13 +28,16 @@ from forum.tasks import send_email_task
 from forum.utils import build_email_message
 from users.models import CustomUser
 from users.permissions import *
-
+from users.serializers import (
+    CustomTokenRefreshSerializer,
+    UserLoginSerializer,
+    UserRegisterSerializer,
+)
 from users.swagger_auto_schema_settings import (
     sendEmailConfirmationView_responses,
     userRegisterView_request_body,
     userRegisterView_responses,
 )
-from users.serializers import UserRegisterSerializer,UserLoginSerializer,CustomTokenRefreshSerializer
 
 from .models import PasswordResetModel
 from .serializers import (
@@ -141,7 +144,7 @@ class PasswordResetRequestView(GenericAPIView):
         reset_token = token_generator.make_token(user)
 
         PasswordResetModel.objects.create(
-            email=clear_data['email'],
+            email=user,
             reset_token=reset_token
         )
 

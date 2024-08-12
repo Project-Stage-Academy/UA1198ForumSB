@@ -1,0 +1,152 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: celery-worker-internal
+  namespace: default
+spec:
+  selector:
+    app: celery-worker
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  celery-worker
+  namespace: default
+  labels:
+    app:  celery-worker
+spec:
+  selector:
+    matchLabels:
+      app: celery-worker
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app:  celery-worker
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name:  celery-worker
+          image: ghcr.io/project-stage-academy/ua1198forumsb:main 
+          command: ["celery"]
+          args: ["-A", "forum", "worker", "-l", "INFO"]
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: FORUM_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_db_name
+            - name: FORUM_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: forum-secret
+                  key: FORUM_DB_USER
+            - name: FORUM_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: forum-secret
+                  key: FORUM_DB_PASSWORD
+            - name: FORUM_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_db_host
+            - name: FORUM_DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_db_port
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: forum-secret
+                  key: SECRET_KEY
+            - name: DJANGO_SETTINGS_MODULE
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: django_settings_module
+            - name: FORUM_EMAIL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_email_host
+            - name: FORUM_EMAIL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_email_port
+            - name: FORUM_EMAIL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: forum-secret
+                  key: FORUM_EMAIL_USER
+            - name: FORUM_EMAIL_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: forum-secret
+                  key: FORUM_EMAIL_USER_PASSWORD
+            - name: FORUM_REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_redis_host
+            - name: FORUM_REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_redis_port
+            - name: FORUM_CELERY_BROKER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_celery_broker_url
+            - name: TOKEN_REFRESH_RATE
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: token_refresh_rate
+            - name: FORUM_PASSWORD_RESET_LINK
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_password_reset_link
+            - name: FORUM_MONGO_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_mongo_host
+            - name: FORUM_MONGO_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_mongo_port
+            - name: FORUM_MONGO_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: forum-configmap
+                  key: forum_mongo_db_name
+            - name: FORUM_MONGO_USER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: forum-secret
+                  key: FORUM_MONGO_USER_NAME
+            - name: FORUM_MONGO_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: forum-secret
+                  key: FORUM_MONGO_USER_PASSWORD
+      volumes:
+        - name: config-volume
+          configMap:
+            name: forum-configmap

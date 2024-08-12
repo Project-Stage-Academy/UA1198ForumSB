@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: forum-redis
+  namespace: default
+spec:
+  selector:
+    app: forum-redis
+  type: ClusterIP
+  ports:
+  - name: forum-redis
+    protocol: TCP
+    port: 6379
+    targetPort: 6379
+  
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forum-redis
+  namespace: default
+  labels:
+    app: forum-redis
+spec:
+  selector:
+    matchLabels:
+      app: forum-redis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: forum-redis
+    spec:
+      containers:
+      - name: forum-redis
+        image: redis:alpine
+        ports:
+        - containerPort: 6379
+          name: forum-redis
+      restartPolicy: Always
