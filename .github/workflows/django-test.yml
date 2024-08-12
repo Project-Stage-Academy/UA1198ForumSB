@@ -39,3 +39,7 @@ jobs:
         run: |
             cd forum/
             poetry run python manage.py test
+      - name: Run tests
+        run: |
+          cd forum/
+          poetry run python manage.py test
