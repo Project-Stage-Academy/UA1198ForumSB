@@ -33,4 +33,5 @@ jobs:
 
       - name: Run tests
         run: |
-          poetry run pytest --ds=forum.settings
+            cd forum/
+            poetry run python manage.py test
