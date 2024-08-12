@@ -39,7 +39,7 @@ function StartChatForm(props) {
             const response = await APIService.fetchWithAuth(`${API_URL}/communications/messages/send`, {
                 method: 'POST',
                 data: {
-                    room: new_room.data.id,
+                    room: new_room.data.conversation_id,
                     author: namespaceInfo,
                     content: message
                 }

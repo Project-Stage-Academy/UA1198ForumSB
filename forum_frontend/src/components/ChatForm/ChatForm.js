@@ -79,9 +79,7 @@ function ChatForm(props) {
             }
             chatSocket.onmessage = (e) => {
                 const data = JSON.parse(e.data);
-                const msg = data.message;
-                const new_message_id = msg.split("Message: ")[1].split(" ")[0]
-                addLastMessageToList(new_message_id);
+                addLastMessageToList(data.message_id);
             };
             chatSocket.onclose = () => {
                 console.log("WS connection has been closed!");
