@@ -34,6 +34,7 @@ jobs:
       - name: Run tests
         run: |
             cd forum/
-            export DJANGO_SETTINGS_MODULE=forum.settings
-            export SECRET_KEY= ${{ secrets.SECRET_KEY }}
+            $env:DJANGO_SETTINGS_MODULE="forum.settings"
+            $env:SECRET_KEY="${{ secrets.SECRET_KEY }}"
             poetry run python manage.py test
+        shell: pwsh
