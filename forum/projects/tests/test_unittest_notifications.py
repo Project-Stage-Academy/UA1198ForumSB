@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from projects.utils import get_changed_fields
 from projects.notifications import send_notification
 from projects.models import Project, ProjectStatus
-from .tests_project_setup import ProjectSetupMixin
 
 from forum.tests_setup import UserSetupMixin
 from forum.settings import EMAIL_HOST
