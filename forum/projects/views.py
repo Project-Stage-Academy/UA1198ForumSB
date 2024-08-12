@@ -33,8 +33,8 @@ class UserStartupProjectView(APIView):
     ]
 
     def get(self, request, user_id, startup_id):
-        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
-        project = get_object_or_404(Project, startup=startup)
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id, is_deleted=False)
+        project = get_object_or_404(Project, startup=startup, is_deleted=False)
         serializer = ProjectSerializer(project)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

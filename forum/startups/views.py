@@ -10,6 +10,7 @@ from .models import StartupSize, Startup
 from .serializers import StartupSizeSerializer, StartupSerializer
 
 from users.permissions import *
+from projects.models import Project
 from rest_framework.permissions import IsAuthenticated
 from .helpers import select_startups_by_search_string, filter_startups, get_details_about_startup
 
@@ -120,8 +121,11 @@ class UserStartupView(APIView):
     )
     def delete(self, request, user_id, startup_id):
         startup = get_object_or_404(Startup, user_id=user_id, startup_id=startup_id, is_deleted=False)
+        project = get_object_or_404(Project, startup_id=startup_id, is_deleted=False)
         startup.is_deleted = True
+        project.is_deleted = True
         startup.save()
+        project.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
       

@@ -32,6 +32,7 @@ class Project(models.Model):
     description = models.TextField(blank=True, null=True)
     budget = models.IntegerField(blank=True, null=True)
     history = HistoricalRecords()
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'project'
