@@ -1,5 +1,5 @@
 from rest_framework_mongoengine.serializers import DocumentSerializer
-from .mongo_models import NotificationPreferences, NotificationTypes
+from .mongo_models import NotificationPreferences, NotificationTypes, NotificationTypeEnum
 from rest_framework import serializers
 
 
@@ -35,22 +35,28 @@ class WSNotificationAckSerializer(serializers.Serializer):
     notification_id = serializers.CharField(required=True)
 
 
+class NotificationTypesSerializer(serializers.Serializer):
+    name = serializers.ChoiceField(choices=[nt.value for nt in NotificationTypeEnum])
+    description = serializers.CharField(max_length=255, required=False)
+
 class NotificationPreferencesSerializer(DocumentSerializer):
+    notification_types = NotificationTypesSerializer(many=True)
+
     class Meta:
         model = NotificationPreferences
-        fields = '__all__'
+        fields = ['notification_types', 'ws_enabled', 'email_enabled']
 
-    def validate_notification_types(self, value):
-        if not value:
-            raise serializers.ValidationError("At least one notification type must be specified.")
-        return value
+    def create(self, validated_data):
+        user_id = self.context['request'].user.user_id
+        notification_types_data = validated_data.pop('notification_types')
+        notification_types = [NotificationTypes(**nt) for nt in notification_types_data]
+        return NotificationPreferences.objects.create(user_id=user_id, notification_types=notification_types, **validated_data)
 
-    def validate(self, data):
-
-        ws_enabled = data.get('ws_enabled')
-        email_enabled = data.get('email_enabled')
-
-        if not (ws_enabled or email_enabled):
-            raise serializers.ValidationError("At least one notification method must be enabled.")
-
-        return data
+    def update(self, instance, validated_data):
+        notification_types_data = validated_data.pop('notification_types', None)
+        if notification_types_data is not None:
+            instance.notification_types = [NotificationTypes(**nt) for nt in notification_types_data]
+        instance.ws_enabled = validated_data.get('ws_enabled', instance.ws_enabled)
+        instance.email_enabled = validated_data.get('email_enabled', instance.email_enabled)
+        instance.save()
+        return instance
