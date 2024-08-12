@@ -118,7 +118,7 @@ class SendMessageView(BaseAPIView):
                 f'with id {new_message.author.namespace_id}'
             )
             manager.push_notification(notification_message)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(new_message.to_json(), status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

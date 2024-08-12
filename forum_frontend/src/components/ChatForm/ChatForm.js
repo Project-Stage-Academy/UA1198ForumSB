@@ -9,7 +9,7 @@ import APIService from '../APIService/APIService';
 import { useNavigate } from 'react-router-dom';
 
 function ChatForm(props) {
-    const {show, handleClose, room} = props;
+    const {show, handleClose, room, chatSocket} = props;
     const room_id = room._id["$oid"];
 
     const [message, setMessage] = useState("");
@@ -58,6 +58,10 @@ function ChatForm(props) {
                 }
             });
             setStatusCode(res.status);
+            if (res.status === 201){
+                const new_message = JSON.parse(res.data);
+                setMessagesList([...messagesList, new_message]);
+            }
 
         } catch (err) {
             console.error("Error while sending message:", err);
@@ -68,24 +72,26 @@ function ChatForm(props) {
     }
 
     useEffect(() => {
-        getMessagesList();
-        const chatSocket = new WebSocket(
-            `ws://localhost:8000/ws/notifications/${APIService.getAccessToken()}`, 
-        );
-        chatSocket.onopen = () => {
-            console.log("WS connection has been opend!");
+        if (typeof chatSocket === 'object'){
+            getMessagesList();
+            chatSocket.onopen = () => {
+                console.log("WS connection has been opend!");
+            }
+            chatSocket.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                const msg = data.message;
+                const new_message_id = msg.split("Message: ")[1].split(" ")[0]
+                addLastMessageToList(new_message_id);
+            };
+            chatSocket.onclose = () => {
+                console.log("WS connection has been closed!");
+            }
+            return () => {
+                console.log("removed ChatForm");
+                chatSocket.close();
+            }
         }
-        chatSocket.onmessage = (e) => {
-            const data = JSON.parse(e.data);
-            const msg = data.message;
-            const new_message_id = msg.split("Message: ")[1].split(" ")[0]
-            addLastMessageToList(new_message_id);
-        };
-        return () => {
-            console.log("removed ChatForm");
-            chatSocket.close();
-        }
-    }, [getMessagesList, addLastMessageToList]);
+    }, [chatSocket, getMessagesList, addLastMessageToList]);
 
     return (
         <Modal show={show} onHide={handleClose}>
