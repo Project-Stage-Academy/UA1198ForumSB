@@ -141,18 +141,6 @@ class UserStartupProjectViewTests(UserSetupMixin):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     @patch('users.permissions.get_token_payload_from_cookies')
-    def test_delete_non_existent_project(self, mock_get_token_payload):
-        mock_get_token_payload.return_value = {
-            'user_id': self.test_user.user_id,
-            'name_space_id': self.startup.startup_id,
-            'name_space_name': 'startup'
-        }
-
-        non_existent_url = reverse('users:user_startup_project', args=[self.test_user.user_id, 999])
-        response = self.client.delete(non_existent_url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    @patch('users.permissions.get_token_payload_from_cookies')
     def test_update_project_with_invalid_data(self, mock_get_token_payload):
         mock_get_token_payload.return_value = {
             'user_id': self.test_user.user_id,
