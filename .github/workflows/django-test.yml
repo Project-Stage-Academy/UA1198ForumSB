@@ -33,5 +33,5 @@ jobs:
 
       - name: Run tests
         run: |
-          cd forum
+          cd forum/
           python manage.py test
