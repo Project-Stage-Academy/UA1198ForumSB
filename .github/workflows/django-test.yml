@@ -37,5 +37,5 @@ jobs:
       - name: Run tests
         run: |
             cd forum/
-            source .env.test
+            set SECRET_KEY=secret
             poetry run python manage.py test
