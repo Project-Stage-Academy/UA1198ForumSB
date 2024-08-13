@@ -1,8 +1,11 @@
-from os import environ
+import logging
 
 from django.apps import AppConfig
+from forum.config import EnvConfig
 
 from mongoengine import connect
+
+from forum.logging import logger
 
 
 class CommunicationsConfig(AppConfig):
@@ -10,10 +13,15 @@ class CommunicationsConfig(AppConfig):
     name = 'communications'
 
     def ready(self) -> None:
-        connect(
-            host=environ.get("FORUM_MONGO_HOST", "localhost"),
-            port=int(environ.get("FORUM_MONGO_PORT", 27017)),
-            db=environ.get("FORUM_MONGO_DB_NAME"),
-            username=environ.get("FORUM_MONGO_USER_NAME"),
-            password=environ.get("FORUM_MONGO_USER_PASSWORD")
-        )
+        try:
+            connect(
+                host=EnvConfig.mongo_host(),
+                port=EnvConfig.mongo_port(),
+                db=EnvConfig.mongo_db_name(),
+                username=EnvConfig.mongo_username(),
+                password=EnvConfig.mongo_password()
+            )
+        except ConnectionError as e:
+            logger.error(f"Failed to connect to MongoDB: {e}")
+        except ValueError as e:
+            logger.error(f"Configuration error: {e}")

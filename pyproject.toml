@@ -21,10 +21,16 @@ mongoengine = "^0.28.2"
 celery = {extras = ["redis"], version = "^5.4.0"}
 django-celery-results = "^2.5.1"
 django-simple-history = "^3.7.0"
+django-ratelimit = "^4.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.2.5"
 pylint-django = "^2.5.5"
+bandit = "^1.7.9"
+sentry-sdk = {extras = ["django"], version = "^2.12.0"}
+
+[tool.bandit]
+exclude_dirs = ["tests.py", "tests_setup.py"]
 
 [build-system]
 requires = ["poetry-core"]

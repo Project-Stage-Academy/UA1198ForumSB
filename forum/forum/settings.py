@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from datetime import timedelta
 from os import environ
 from pathlib import Path
+import logging
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from dotenv import load_dotenv
 
@@ -32,7 +37,7 @@ SECRET_KEY = environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(environ.get('DEBUG', 1)))
 
-ALLOWED_HOSTS = ['mega-forum.com']
+ALLOWED_HOSTS = ['mega-forum.com', 'localhost']
 
 # Application definition
 
@@ -52,6 +57,7 @@ INSTALLED_APPS = [
     'simple_history',
     'django_celery_results',
     'communications',
+    'notifications',
     'investors',
     'projects',
     'startups',
@@ -231,7 +237,7 @@ EMAIL_HOST = environ.get('FORUM_EMAIL_HOST', 'localhost')
 EMAIL_PORT = environ.get('FORUM_EMAIL_PORT', '8025')
 EMAIL_HOST_USER = environ.get('FORUM_EMAIL_USER', '')
 EMAIL_HOST_PASSWORD = environ.get('FORUM_EMAIL_USER_PASSWORD', '')
-EMAIL_USE_TLS = environ.get('EMAIL_USE_TLS')
+EMAIL_USE_TLS = environ.get('FORUM_EMAIL_USE_TLS')
 
 
 # Celery configuration
@@ -265,3 +271,22 @@ LOGGING = {
         },
     },
 }
+
+
+# Sentry configuration
+
+TOKEN_SENTRY = environ.get('FORUM_TOKEN_SENTRY', '')
+if TOKEN_SENTRY:
+    sentry_sdk.init(
+        dsn=TOKEN_SENTRY,
+        integrations=[
+            DjangoIntegration(),
+            LoggingIntegration(
+                level=logging.INFO,
+                event_level=logging.INFO
+            ),
+        ],
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+        send_default_pii=True
+    )

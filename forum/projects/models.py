@@ -32,6 +32,7 @@ class Project(models.Model):
     description = models.TextField(blank=True, null=True)
     budget = models.IntegerField(blank=True, null=True)
     history = HistoricalRecords()
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'project'
@@ -40,6 +41,10 @@ class Project(models.Model):
 
     def __str__(self) -> str:
         return f"{self.project_id} {self.title}"
+
+    @property
+    def total_funding(self):
+        return self.project_subscriptions.aggregate(total_funding=models.Sum("part"))["total_funding"] or 0
 
 
 class ProjectSubscription(models.Model):

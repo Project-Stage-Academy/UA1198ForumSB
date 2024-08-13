@@ -1,11 +1,11 @@
 from os import environ
 
 import jwt
+from django.contrib.auth import login
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
-from django.shortcuts import get_object_or_404
-from django.contrib.auth import login
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -28,14 +28,16 @@ from forum.tasks import send_email_task
 from forum.utils import build_email_message
 from users.models import CustomUser
 from users.permissions import *
-
+from users.serializers import (
+    CustomTokenRefreshSerializer,
+    UserLoginSerializer,
+    UserRegisterSerializer,
+)
 from users.swagger_auto_schema_settings import (
     sendEmailConfirmationView_responses,
     userRegisterView_request_body,
     userRegisterView_responses,
 )
-from users.serializers import UserRegisterSerializer,UserLoginSerializer,CustomTokenRefreshSerializer
-from users.utils import Util
 
 from .models import PasswordResetModel
 from .serializers import (
@@ -45,7 +47,6 @@ from .serializers import (
     UserRegisterSerializer,
 )
 from .throttling import PasswordResetThrottle
-
 
 
 class TokenObtainPairView(BaseTokenObtainPairView):
@@ -73,6 +74,7 @@ class TokenRefreshView(BaseTokenRefreshView):
         if 'refresh' in serializer.validated_data:
             response.set_cookie('refresh_token', serializer.validated_data['refresh'], httponly=True, secure=True)
         return response
+
 
 class NamespaceSelectionView(APIView):
     permission_classes = [IsAuthenticated]
@@ -142,7 +144,7 @@ class PasswordResetRequestView(GenericAPIView):
         reset_token = token_generator.make_token(user)
 
         PasswordResetModel.objects.create(
-            email=clear_data['email'],
+            email=user,
             reset_token=reset_token
         )
 
@@ -155,7 +157,7 @@ class PasswordResetRequestView(GenericAPIView):
                     "reset_link": environ.get('FORUM_PASSWORD_RESET_LINK') + reset_token
                 }
             ),
-            sender="from@example.com",
+            sender=settings.EMAIL_HOST_USER,
             receivers=[user.email],
         )
 
@@ -221,18 +223,22 @@ class UserRegisterView(APIView):
             for key, value in user_data.items():
                 token[key] = str(value)
 
-            message_data = {
-                'subject': 'Verify your email',
-                'from_email': settings.EMAIL_HOST_USER,
-                'to_email': user_data['email']
-            }
             domain = get_current_site(request).domain
             verification_link = reverse('users:email-verify', kwargs={'token': str(token)})
-            email_sent = Util.send_email(domain, verification_link, message_data, user_data)
-            if email_sent:
-                return Response("Verification link was sent to your email", status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "An error occurred during sending email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            send_email_task.delay(
+                subject="Email Verification Request",
+                body=build_email_message(
+                    "email/email_confirmation_request.txt",
+                    {
+                        "first_name": user_data['first_name'],
+                        "confirmation_email_link": domain + verification_link
+                    }
+                ),
+                sender=settings.EMAIL_HOST_USER,
+                receivers=[user_data['email']],
+            )
+            return Response("Verification link was sent to your email", status=status.HTTP_200_OK)
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
       
@@ -261,6 +267,7 @@ class SendEmailConfirmationView(APIView):
         except (jwt.exceptions.DecodeError, jwt.exceptions.InvalidTokenError):
             return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class UserLoginView(APIView):
     serializer_class = UserLoginSerializer
 
@@ -281,6 +288,7 @@ class UserLoginView(APIView):
         response.set_cookie('access_token', str(refresh.access_token), httponly=True, secure=True)
         response.set_cookie('refresh_token', str(refresh), httponly=True, secure=True)
         return response
+
 
 class LogoutAndBlacklistRefreshTokenView(APIView):
     permission_classes = (IsAuthenticated,)
