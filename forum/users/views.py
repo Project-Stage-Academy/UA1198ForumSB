@@ -1,6 +1,7 @@
 from os import environ
 
 import jwt
+from django.contrib.auth import authenticate
 from django.contrib.auth import login
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
@@ -51,6 +52,32 @@ from .throttling import PasswordResetThrottle
 
 class TokenObtainPairView(BaseTokenObtainPairView):
     throttle_scope = 'token_obtain'
+    
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        user = authenticate(request, 
+                            email=request.data.get('email'),
+                            password=request.data.get('password'))
+        if user:
+            login(request, user)
+        access_token = response.data.get('access')
+        refresh_token = response.data.get('refresh')
+
+        if access_token:
+            response.set_cookie(
+                'access_token',
+                access_token,
+                httponly=False,
+                secure=False
+            )
+        if refresh_token:
+            response.set_cookie(
+                'refresh_token',
+                refresh_token,
+                httponly=True,
+                secure=True
+            )
+        return response
 
 
 class TokenRefreshView(BaseTokenRefreshView):
@@ -70,7 +97,7 @@ class TokenRefreshView(BaseTokenRefreshView):
             return JsonResponse({'detail': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
         response = Response(serializer.validated_data, status=status.HTTP_200_OK)
-        response.set_cookie('access_token', serializer.validated_data['access'], httponly=True, secure=True)
+        response.set_cookie('access_token', serializer.validated_data['access'], httponly=False, secure=False)
         if 'refresh' in serializer.validated_data:
             response.set_cookie('refresh_token', serializer.validated_data['refresh'], httponly=True, secure=True)
         return response
@@ -113,15 +140,13 @@ class NamespaceSelectionView(APIView):
                 'refresh_token',
                 new_refresh_token,
                 httponly=True,
-                secure=True,
-                samesite='Strict',
+                secure=True
             )
             response.set_cookie(
                 'access_token',
                 new_refresh_token.access_token,
-                httponly=True,
-                secure=True,
-                samesite='Strict',
+                httponly=False,
+                secure=False
             )
             return response
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -270,22 +295,23 @@ class SendEmailConfirmationView(APIView):
 
 class UserLoginView(APIView):
     serializer_class = UserLoginSerializer
+    permission_classes = [AllowAny,]
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
         user_data = serializer.validated_data
-        login(request, user_data)
-        refresh = RefreshToken.for_user(user_data)
+        user = CustomUser.objects.get(email=user_data["email"])
+        refresh = RefreshToken.for_user(user)
         data = {
-            "email": user_data.email,
+            "email": user.email,
             "access": str(refresh.access_token),
             "refresh": str(refresh),
             }
 
         response = Response(data, status=status.HTTP_200_OK)
-        response.set_cookie('access_token', str(refresh.access_token), httponly=True, secure=True)
+        response.set_cookie('access_token', str(refresh.access_token), httponly=False, secure=False)
         response.set_cookie('refresh_token', str(refresh), httponly=True, secure=True)
         return response
 
