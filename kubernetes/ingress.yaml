@@ -9,10 +9,17 @@ spec:
   - host: mega-forum.com
     http:
       paths:
-      - path: /
+      - path: /api
         pathType: Prefix
         backend:
           service:
             name: forum-internal
             port:
               number: 8000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web-internal
+            port:
+              number: 80
