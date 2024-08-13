@@ -8,7 +8,7 @@ function UserNamespacesList() {
     const [investors, setInvestors] = useState([]);
     const [startups, setStartups] = useState([]);
     const [error, setError] = useState("");
-    const [selectedNamespace, setSelectedNamespace] = useState(0);
+    const [selectedNamespace, setSelectedNamespace] = useState({id: 0, name: ''});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -16,7 +16,7 @@ function UserNamespacesList() {
             try {
                 const token = APIService.getDecodedToken();
                 if (token) {
-                    setSelectedNamespace(token.name_space_id);
+                    setSelectedNamespace({id: token.name_space_id, name: token.name_space_name});
                     const user_id = token.user_id;
                     const investorResponse = await APIService.fetchWithAuth(
                         `${API_URL}/users/${user_id}/investors/`, {}, navigate);
@@ -45,7 +45,7 @@ function UserNamespacesList() {
                 method: 'POST',
                 data: { name_space_id, name_space_name },
             }, navigate);
-            setSelectedNamespace(name_space_id);
+            setSelectedNamespace({id: name_space_id, name: name_space_name});
         } catch (err) {
             console.error("Error selecting namespace", err);
             setError("Failed to select cabinet.");
@@ -65,11 +65,16 @@ function UserNamespacesList() {
                                 <div key={investor.investor_id} className="col-lg-2 col-md-6 mt-4 mb-4 text-center">
                                     <div className="position-relative">
                                         <Button 
-                                            variant={selectedNamespace === investor.investor_id ? "success" : "primary"} 
+                                            variant={
+                                                selectedNamespace.id === investor.investor_id && 
+                                                selectedNamespace.name === 'investor' ? 
+                                                "success" : "primary"
+                                            } 
                                             onClick={() => selectNamespace(investor.investor_id, 'investor')}
                                         >
-                                            {selectedNamespace === investor.investor_id ? "Selected" : 
-                                                "Select"} {investor.investor_id} 
+                                            {selectedNamespace.id === investor.investor_id && 
+                                            selectedNamespace.name === 'investor' ? 
+                                            "Selected" : "Select"} {investor.investor_id} 
                                         </Button>
                                     </div>
                                 </div>
@@ -87,11 +92,16 @@ function UserNamespacesList() {
                                 <div key={startup.startup_id} className="col-lg-2 col-md-6 mt-4 mb-4 text-center">
                                     <div className="position-relative">
                                         <Button 
-                                            variant={selectedNamespace === startup.startup_id ? "success" : "primary"} 
+                                            variant={
+                                                selectedNamespace.id === startup.startup_id && 
+                                                selectedNamespace.name === 'startup' ? 
+                                                "success" : "primary"
+                                            } 
                                             onClick={() => selectNamespace(startup.startup_id, 'startup')}
                                         >
-                                            {selectedNamespace === startup.startup_id ? "Selected" : 
-                                                "Select"} {startup.startup_id}
+                                            {selectedNamespace.id === startup.startup_id && 
+                                            selectedNamespace.name === 'startup' ? 
+                                            "Selected" : "Select"} {startup.startup_id}
                                         </Button>
                                     </div>
                                 </div>
