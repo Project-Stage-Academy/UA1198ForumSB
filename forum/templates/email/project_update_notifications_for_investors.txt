@@ -1,0 +1,16 @@
+We wanted to inform you that the project "{{ project_title }}" by "{{ startup_name }}" has been updated.
+
+Here are the updated details of the project:
+{% if changes.updated_fields.title %}
+- Title: {{ project_title }}
+{% endif %}
+{% if changes.updated_fields.description %}
+- Description: {{ project_description }}
+{% endif %}
+{% if changes.updated_fields.status %}
+- Status: {{ project_status }}
+{% endif %}
+If you have any questions or need further information, please feel free to contact us.
+
+Best regards,
+Your Team

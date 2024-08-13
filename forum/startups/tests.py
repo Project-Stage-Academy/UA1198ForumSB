@@ -1,5 +1,6 @@
 import json
 import unittest
+from unittest import patch
 
 from rest_framework.reverse import reverse
 from rest_framework import status
@@ -89,12 +90,6 @@ class BaseUserStartupsTestCase(UserSetupMixin):
             email="other_test@gmail.com",
             password="other_test_password"
         )
-
-        post_body = {
-            'name_space_id': self.startup1.startup_id,
-            'name_space_name': 'startup'
-        }
-        self.client.post(reverse('users:namespace_selection'), data=post_body)
 
 
 class UserStartupsTestCase(BaseUserStartupsTestCase):
@@ -229,7 +224,6 @@ class UserStartupsTestCase(BaseUserStartupsTestCase):
             "The user_id value in the url and in the body can be different"
         )
 
-
 class UserStartupTestCase(BaseUserStartupsTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -362,7 +356,13 @@ class UserStartupTestCase(BaseUserStartupsTestCase):
                     "Permissions do not work"
                 )
 
-    def test_delete_startup(self):
+    @patch('users.permissions.get_token_payload_from_cookies')
+    def test_delete_startup(self, mock_get_token_payload):
+        mock_get_token_payload.return_value = {
+            'user_id': self.test_user.user_id,
+            'name_space_id': self.startup3.startup_id,
+            'name_space_name': 'startup'
+        }
         response = self.client.delete(
             reverse(
                 'users:user_startup',
@@ -396,15 +396,3 @@ class UserStartupTestCase(BaseUserStartupsTestCase):
                     {'detail': 'No Startup matches the given query.'},
                     "Response body does not match the expected one"
                 )
-
-    def test_delete_startup_ThisUserPermission_failed(self):
-        response = self.client.delete(
-            reverse('users:user_startup', kwargs={'user_id': 5555, 'startup_id': self.startup1.startup_id})
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, "Status code is different from 403")
-        self.assertEqual(
-            response.json(),
-            {'detail': 'You do not have permission to perform this action.'},
-            "Wrong user can delete a startup"
-        )

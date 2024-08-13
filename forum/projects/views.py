@@ -17,29 +17,57 @@ from .serializers import (
     ProjectSubscriptionSerializer
 )
 from .permissions import UpdateOwnProject
-from .services import notify_investors_via_email
+from .notifications import notify_investors_via_email, send_notification
+from .utils import get_changed_fields
 
-from forum.utils import get_changed_fields
-
+from users.permissions import (
+    ThisUserPermission,
+    IsStartupNamespaceSelected,
+    ThisStartup)
+from startups.models import Startup
 
 from drf_yasg.utils import swagger_auto_schema
 
 
-class ProjectViewSet(viewsets.ModelViewSet):
-    """
-    A viewset for viewing and editing Project instances.
-    """
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = (permissions.IsAuthenticated, UpdateOwnProject)
+class UserStartupProjectView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        ThisUserPermission,
+        IsStartupNamespaceSelected,
+        ThisStartup,
+        UpdateOwnProject
+    ]
 
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        old_instance = Project.objects.get(pk=instance.pk)
-        changes = get_changed_fields(old_instance, instance)
+    def get(self, request, user_id, startup_id):
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id, is_deleted=False)
+        project = get_object_or_404(Project, startup=startup, is_deleted=False)
+        serializer = ProjectSerializer(project)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        if changes:
-            notify_investors_via_email(instance, changes)
+    def post(self, request, user_id, startup_id):
+        serializer = ProjectSerializer(data={
+            **request.data,
+            'user': user_id,
+            'startup': startup_id
+        })
+        if serializer.is_valid():
+            project = serializer.save()
+            send_notification(project, "create")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, user_id, startup_id):
+        startup = get_object_or_404(Startup, user=user_id, startup_id=startup_id)
+        project = get_object_or_404(Project, startup=startup)
+        serializer = ProjectSerializer(project, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_project = serializer.save()
+            changes = get_changed_fields(project, updated_project)
+            if changes:
+                notify_investors_via_email(updated_project, changes)
+                send_notification(updated_project, "update")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProjectHistoryViewSet(viewsets.ReadOnlyModelViewSet):
